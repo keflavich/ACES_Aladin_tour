@@ -1,0 +1,16 @@
+ALADIN Lite Tour
+
+https://www.cefca.es/cefca_en/tour_navigator_library
+
+
+Help me write code that will:
+(1) convert a FITS file (e.g., 12m_continuum_commonbeam_circular_mosaic.fits) to an ALADIN HIPS file using a colorscheme in matplotlib that transitions from grayscale to hot
+(2) create an ALADIN Lite tour (e.g., see @https://www.cefca.es/cefca_en/tour_navigator_library )
+(3) in that tour, zoom in and then pan across the image
+
+
+We're trying to make an Aladin Lite tour using HIPS for the display.  You made it most of the way through last time, but we need to fix some things.
+
+fits_to_hips is adding a colorbar that doesn't belong
+
+the website isn't working - it's getting stuck with javascript errors

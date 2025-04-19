@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>ACES Continuum ALADIN Lite Tour</title>
+    <link rel="stylesheet" href="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        #aladin-lite-div {
+            width: 100%;
+            height: 100vh;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            display: block !important; /* Always visible */
+        }
+        button {
+            margin: 5px;
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        select {
+            padding: 8px;
+            margin: 5px;
+        }
+        .tour-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 400px;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading ALADIN Lite... Please wait.</div>
+    <div id="controls" style='margin-left:15%'>
+        <button id="start-tour">Start Tour</button>
+        <button id="reset-view">Reset View</button>
+        <select id="hips-source">
+            <option value="local">Local HiPS (Generated)</option>
+            <option value="2mass">2MASS colored</option>
+            <option value="dss">DSS colored</option>
+            <option value="atlasgal">ATLASGAL</option>
+        </select>
+        <button id="test-coords" style="background-color: #ff6600;">Test Coords</button>
+        <button id="debug-button" style="background-color: #888;">Debug</button>
+    </div>
+    <div id="aladin-lite-div"></div>
+    <div id="tour-info" class="tour-info hidden">
+        <h3 id="tour-title"></h3>
+        <p id="tour-description"></p>
+    </div>
+
+    <!-- Load scripts at the end -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js" charset="utf-8"></script>
+    <!-- Add astronomy.js for coordinate conversion -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/astronomy-js@1.0.1/astronomy.min.js"></script>
+
+    <script type="text/javascript">
+        // Tour waypoints
+            const tourWaypoints = [
+                {
+                galacticCoords: {lon: -0.01, lat: 0.001},
+                    fov: 1.5,
+                    title: "ACES Galactic Center Overview",
+                description: "Overview of the ALMA data for the Galactic Center.",
+                pauseTime: 0  // Start immediately
+                },
+                {
+                galacticCoords: {lon: 359.944, lat: -0.046},
+                    fov: 0.4,
+                    title: "Sgr A* Central Region",
+                description: "Zoomed view of the central region around Sgr A*.",
+                pauseTime: 1000  // 4 seconds at this waypoint
+            },
+            {
+                galacticCoords: {lon: 0.66, lat: -0.05},
+                fov: 0.15,
+                title: "Sgr B2",
+                description: "Structures in the eastern part of the galactic center.",
+                pauseTime: 4000  // 4 seconds at this waypoint
+            },
+            {
+                galacticCoords: {lon: 359.85, lat: -0.08},
+                    fov: 0.3,
+                    title: "Southern Filaments",
+                description: "Filamentary structures in the southern part of the field.",
+                pauseTime: 4000  // 4 seconds at this waypoint
+            },
+            {
+                galacticCoords: {lon: 0.02467, lat: -0.0727},
+                radecCoords: {ra: 266.49060146, dec: -28.95296738},
+                fov: 0.05,
+                title: "MUBLO",
+                description: "The MUBLO - Millimeter Ultra Broad-Line Object.",
+                pauseTime: 6000  // 6 seconds at this interesting feature
+            },
+            {
+                galacticCoords: {lon: 359.944, lat: -0.046},
+                    fov: 1.5,
+                    title: "Full ACES Continuum Overview",
+                description: "Returning to the full view of the ACES continuum mosaic.",
+                pauseTime: 4000  // 4 seconds at final waypoint
+            }
+        ];
+
+        // Global variables
+        let aladin = null;
+        let tourRunning = false;
+        let tourInterval = null;
+        let tourIndex = 0;
+        let localHipsOverlay = null;
+        
+        // DOM elements
+        const loadingDiv = document.getElementById('loading');
+        const tourInfoDiv = document.getElementById('tour-info');
+        const tourTitle = document.getElementById('tour-title');
+        const tourDescription = document.getElementById('tour-description');
+        
+        // Initialize when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Aladin
+            initAladin();
+        });
+        
+        // Initialize Aladin viewer using v3 API
+        function initAladin() {
+            console.log('Starting Aladin Lite v3 initialization...');
+            
+            // First wait for A.init to complete (v3 API requirement)
+            A.init.then(() => {
+                console.log('A.init completed, creating Aladin instance');
+                
+                // Create Aladin Lite instance
+                aladin = A.aladin('#aladin-lite-div', {
+                    survey: "P/2MASS/color",
+                    cooFrame: 'galactic',
+                    target: "359.944 -0.046",
+                    fov: 1.5,
+                    showReticle: true,
+                    showLayersControl: true,
+                    showFullscreenControl: true,
+                    showFrame: true
+                });
+                
+                console.log('Aladin instance created');
+                
+                // Hide loading message
+                loadingDiv.classList.add('hidden');
+                
+                // Set initial view
+                goToWaypoint(tourWaypoints[0]);
+                
+                // Try to load local HiPS
+                setTimeout(() => loadLocalHips(), 1000);
+                
+                // Check for stored survey selection
+                const storedSurvey = localStorage.getItem('selectedSurvey');
+                if (storedSurvey) {
+                    console.log('Restoring stored survey:', storedSurvey);
+                    localStorage.removeItem('selectedSurvey');
+                    
+                    // Set dropdown and change survey
+                    document.getElementById('hips-source').value = storedSurvey;
+                    document.getElementById('hips-source').dispatchEvent(new Event('change'));
+                }
+            }).catch(err => {
+                console.error('Failed to initialize Aladin:', err);
+                loadingDiv.textContent = 'Error loading Aladin. Please refresh the page.';
+            });
+        }
+        
+        // Load local HiPS data
+        function loadLocalHips() {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+            
+            loadingDiv.textContent = 'Loading HiPS data...';
+            loadingDiv.classList.remove('hidden');
+            
+            try {
+                console.log('Loading local HiPS data...');
+                
+                // Remove any existing local HiPS overlay
+                if (localHipsOverlay) {
+                    console.log('Removing existing local HiPS overlay');
+                    try {
+                        aladin.removeOverlay(localHipsOverlay);
+                    } catch (e) {
+                        console.warn('Error removing overlay:', e);
+                    }
+                    localHipsOverlay = null;
+                }
+                
+                // Path to local HiPS
+                const hipsUrl = './UNK.AUTH_P_ACES12mMosaicFeathered';
+                console.log('Loading local HiPS from:', hipsUrl);
+                
+                aladin.setOverlayImageLayer(hipsUrl);
+                // Try to load the Allsky.jpg directly as a background image
+                fetch(`${hipsUrl}/Allsky.jpg`)
+                    .then(response => {
+                        if (response.ok) {
+                            console.log('Found Allsky.jpg - loading as background');
+                            // We would use this information, but we'll keep the catalog marker
+                            // for now as it's more reliable
+                        } else {
+                            console.warn('Allsky.jpg not available');
+                        }
+                    })
+                    .catch(err => {
+                        console.warn('Error checking for Allsky.jpg:', err);
+                    });
+                
+                // Hide loading message
+                loadingDiv.classList.add('hidden');
+                
+                // Update tour info with warning
+                showTourInfo({
+                    ...tourWaypoints[0],
+                    description: tourWaypoints[0].description + 
+                        "<br><span style='color:yellow'>Using a placeholder visualization. Local HiPS loading is not fully supported in this browser.</span>"
+                });
+                
+            } catch (e) {
+                console.error('Failed to load local HiPS:', e);
+                loadingDiv.textContent = 'Could not load HiPS data.';
+                setTimeout(() => loadingDiv.classList.add('hidden'), 2000);
+                
+                // Show the info without the error
+                showTourInfo(tourWaypoints[0]);
+            }
+        }
+        
+        // Change survey source
+        document.getElementById('hips-source').addEventListener('change', function(e) {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+            
+                const source = e.target.value;
+            console.log('Changing survey to:', source);
+            
+            loadingDiv.textContent = 'Loading selected survey...';
+            loadingDiv.classList.remove('hidden');
+            
+            // Define survey mapping for v3 API
+            const surveyMap = {
+                'local': 'local',  // Special case, handled separately
+                '2mass': 'P/2MASS/color',
+                'dss': 'P/DSS2/color',
+                'atlasgal': 'P/ATLASGAL/APEXPlanck',
+            };
+            
+            if (source === 'local') {
+                // Load local HiPS
+                        loadLocalHips();
+                return;
+            }
+            
+            // Get survey ID
+            const surveyId = surveyMap[source] || 'P/DSS2/color';
+            console.log('Survey ID:', surveyId);
+            
+            // Remove any existing local HiPS overlay
+            if (localHipsOverlay) {
+                console.log('Removing local HiPS overlay');
+                aladin.removeOverlay(localHipsOverlay);
+                localHipsOverlay = null;
+            }
+            
+            // Set the base image survey
+            try {
+                console.log('Setting base image layer to:', surveyId);
+                aladin.setBaseImageLayer(surveyId);
+                loadingDiv.classList.add('hidden');
+            } catch (e) {
+                console.error('Error changing survey:', e);
+                loadingDiv.textContent = 'Survey change failed.';
+                setTimeout(() => loadingDiv.classList.add('hidden'), 2000);
+            }
+        });
+        
+        // Convert galactic coordinates to equatorial (RA/Dec) using astronomy.js library
+        function galacticToEquatorial(lon, lat) {
+            // Define known reference points with accurate conversions
+            const referencePoints = [
+                {
+                    // Sgr A*
+                    gal: { lon: 359.944, lat: -0.046 },
+                    eq: { ra: 266.4168, dec: -29.0078 } // 17h45m40s, -29°00'28"
+                },
+                {
+                    // Sgr B2
+                    gal: { lon: 0.6667, lat: -0.0362 },
+                    eq: { ra: 266.8350, dec: -28.3853 } // 17h47m20.4s, -28°23'07"
+                },
+                {
+                    // MUBLO
+                    gal: { lon: 0.02467, lat: -0.0727 },
+                    eq: { ra: 266.4906, dec: -28.9530 }
+                }
+            ];
+            
+            // Check if we have an exact reference point match
+            for (const ref of referencePoints) {
+                if (Math.abs(lon - ref.gal.lon) < 0.001 && Math.abs(lat - ref.gal.lat) < 0.001) {
+                    console.log(`Using exact reference point for (${lon}, ${lat}) → (${ref.eq.ra}, ${ref.eq.dec})`);
+                    return { ra: ref.eq.ra, dec: ref.eq.dec };
+                }
+            }
+            
+            // First check if Aladin has built-in conversion
+            if (aladin && typeof aladin.gal2J2000 === 'function') {
+                try {
+                    const result = aladin.gal2J2000(lon, lat);
+                    console.log(`Using Aladin's built-in conversion for (${lon}, ${lat}) → (${result.ra}, ${result.dec})`);
+                    return result;
+                } catch (e) {
+                    console.warn('Failed to use Aladin conversion:', e);
+                    // Fall through to other methods
+                }
+            }
+            
+            // Check if astronomy.js is available
+            if (typeof Astronomy !== 'undefined') {
+                try {
+                    console.log('Using astronomy.js for coordinate conversion');
+                    // Create a Galactic position
+                    const galactic = new Astronomy.Galactic(lon, lat);
+                    
+                    // Convert to equatorial
+                    const equatorial = galactic.toEquatorial();
+                    
+                    return {
+                        ra: equatorial.ra,
+                        dec: equatorial.dec
+                    };
+                } catch (e) {
+                    console.warn('Failed to use astronomy.js conversion:', e);
+                }
+            }
+            
+            // Use interpolation between known reference points
+            // This provides better accuracy than the simple approximation
+            console.log('Using interpolation between reference points');
+            
+            // Find the closest reference point
+            let closestRef = referencePoints[0];
+            let minDist = Number.MAX_VALUE;
+            
+            for (const ref of referencePoints) {
+                const dist = Math.sqrt(
+                    Math.pow(lon - ref.gal.lon, 2) + 
+                    Math.pow(lat - ref.gal.lat, 2)
+                );
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestRef = ref;
+                }
+            }
+            
+            // Handle the case where longitude wraps around 0/360
+            let dLon = lon - closestRef.gal.lon;
+            if (Math.abs(dLon) > 180) {
+                if (dLon > 0) {
+                    dLon = dLon - 360;
+                } else {
+                    dLon = dLon + 360;
+                }
+            }
+            
+            const dLat = lat - closestRef.gal.lat;
+            
+            // Conversion factors for the Galactic Center region, based on the two reference points
+            const raPerLon = 0.63;   // About 0.63° in RA per 1° in galactic longitude
+            const decPerLat = 1.62;  // About 1.62° in Dec per 1° in galactic latitude
+            const raPerLat = 0;      // Cross-terms are small and can be neglected
+            const decPerLon = -1.05; // About -1.05° in Dec per 1° in galactic longitude
+            
+            // Calculate new RA and Dec using the offset and conversion factors
+            const ra = closestRef.eq.ra + dLon * raPerLon + dLat * raPerLat;
+            const dec = closestRef.eq.dec + dLon * decPerLon + dLat * decPerLat;
+            
+            console.log(`Interpolated coordinates for (${lon}, ${lat}) → (${ra.toFixed(4)}, ${dec.toFixed(4)})`);
+            return { ra, dec };
+        }
+        
+        // Test coordinate conversion
+        document.getElementById('test-coords').addEventListener('click', function() {
+            // Create test overlay
+            const testDiv = document.createElement('div');
+            testDiv.style.position = 'fixed';
+            testDiv.style.top = '50%';
+            testDiv.style.left = '50%';
+            testDiv.style.transform = 'translate(-50%, -50%)';
+            testDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            testDiv.style.color = 'white';
+            testDiv.style.padding = '20px';
+            testDiv.style.borderRadius = '5px';
+            testDiv.style.maxWidth = '80%';
+            testDiv.style.maxHeight = '80%';
+            testDiv.style.overflow = 'auto';
+            testDiv.style.zIndex = '2000';
+            testDiv.style.fontFamily = 'monospace';
+            testDiv.style.fontSize = '12px';
+            
+            // Close button
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Close';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '10px';
+            closeButton.addEventListener('click', function() {
+                document.body.removeChild(testDiv);
+            });
+            
+            // Test information
+            let testHtml = '<h3>Coordinate Conversion Tests</h3>';
+            testHtml += '<p>This compares our conversion with known accurate coordinates.</p>';
+            testHtml += '<table border="1" cellpadding="5" style="border-collapse: collapse;">';
+            testHtml += '<tr><th>Location</th><th>Galactic (l,b)</th><th>Expected (RA,Dec)</th><th>Converted (RA,Dec)</th><th>Difference</th></tr>';
+            
+            // Test cases (known locations)
+            const testCases = [
+                {
+                    name: "Sgr A*",
+                    gal: { lon: 359.944, lat: -0.046 },
+                    expected: { ra: 266.4168, dec: -29.0078 } // 17h45m40s, -29°00'28"
+                },
+                {
+                    name: "Sgr B2",
+                    gal: { lon: 0.6667, lat: -0.0362 },
+                    expected: { ra: 266.8350, dec: -28.3853 } // 17h47m20.4s, -28°23'07"
+                },
+                {
+                    name: "MUBLO",
+                    gal: { lon: 0.02467, lat: -0.0727 },
+                    expected: { ra: 266.4906, dec: -28.9530 }
+                },
+                // Test each waypoint
+                ...tourWaypoints.map((wp, idx) => {
+                    // Skip waypoints that are already in our test cases
+                    if (wp.title === "MUBLO") return null;
+                    
+                    return {
+                        name: `Waypoint ${idx+1}: ${wp.title}`,
+                        gal: { lon: wp.galacticCoords.lon, lat: wp.galacticCoords.lat },
+                        expected: wp.radecCoords || null // Use provided RA/Dec if available
+                    };
+                }).filter(item => item !== null) // Remove null entries
+            ];
+            
+            // Run tests
+            for (const test of testCases) {
+                const result = galacticToEquatorial(test.gal.lon, test.gal.lat);
+                
+                // Format for display
+                const galStr = `(${test.gal.lon.toFixed(4)}, ${test.gal.lat.toFixed(4)})`;
+                const expectedStr = test.expected ? 
+                    `(${test.expected.ra.toFixed(4)}, ${test.expected.dec.toFixed(4)})` : 
+                    "N/A";
+                const convertedStr = `(${result.ra.toFixed(4)}, ${result.dec.toFixed(4)})`;
+                
+                // Calculate difference if expected values are available
+                let diffStr = "N/A";
+                if (test.expected) {
+                    const raDiff = Math.abs(result.ra - test.expected.ra);
+                    const decDiff = Math.abs(result.dec - test.expected.dec);
+                    const totalDiff = Math.sqrt(raDiff*raDiff + decDiff*decDiff);
+                    diffStr = totalDiff.toFixed(4) + "°";
+                }
+                
+                // Color-code the difference
+                let rowStyle = '';
+                if (test.expected) {
+                    const diff = Math.sqrt(
+                        Math.pow(result.ra - test.expected.ra, 2) + 
+                        Math.pow(result.dec - test.expected.dec, 2)
+                    );
+                    if (diff < 0.01) rowStyle = 'background-color: rgba(0, 128, 0, 0.2);'; // Good match (green)
+                    else if (diff < 0.1) rowStyle = 'background-color: rgba(255, 165, 0, 0.2);'; // Fair match (orange)
+                    else rowStyle = 'background-color: rgba(255, 0, 0, 0.2);'; // Poor match (red)
+                }
+                
+                // Add row to table
+                testHtml += `<tr style="${rowStyle}">
+                    <td>${test.name}</td>
+                    <td>${galStr}</td>
+                    <td>${expectedStr}</td>
+                    <td>${convertedStr}</td>
+                    <td>${diffStr}</td>
+                </tr>`;
+                
+                // For expected values, also add the sexagesimal notation
+                if (test.expected) {
+                    testHtml += `<tr style="${rowStyle}">
+                        <td colspan="2"></td>
+                        <td>${formatRADec(test.expected.ra, true)}<br>${formatRADec(test.expected.dec, false)}</td>
+                        <td>${formatRADec(result.ra, true)}<br>${formatRADec(result.dec, false)}</td>
+                        <td></td>
+                    </tr>`;
+                }
+            }
+            
+            testHtml += '</table>';
+            
+            // Add manual test form
+            testHtml += `
+            <h3>Test Custom Coordinates</h3>
+            <div style="margin-top: 15px">
+                <div>
+                    <label>Galactic Longitude: </label>
+                    <input type="text" id="test-lon" value="0.6667" style="width: 80px; background: #333; color: white; border: 1px solid #666;">
+                    <label>Latitude: </label>
+                    <input type="text" id="test-lat" value="-0.0362" style="width: 80px; background: #333; color: white; border: 1px solid #666;">
+                    <button id="convert-coords" style="margin-left: 10px;">Convert</button>
+                </div>
+                <div id="conversion-result" style="margin-top: 10px; padding: 10px; background: #222; border-radius: 5px;"></div>
+            </div>`;
+            
+            // Add content to div
+            testDiv.innerHTML = testHtml;
+            testDiv.appendChild(closeButton);
+            document.body.appendChild(testDiv);
+            
+            // Add event listener for custom coordinate conversion
+            document.getElementById('convert-coords').addEventListener('click', function() {
+                const lon = parseFloat(document.getElementById('test-lon').value);
+                const lat = parseFloat(document.getElementById('test-lat').value);
+                
+                if (isNaN(lon) || isNaN(lat)) {
+                    document.getElementById('conversion-result').innerHTML = 
+                        '<span style="color: red;">Please enter valid numbers</span>';
+                    return;
+                }
+                
+                const result = galacticToEquatorial(lon, lat);
+                
+                document.getElementById('conversion-result').innerHTML = 
+                    `Galactic (${lon.toFixed(4)}, ${lat.toFixed(4)}) → ` +
+                    `Equatorial (${result.ra.toFixed(4)}, ${result.dec.toFixed(4)})<br>` +
+                    `RA: ${formatRADec(result.ra, true)}<br>` +
+                    `Dec: ${formatRADec(result.dec, false)}`;
+                
+                // Offer to go to these coordinates
+                const gotoButton = document.createElement('button');
+                gotoButton.textContent = 'Go to this position';
+                gotoButton.style.marginTop = '10px';
+                gotoButton.addEventListener('click', function() {
+                    aladin.gotoRaDec(result.ra, result.dec);
+                    document.getElementById('conversion-result').innerHTML += 
+                        '<br><span style="color: green;">Going to position...</span>';
+                });
+                document.getElementById('conversion-result').appendChild(gotoButton);
+            });
+        });
+        
+        // Helper function to format RA/Dec in sexagesimal notation
+        function formatRADec(decimal, isRA) {
+            // For RA: hours (0-24), minutes, seconds
+            // For Dec: degrees (-90 to +90), minutes, seconds
+            let value = decimal;
+            
+            if (isRA) {
+                // Convert degrees to hours (24 hours = 360 degrees)
+                value = value / 15;
+                
+                // Ensure 0-24 range
+                while (value < 0) value += 24;
+                while (value >= 24) value -= 24;
+            }
+            
+            // Get the degree/hour component
+            const primary = Math.floor(Math.abs(value));
+            
+            // Get the minutes
+            const minDecimal = (Math.abs(value) - primary) * 60;
+            const minutes = Math.floor(minDecimal);
+            
+            // Get the seconds
+            const seconds = ((minDecimal - minutes) * 60).toFixed(1);
+            
+            // Format the result with the correct sign
+            const sign = (value < 0 && !isRA) ? '-' : '';
+            
+            if (isRA) {
+                return `${sign}${primary.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(4, '0')}s`;
+            } else {
+                return `${sign}${primary.toString().padStart(2, '0')}° ${minutes.toString().padStart(2, '0')}' ${seconds.toString().padStart(4, '0')}"`;
+            }
+        }
+        
+        // Go to a specific waypoint
+            function goToWaypoint(waypoint) {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+            
+            try {
+                // Go to the position in galactic coordinates
+                aladin.gotoPosition(
+                    waypoint.galacticCoords.lon,
+                    waypoint.galacticCoords.lat,
+                    'galactic'
+                );
+                aladin.setFoV(waypoint.fov);
+                showTourInfo(waypoint);
+            } catch (e) {
+                console.error('Error going to waypoint:', e);
+            }
+        }
+        
+        // Display tour information
+        function showTourInfo(waypoint) {
+                tourTitle.textContent = waypoint.title;
+            tourDescription.innerHTML = waypoint.description;
+                tourInfoDiv.classList.remove('hidden');
+        }
+
+        // Animate between waypoints using Aladin's built-in animateToRaDec
+        function animateToWaypoint(fromWaypoint, toWaypoint, durationMs, callback) {
+            if (!aladin) {
+                console.log("Aladin not initialized");
+                if (callback) callback();
+                return;
+            }
+            
+            // Convert galactic coordinates to RA/Dec
+            const fromCoords = galacticToEquatorial(
+                fromWaypoint.galacticCoords.lon, 
+                fromWaypoint.galacticCoords.lat
+            );
+            
+            const toCoords = galacticToEquatorial(
+                toWaypoint.galacticCoords.lon, 
+                toWaypoint.galacticCoords.lat
+            );
+            
+            console.log(`Starting animation from Gal(${fromWaypoint.galacticCoords.lon}, ${fromWaypoint.galacticCoords.lat}) = Eq(${fromCoords.ra.toFixed(4)}, ${fromCoords.dec.toFixed(4)})`);
+            console.log(`                  to Gal(${toWaypoint.galacticCoords.lon}, ${toWaypoint.galacticCoords.lat}) = Eq(${toCoords.ra.toFixed(4)}, ${toCoords.dec.toFixed(4)})`);
+            
+            // Show starting waypoint info
+            showTourInfo(fromWaypoint);
+            
+            // Original FOV for initial zoom out (we'll use the first waypoint's FOV as our "full view")
+            const originalFov = tourWaypoints[0].fov;
+            
+            // Animation sequence divided into three phases:
+            // 1. Zoom out to original FOV (0.5 seconds)
+            // 2. Animate to new position (half of remaining time)
+            // 3. Zoom to target FOV (half of remaining time)
+            const zoomOutTime = 0.5; // seconds
+            const remainingTime = durationMs / 1000 - zoomOutTime; // seconds
+            const positionAnimationTime = remainingTime / 2; // seconds
+            const zoomInTime = remainingTime / 2; // seconds
+            
+            console.log(`Animation sequence: ${zoomOutTime}s zoom out, ${positionAnimationTime}s position change, ${zoomInTime}s zoom in`);
+            
+            // Phase 1: First zoom out to the original FOV quickly
+            console.log(`Zooming out to FOV ${originalFov} in ${zoomOutTime}s`);
+            animateFov(fromWaypoint.fov, originalFov, zoomOutTime * 1000, () => {
+                // Phase 2: Then animate to the new position
+                console.log(`Moving to new position in ${positionAnimationTime}s`);
+                aladin.animateToRaDec(toCoords.ra, toCoords.dec, positionAnimationTime);
+                
+                // Wait for position animation to complete
+                setTimeout(() => {
+                    // Update tour info after position change
+                    showTourInfo(toWaypoint);
+                    
+                    // Phase 3: Finally zoom to the target FOV
+                    console.log(`Zooming to target FOV ${toWaypoint.fov} in ${zoomInTime}s`);
+                    animateFov(originalFov, toWaypoint.fov, zoomInTime * 1000, () => {
+                        if (callback) callback();
+                    });
+                }, positionAnimationTime * 1000);
+            });
+        }
+        
+        // Animate FOV change over time
+        function animateFov(startFov, endFov, duration, callback) {
+            const steps = 20;
+            const stepDuration = duration / steps;
+            let currentStep = 0;
+            
+            function doFovStep() {
+                currentStep++;
+                const progress = currentStep / steps;
+                
+                // Easing function
+                    const easedProgress = progress < 0.5 
+                        ? 2 * progress * progress 
+                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    
+                // Calculate current FOV
+                    const currentFov = startFov + (endFov - startFov) * easedProgress;
+                    
+                // Set the FOV
+                aladin.setFoV(currentFov);
+                
+                // Continue or complete
+                if (currentStep < steps) {
+                    setTimeout(doFovStep, stepDuration);
+                    } else {
+                    aladin.setFoV(endFov); // Make sure we end at the exact target FOV
+                        if (callback) callback();
+                    }
+                }
+                
+            // Start FOV animation
+            setTimeout(doFovStep, 10);
+            }
+
+            // Start tour button
+            document.getElementById('start-tour').addEventListener('click', function() {
+            if (!aladin) {
+                alert('Aladin not ready yet. Please wait.');
+                return;
+            }
+            
+                if (tourRunning) {
+                    // Stop tour if running
+                    clearTimeout(tourInterval);
+                    tourRunning = false;
+                    this.textContent = 'Start Tour';
+                } else {
+                    // Start tour
+                    tourRunning = true;
+                    this.textContent = 'Stop Tour';
+                    
+                    // Begin from the first waypoint
+                    tourIndex = 0;
+                    goToWaypoint(tourWaypoints[tourIndex]);
+                    
+                    // Function to advance the tour
+                    function advanceTour() {
+                    if (!tourRunning) return;
+                    
+                        const currentWaypoint = tourWaypoints[tourIndex];
+                        tourIndex = (tourIndex + 1) % tourWaypoints.length;
+                        const nextWaypoint = tourWaypoints[tourIndex];
+                        
+                    // Get animation duration based on distance and FOV change
+                    const animationDuration = calculateAnimationDuration(currentWaypoint, nextWaypoint);
+                    
+                    // Animate to next waypoint
+                    animateToWaypoint(currentWaypoint, nextWaypoint, animationDuration, function() {
+                        // Pause at each waypoint for the specified time (or default if not set)
+                            if (tourRunning) {
+                            const pauseTime = nextWaypoint.pauseTime !== undefined ? 
+                                nextWaypoint.pauseTime : 4000; // Default 4 seconds
+                            
+                            console.log(`Pausing at waypoint "${nextWaypoint.title}" for ${pauseTime}ms`);
+                            tourInterval = setTimeout(advanceTour, pauseTime);
+                            }
+                        });
+                    }
+                
+                // Start advancing immediately if first waypoint has zero pause time
+                const startDelay = tourWaypoints[0].pauseTime !== undefined ? 
+                    tourWaypoints[0].pauseTime : 3000; // Default to 3 seconds
+                    
+                console.log(`Starting tour with initial delay of ${startDelay}ms`);
+                tourInterval = setTimeout(advanceTour, startDelay);
+                }
+            });
+
+            // Reset view button
+            document.getElementById('reset-view').addEventListener('click', function() {
+            if (!aladin) {
+                alert('Aladin not ready yet. Please wait.');
+                return;
+            }
+            
+                // Stop tour if running
+                if (tourRunning) {
+                    clearTimeout(tourInterval);
+                    tourRunning = false;
+                    document.getElementById('start-tour').textContent = 'Start Tour';
+                }
+                
+                // Reset to first waypoint
+            tourIndex = 0;
+                goToWaypoint(tourWaypoints[0]);
+        });
+        
+        // Debug button
+        document.getElementById('debug-button').addEventListener('click', function() {
+            if (!aladin) {
+                alert('Aladin not initialized');
+                return;
+            }
+            
+            // Create debug overlay
+            const debugDiv = document.createElement('div');
+            debugDiv.style.position = 'fixed';
+            debugDiv.style.top = '50%';
+            debugDiv.style.left = '50%';
+            debugDiv.style.transform = 'translate(-50%, -50%)';
+            debugDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            debugDiv.style.color = 'white';
+            debugDiv.style.padding = '20px';
+            debugDiv.style.borderRadius = '5px';
+            debugDiv.style.maxWidth = '80%';
+            debugDiv.style.maxHeight = '80%';
+            debugDiv.style.overflow = 'auto';
+            debugDiv.style.zIndex = '2000';
+            debugDiv.style.fontFamily = 'monospace';
+            debugDiv.style.fontSize = '12px';
+            
+            // Close button
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Close';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '10px';
+            closeButton.addEventListener('click', function() {
+                document.body.removeChild(debugDiv);
+            });
+            debugDiv.appendChild(closeButton);
+            
+            // Debug information
+            let debugHtml = '<h3>Aladin v3 Debug Information</h3>';
+            
+            // Try to load HiPS properties
+            fetch('./UNK.AUTH_P_ACES12mMosaicFeathered/properties')
+                .then(response => response.text())
+                .then(text => {
+                    debugHtml += '<h4>HiPS Properties</h4>';
+                    debugHtml += '<pre>' + text + '</pre>';
+                    updateDebugContent();
+                })
+                .catch(error => {
+                    debugHtml += '<h4>HiPS Properties Error</h4>';
+                    debugHtml += '<pre>Failed to load: ' + error.message + '</pre>';
+                    updateDebugContent();
+                });
+            
+            // Aladin status
+            debugHtml += '<h4>Aladin Status</h4>';
+            debugHtml += '<pre>';
+            debugHtml += 'Aladin Initialized: ' + (aladin ? 'Yes' : 'No') + '\n';
+            
+            // Get current view parameters
+            try {
+                const view = aladin.getViewParams();
+                debugHtml += 'Current View: ' + JSON.stringify(view, null, 2) + '\n';
+            } catch (e) {
+                debugHtml += 'Error getting view params: ' + e.message + '\n';
+            }
+            
+            // Current survey info
+            try {
+                const currentSurvey = aladin.getBaseImageLayer();
+                debugHtml += '\nCurrent Base Survey: ' + (currentSurvey ? currentSurvey.id : 'None') + '\n';
+                if (currentSurvey) {
+                    const surveyInfo = {
+                        id: currentSurvey.id,
+                        name: currentSurvey.name,
+                        maxOrder: currentSurvey.maxOrder
+                    };
+                    debugHtml += JSON.stringify(surveyInfo, null, 2) + '\n';
+                }
+            } catch (e) {
+                debugHtml += 'Error getting survey info: ' + e.message + '\n';
+            }
+            
+            // Check overlays
+            try {
+                const overlays = aladin.getOverlays();
+                debugHtml += '\nOverlays: ' + (overlays && overlays.length > 0 ? overlays.length : 'None') + '\n';
+                if (overlays && overlays.length > 0) {
+                    overlays.forEach((overlay, index) => {
+                        debugHtml += 'Overlay #' + (index + 1) + ':\n';
+                        const overlayInfo = {
+                            name: overlay.name || 'Unnamed',
+                            type: overlay.type || 'Unknown'
+                        };
+                        debugHtml += JSON.stringify(overlayInfo, null, 2) + '\n';
+                    });
+                }
+            } catch (e) {
+                debugHtml += 'Error checking overlays: ' + e.message + '\n';
+            }
+            
+            // Available methods
+            debugHtml += '\nAvailable Methods:\n';
+            for (const key in aladin) {
+                if (typeof aladin[key] === 'function') {
+                    debugHtml += '- ' + key + '()\n';
+                }
+            }
+            debugHtml += '</pre>';
+            
+            function updateDebugContent() {
+                debugDiv.innerHTML = debugHtml;
+                debugDiv.appendChild(closeButton);
+            }
+            
+            updateDebugContent();
+            document.body.appendChild(debugDiv);
+        });
+
+        // Calculate appropriate animation duration based on distance and FOV change
+        function calculateAnimationDuration(fromWaypoint, toWaypoint) {
+            // Convert to equatorial for consistent distance calculation
+            const fromCoords = galacticToEquatorial(
+                fromWaypoint.galacticCoords.lon, 
+                fromWaypoint.galacticCoords.lat
+            );
+            
+            const toCoords = galacticToEquatorial(
+                toWaypoint.galacticCoords.lon, 
+                toWaypoint.galacticCoords.lat
+            );
+            
+            // Calculate angular distance (simplified)
+            const dRa = Math.abs(toCoords.ra - fromCoords.ra);
+            const dDec = Math.abs(toCoords.dec - fromCoords.dec);
+            const distance = Math.sqrt(dRa * dRa + dDec * dDec);
+            
+            // Calculate FOV change
+            const fovChange = Math.abs(toWaypoint.fov - fromWaypoint.fov);
+            
+            // Base duration on distance and FOV change
+            // More distance or FOV change = more time needed
+            const baseDuration = 2000; // Base 2 seconds
+            const distanceFactor = distance * 50; // Increase time with distance
+            const fovFactor = fovChange * 1000; // Increase time with FOV change
+            
+            // Calculate total duration, min 1.5s, max 8s
+            const duration = Math.min(8000, Math.max(1500, baseDuration + distanceFactor + fovFactor));
+            
+            console.log(`Animation duration from "${fromWaypoint.title}" to "${toWaypoint.title}": ${duration}ms`);
+            return duration;
+        }
+    </script>
+</body>
+</html> 

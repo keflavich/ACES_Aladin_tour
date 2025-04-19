@@ -1,0 +1,13 @@
+<html>
+<div id='aladin-lite-div' style='width: 100%; height: 500px;'></div>
+<script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+<script>
+    var aladin;
+A.init.then(() => {
+    var aladin = A.aladin('#aladin-lite-div', {projection: 'AIT', cooFrame: 'galactic', fov: 200, target: 'galactic center'});
+    aladin.setBaseImageLayer('P/Mellinger/color');
+    aladin.setOverlayImageLayer('P/ATLASGAL/APEXPlanck');
+    aladin.getOverlayImageLayer().setAlpha(0.1);
+});
+</script>
+</html>

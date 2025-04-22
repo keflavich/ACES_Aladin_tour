@@ -14,3 +14,9 @@ We're trying to make an Aladin Lite tour using HIPS for the display.  You made i
 fits_to_hips is adding a colorbar that doesn't belong
 
 the website isn't working - it's getting stuck with javascript errors
+
+
+
+
+Let's try to get fits_to_hips working.  We're missing some files.  Look in the directory ACES_tour_Aladin/UNK.AUTH_P_ACES12mMosaicFeather: there are metadata files there, and deeper structure.  I think we need to make more of that with create_hips_structure.  The documentation for HIPS generation is here:
+@https://aladin.cds.unistra.fr/hips/HipsgenManual.pdf 

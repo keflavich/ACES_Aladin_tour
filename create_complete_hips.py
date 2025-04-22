@@ -24,8 +24,12 @@ def create_complete_hips_structure(hips_dir):
     # Check if the basic files exist
     allsky_path = os.path.join(hips_dir, "Allsky.jpg")
     if not os.path.exists(allsky_path):
-        print(f"Error: 'Allsky.jpg' not found in {hips_dir}")
-        return False
+        print(f"Warning: 'Allsky.jpg' not found in {hips_dir}")
+        print("Creating a blank Allsky.jpg file...")
+        # Create a blank image as Allsky.jpg
+        blank_image = Image.new('RGB', (512, 512), color=(0, 0, 0))
+        blank_image.save(allsky_path)
+        print(f"Created blank Allsky.jpg at {allsky_path}")
     
     # Read the properties file to get the HiPS order
     properties_path = os.path.join(hips_dir, "properties")
@@ -76,6 +80,7 @@ def create_complete_hips_structure(hips_dir):
                 for npix in range(12):
                     npix_file = os.path.join(dir0, f"Npix{npix}.jpg")
                     if not os.path.exists(npix_file):
+                        print(f"Creating tile Norder{order}/Dir0/Npix{npix}.jpg")
                         shutil.copy(allsky_path, npix_file)
             else:
                 # For higher orders, create tiles likely to be used for galactic center

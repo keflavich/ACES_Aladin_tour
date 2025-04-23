@@ -3,83 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>James Webb Space Telescope (JWST) Tour - Herbig-Haro Objects and Star Formation</title>
-<style>
-    body, html {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        height: 100%;
-    }
-    #aladin-lite-div {
-        width: 100%;
-        height: 100%;
-        position: absolute;
-    }
-    #controlsDiv {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 10px;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    }
-    .tourControls {
-        margin-top: 10px;
-    }
-    .tourControls button {
-        background: #3498db;
-        border: none;
-        color: white;
-        padding: 8px 15px;
-        margin-right: 5px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    .tourControls button:hover {
-        background: #2980b9;
-    }
-    .waypoint {
-        margin-bottom: 15px;
-    }
-    .waypointTitle {
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    .waypointDesc {
-        font-size: 0.9em;
-        margin-bottom: 5px;
-        max-width: 300px;
-    }
-    #waypointInfoDiv {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 10px;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        max-width: 350px;
-    }
-    .hidden {
-        display: none;
-    }
-    #loadingDiv {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1001;
-        background-color: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 20px;
-        border-radius: 5px;
-        text-align: center;
-    }
-</style>
+<link rel="stylesheet" href="default.css">
 </head>
 <body>
 <div id="aladin-lite-div"></div>
@@ -102,6 +26,8 @@
 <!-- Load jQuery first -->
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+<!-- Add draggable functionality -->
+<script type="text/javascript" src="draggable.js"></script>
 
 <script type="text/javascript">
     let aladin;
@@ -135,24 +61,50 @@
             fov: 0.02,
             title: 'HH 46/47 Detail View',
             description: 'The orange lobes were created by earlier ejections, while the blue thread-like features are more recent ejections. These outflows remove excess material and help stabilize the star\'s formation process.'
-        },
-        {
-            coordinates: '5 36 22.8 -06 46 03',
-            fov: 0.2,
-            title: 'Herbig-Haro 1-2',
-            description: 'HH 1-2 is one of the most well-studied Herbig-Haro objects, located in the Orion Nebula. JWST reveals the complex shock structures formed as the stellar jets collide with surrounding gas, creating bright bow shocks.'
-        },
-        {
-            coordinates: '5 36 22.8 -06 46 03',
-            fov: 0.02,
-            title: 'HH 1-2 Close-up',
-            description: 'In this detailed view, we can see the intricate structures within the shock fronts. The different colors reveal temperature variations within the outflow, showcasing the dynamic nature of these protostellar jets.'
         }
+        // {
+        //     coordinates: '5 36 22.8 -06 46 03',
+        //     fov: 0.2,
+        //     title: 'Herbig-Haro 1-2',
+        //     description: 'HH 1-2 is one of the most well-studied Herbig-Haro objects, located in the Orion Nebula. JWST reveals the complex shock structures formed as the stellar jets collide with surrounding gas, creating bright bow shocks.'
+        // },
+        // {
+        //     coordinates: '5 36 22.8 -06 46 03',
+        //     fov: 0.02,
+        //     title: 'HH 1-2 Close-up',
+        //     description: 'In this detailed view, we can see the intricate structures within the shock fronts. The different colors reveal temperature variations within the outflow, showcasing the dynamic nature of these protostellar jets.'
+        // }
     ];
 
     // Initialize Aladin Lite viewer when the page is loaded
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Document loaded, waiting for A.init to complete');
+        
+        // Make controls divs draggable
+        makeDraggable(document.getElementById('controlsDiv'));
+        makeDraggable(document.getElementById('waypointInfoDiv'));
+        
+        // Parse coordinates for each waypoint
+        waypoints.forEach(waypoint => {
+            // Extract RA and Dec from the coordinates string
+            const parts = waypoint.coordinates.trim().split(' ');
+            if (parts.length >= 6) {
+                // Format: "H M S +/-D M S"
+                const raH = parseFloat(parts[0]);
+                const raM = parseFloat(parts[1]);
+                const raS = parseFloat(parts[2]);
+                const decSign = parts[3].startsWith('-') ? -1 : 1;
+                const decD = parseFloat(parts[3].replace('-', ''));
+                const decM = parseFloat(parts[4]);
+                const decS = parseFloat(parts[5]);
+                
+                // Convert to decimal degrees
+                waypoint.ra = 15 * (raH + raM/60 + raS/3600);
+                waypoint.dec = decSign * (decD + decM/60 + decS/3600);
+                
+                console.log(`Parsed coordinates for ${waypoint.title}: RA=${waypoint.ra}, Dec=${waypoint.dec}`);
+            }
+        });
         
         // Wait for A.init promise to complete (required for v3 API)
         A.init.then(() => {
@@ -248,6 +200,8 @@
         }
         
         const waypoint = waypoints[index];
+        const prevIndex = index > 0 ? index - 1 : waypoints.length - 1;
+        const prevWaypoint = waypoints[prevIndex];
         
         // Update the info display
         document.getElementById('waypointTitle').textContent = waypoint.title;
@@ -255,9 +209,8 @@
         
         // If this is an immediate transition (duration=0), just go directly
         if (duration === 0) {
-            aladin.animateToRaDec(waypoint.ra, waypoint.dec, 0, function() {
-                aladin.setFov(waypoint.fov);
-            });
+            aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2);
+            aladin.setFoV(waypoint.fov);
             
             // If tour is running, schedule the next waypoint
             scheduleNextWaypoint();
@@ -265,19 +218,31 @@
         }
         
         // Multi-step animation with custom FOV animation
-        const stepDuration = duration / 3;
+        const stepDuration = duration / 1000;
         
-        // Step 1: Zoom out to 5 degrees
-        animateFov(aladin.getFov(), 5.0, stepDuration, function() {
-            // Step 2: Go to the new position
-            aladin.animateToRaDec(waypoint.ra, waypoint.dec, transitionTimeMs/1000.0, function() {
-                // Step 3: Zoom in to target FOV
-                animateFov(5.0, waypoint.fov, stepDuration);
+        console.log("Zooming to FOV " + waypoint.fov + " from " + aladin.getFov());
+        
+        // Check if we're staying at the same location (same RA/Dec)
+        const sameLocation = (prevWaypoint.ra === waypoint.ra && prevWaypoint.dec === waypoint.dec);
+        
+        if (sameLocation) {
+            console.log("Same location, only changing FOV to " + waypoint.fov);
+            // Only change FOV if same location
+            aladin.zoomToFoV(waypoint.fov, stepDuration, () => {
+                console.log("FOV change complete");
+                scheduleNextWaypoint();
             });
-        });
-        
-        // Schedule the next waypoint if tour is running
-        scheduleNextWaypoint();
+        } else {
+            // Full animation sequence for different location
+            aladin.zoomToFoV(5.0, stepDuration,
+                () => aladin.animateToRaDec(waypoint.ra, waypoint.dec, transitionTimeMs/1000.0,
+                    () => aladin.zoomToFoV(waypoint.fov, stepDuration, () => {
+                        console.log("Animation sequence complete");
+                        scheduleNextWaypoint();
+                    })
+                )
+            );
+        }
     }
     
     // Custom FOV animation function using setFoV

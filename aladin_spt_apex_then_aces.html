@@ -5,115 +5,7 @@
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
     <title>ACES Continuum ALADIN Lite Tour</title>
     <link rel="stylesheet" href="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.css" />
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        #aladin-lite-div {
-            width: 100%;
-            height: 100vh;
-        }
-        #controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            margin-left: 15%;
-            transition: all 0.3s ease;
-        }
-        button {
-            margin: 5px;
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        select {
-            padding: 8px;
-            margin: 5px;
-        }
-        .tour-info {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            z-index: 1000;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            max-width: 400px;
-        }
-        #loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1001;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .opacity-control {
-            margin: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .opacity-control label {
-            min-width: 60px;
-        }
-        .opacity-control input[type="range"] {
-            width: 100px;
-        }
-        .opacity-value {
-            min-width: 30px;
-            text-align: right;
-        }
-        #toggle-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 8px;
-            cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-        }
-        #toggle-controls:hover {
-            background-color: #45a049;
-        }
-        .controls-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 8px;
-        }
-        .controls-title {
-            font-weight: bold;
-            margin: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="default.css">
 </head>
 <body>
     <div id="loading">Loading ALADIN Lite... Please wait.</div>
@@ -141,12 +33,26 @@
             <option value="spt3g-150">SPT-3G 150 GHz</option>
             <option value="spt3g-220">SPT-3G 220 GHz</option>
         </select>
-        <button id="test-coords" style="background-color: #ff6600;">Test Coords</button>
-        <button id="debug-button" style="background-color: #888;">Debug</button>
+        <!--<button id="test-coords" style="background-color: #ff6600; display: none;">Test Coords</button>
+        <button id="debug-button" style="background-color: #888; display: none;">Debug</button>-->
         <div class="opacity-control">
             <label>Opacity:</label>
             <input type="range" id="opacity-slider" min="0" max="100" value="100">
             <span class="opacity-value">100%</span>
+        </div>
+        <div class="waypoint-navigation">
+            <div class="waypoint-select">
+                <label>Go to Waypoint:</label>
+                <select id="goto-waypoint">
+                    <option value="">Select a waypoint...</option>
+                </select>
+            </div>
+            <div class="waypoint-select" style="margin-top: 5px;">
+                <label>Pan to Waypoint:</label>
+                <select id="pan-waypoint">
+                    <option value="">Select a waypoint...</option>
+                </select>
+            </div>
         </div>
     </div>
     <div id="aladin-lite-div"></div>
@@ -162,6 +68,8 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/astronomy-js@1.0.1/astronomy.min.js"></script>
     <!-- Add our animation library -->
     <script type="text/javascript" src="aladin-animations.js"></script>
+    <!-- Add draggable functionality -->
+    <script type="text/javascript" src="draggable.js"></script>
 
     <script type="text/javascript">
         // Tour waypoints
@@ -233,6 +141,9 @@
             const toggleControlsBtn = document.getElementById('toggle-controls');
             const controlsDiv = document.getElementById('controls');
 
+            // Make controls draggable
+            makeDraggable(controlsDiv);
+
             // Make sure all control elements are initially visible
             Array.from(controlsDiv.children).slice(1).forEach(el => {
                 el.style.display = 'block';
@@ -249,7 +160,7 @@
                 });
 
                 // Update button text
-                this.textContent = isHidden ? 'Hide' : 'Show';
+                this.textContent = isHidden ? 'x' : '+';
                 this.title = isHidden ? 'Hide Controls' : 'Show Controls';
 
                 // Adjust controls div size
@@ -285,7 +196,171 @@
                     }
                 }
             });
+            
+            // Initialize waypoint selector
+            initWaypointSelector();
         });
+        
+        // Initialize waypoint selector dropdown
+        function initWaypointSelector() {
+            const gotoSelector = document.getElementById('goto-waypoint');
+            const panSelector = document.getElementById('pan-waypoint');
+            
+            // Populate both dropdowns with waypoints
+            tourWaypoints.forEach((waypoint, index) => {
+                // Go To dropdown
+                const gotoOption = document.createElement('option');
+                gotoOption.value = index;
+                gotoOption.textContent = waypoint.title;
+                gotoSelector.appendChild(gotoOption);
+                
+                // Pan To dropdown
+                const panOption = document.createElement('option');
+                panOption.value = index;
+                panOption.textContent = waypoint.title;
+                panSelector.appendChild(panOption);
+            });
+            
+            // Handle "Go to Waypoint" selection - Direct jump
+            gotoSelector.addEventListener('change', function() {
+                const selectedIndex = parseInt(this.value);
+                
+                // If nothing selected or invalid index, do nothing
+                if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= tourWaypoints.length) {
+                    return;
+                }
+                
+                // Stop any running tour
+                if (tourRunning) {
+                    clearTimeout(tourInterval);
+                    tourRunning = false;
+                    document.getElementById('start-tour').textContent = 'Start Tour';
+                }
+                
+                // Get the selected waypoint
+                const targetWaypoint = tourWaypoints[selectedIndex];
+                
+                // Update current tour index
+                tourIndex = selectedIndex;
+                
+                // Go directly to waypoint without animation
+                goToWaypoint(targetWaypoint);
+                
+                // Reset the dropdown after a short delay
+                setTimeout(() => {
+                    this.value = "";
+                }, 500);
+            });
+            
+            // Handle "Pan to Waypoint" selection - Smooth animation
+            panSelector.addEventListener('change', function() {
+                const selectedIndex = parseInt(this.value);
+                
+                // If nothing selected or invalid index, do nothing
+                if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= tourWaypoints.length) {
+                    return;
+                }
+                
+                // Stop any running tour
+                if (tourRunning) {
+                    clearTimeout(tourInterval);
+                    tourRunning = false;
+                    document.getElementById('start-tour').textContent = 'Start Tour';
+                }
+                
+                // Get the selected waypoint
+                const targetWaypoint = tourWaypoints[selectedIndex];
+                console.log("Target waypoint:", targetWaypoint);
+                
+                // Update current tour index
+                tourIndex = selectedIndex;
+                
+                // Create a custom animation that doesn't rely on complex API detection
+                try {
+                    // First, calculate a slow animation duration
+                    const slowAnimationDuration = 4000; // 4 seconds should be enough
+                    
+                    // Get current FOV (zoom level)
+                    const currentFov = aladin.getFov();
+                    console.log("Current FOV value:", currentFov);
+                    
+                    // Handle the case where getFov() returns an array or unexpected value
+                    let currentFovValue;
+                    if (Array.isArray(currentFov)) {
+                        // If it's an array, use the first value (typically the larger one)
+                        currentFovValue = currentFov[0] || 1.0;
+                        console.log("Using first value from FOV array:", currentFovValue);
+                    } else if (typeof currentFov === 'number' && !isNaN(currentFov)) {
+                        // If it's a valid number, use it directly
+                        currentFovValue = currentFov;
+                    } else {
+                        // Default fallback value
+                        currentFovValue = 1.0;
+                        console.log("Using default FOV value");
+                    }
+                    
+                    // Make sure the target FOV is valid too
+                    const targetFovValue = (typeof targetWaypoint.fov === 'number' && !isNaN(targetWaypoint.fov)) 
+                                         ? targetWaypoint.fov : 1.0;
+                    
+                    // Create and run a custom 3-step animation
+                    // 1. Zoom out (25% of time)
+                    // 2. Change position directly (instant)
+                    // 3. Zoom in (75% of time)
+                    
+                    // Step 1: Zoom out to a wider view (safely)
+                    const wideViewFov = Math.max(currentFovValue * 1.5, targetFovValue * 1.5, 1.0);
+                    console.log("Zooming out to FOV:", wideViewFov);
+                    
+                    // Use our custom FOV animation
+                    animateFov(
+                        currentFovValue,
+                        wideViewFov,
+                        slowAnimationDuration * 0.25, // 25% of time for zoom out
+                        aladin,
+                        function() {
+                            // Step 2: Change position directly
+                            console.log("Changing position to:", targetWaypoint.galacticCoords);
+                            
+                            // Go to the target position in galactic coordinates
+                            aladin.gotoPosition(
+                                targetWaypoint.galacticCoords.lon,
+                                targetWaypoint.galacticCoords.lat,
+                                'galactic'
+                            );
+                            
+                            // Update the info panel
+                            showTourInfo(targetWaypoint, tourInfoDiv, tourTitle, tourDescription);
+                            
+                            // Step 3: Zoom in to final FOV
+                            console.log("Zooming in to FOV:", targetFovValue);
+                            
+                            animateFov(
+                                wideViewFov,
+                                targetFovValue,
+                                slowAnimationDuration * 0.75, // 75% of time for zoom in
+                                aladin,
+                                function() {
+                                    console.log("Animation complete");
+                                    
+                                    // Reset the dropdown after animation
+                                    setTimeout(() => {
+                                        panSelector.value = "";
+                                    }, 500);
+                                }
+                            );
+                        }
+                    );
+                } catch (error) {
+                    console.error("Error during pan animation:", error);
+                    // Fallback to direct positioning in case of error
+                    goToWaypoint(targetWaypoint);
+                    setTimeout(() => {
+                        panSelector.value = "";
+                    }, 500);
+                }
+            });
+        }
 
         // Initialize Aladin viewer using v3 API
         function initAladin() {
@@ -702,12 +777,15 @@
 
         // Animate FOV change over time
         function animateFov(startFov, endFov, duration, callback) {
+            // Ensure callback is a function or use empty function
+            const safeCallback = typeof callback === 'function' ? callback : function() {};
+            
             AladinAnimations.animateFov(
                 startFov,
                 endFov,
                 duration,
                 aladin,
-                callback
+                safeCallback
             );
         }
 
@@ -744,16 +822,25 @@
                     const animationDuration = calculateAnimationDuration(currentWaypoint, nextWaypoint);
 
                     // Animate to next waypoint
-                    animateToWaypoint(currentWaypoint, nextWaypoint, animationDuration, function() {
-                        // Pause at each waypoint for the specified time (or default if not set)
-                        if (tourRunning) {
-                            const pauseTime = nextWaypoint.pauseTime !== undefined ?
-                                nextWaypoint.pauseTime : 4000; // Default 4 seconds
+                    animateToWaypoint(
+                        currentWaypoint, 
+                        nextWaypoint, 
+                        animationDuration, 
+                        aladin,
+                        tourInfoDiv,
+                        tourTitle,
+                        tourDescription,
+                        function() {
+                            // Pause at each waypoint for the specified time (or default if not set)
+                            if (tourRunning) {
+                                const pauseTime = nextWaypoint.pauseTime !== undefined ?
+                                    nextWaypoint.pauseTime : 4000; // Default 4 seconds
 
-                            console.log(`Pausing at waypoint "${nextWaypoint.title}" for ${pauseTime}ms`);
-                            tourInterval = setTimeout(advanceTour, pauseTime);
+                                console.log(`Pausing at waypoint "${nextWaypoint.title}" for ${pauseTime}ms`);
+                                tourInterval = setTimeout(advanceTour, pauseTime);
+                            }
                         }
-                    });
+                    );
                 }
 
                 // Start advancing immediately if first waypoint has zero pause time

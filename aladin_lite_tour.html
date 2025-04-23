@@ -25,6 +25,8 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             display: block !important; /* Always visible */
+            cursor: move;
+            user-select: none;
         }
         button {
             margin: 5px;
@@ -52,6 +54,8 @@
             padding: 10px;
             border-radius: 5px;
             max-width: 400px;
+            cursor: move;
+            user-select: none;
         }
         #loading {
             position: absolute;
@@ -118,6 +122,8 @@
     <script type="text/javascript" src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js" charset="utf-8"></script>
     <!-- Add astronomy.js for coordinate conversion -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/astronomy-js@1.0.1/astronomy.min.js"></script>
+    <!-- Add draggable functionality -->
+    <script type="text/javascript" src="draggable.js"></script>
 
     <script type="text/javascript">
         // Tour waypoints
@@ -182,6 +188,10 @@
 
         // Initialize when document is ready
         document.addEventListener('DOMContentLoaded', function() {
+            // Make elements draggable
+            makeDraggable(document.getElementById('controls'));
+            makeDraggable(document.getElementById('tour-info'));
+            
             // Initialize Aladin
             initAladin();
 

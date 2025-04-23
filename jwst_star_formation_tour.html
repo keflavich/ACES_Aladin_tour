@@ -6,6 +6,9 @@
     <title>JWST Star Formation Tour</title>
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+    <!-- Add draggable functionality -->
+    <script type="text/javascript" src="draggable.js"></script>
+    <link rel="stylesheet" href="default.css">
     <style>
         body {
             margin: 0;
@@ -36,6 +39,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: move;
+            user-select: none;
         }
         
         #tour-controls button {
@@ -62,6 +67,8 @@
             padding: 15px;
             border-radius: 10px;
             z-index: 100;
+            cursor: move;
+            user-select: none;
         }
         
         #waypoint-title {
@@ -125,7 +132,8 @@
         <button id="prev-btn">Previous</button>
         <div id="progress-bar"><div id="progress"></div></div>
         <span id="current-waypoint">0/8</span>
-        <button id="next-btn">Start Tour</button>
+        <button id="next-btn">Next</button>
+        <button id="start-btn">Start Tour</button>
         <button id="reset-btn">Reset</button>
     </div>
 
@@ -141,36 +149,43 @@
         // Define waypoints for the tour
         const waypoints = [
             {
-                ra: 130.43375, // Welcome/Introduction
-                dec: -59.87333,
+                ra: 83.82,
+                dec: -5.39,
                 fov: 0.8,
                 title: "Welcome to JWST Star Formation Tour",
                 description: "This tour will explore spectacular star-forming regions and Herbig-Haro objects observed by the James Webb Space Telescope. JWST's infrared capabilities reveal the hidden processes of star birth in unprecedented detail."
             },
+            { 
+                ra: 166.48416667,
+                dec:  -77.55880556,
+                fov: 0.08,
+                title: "Herbig-Haro 49/50",
+                description: "HH49/50"
+            },
             {
-                ra: 10.61095, // HH 46/47
-                dec: -51.01060,
+                ra: 126.43270833, 
+                dec: -51.00908333, // HH 46/47
                 fov: 0.08,
                 title: "Herbig-Haro 46/47",
                 description: "Located 1470 light years away in the constellation Vela, this is a pair of actively forming stars. JWST's NIRCam reveals the stars surrounded by a disc of gas and dust, with bipolar jets extending outward as the young stars gather mass from their surroundings."
             },
             {
-                ra: 10.61095, // HH 46/47 zoom in
-                dec: -51.01060,
+                ra: 126.399125,
+                dec: -51.02180556,
                 fov: 0.03,
                 title: "Herbig-Haro 46/47 - Closer Look",
                 description: "The jets from these young stars slam into surrounding gas and dust, creating shock fronts visible as bright knots. These features help astronomers understand the dynamics of mass retention and ejection during star formation."
             },
             {
-                ra: 10.6125, // NGC 3324 - Cosmic Cliffs
-                dec: -58.62,
+                ra: 159.241, // NGC 3324 - Cosmic Cliffs
+                dec: -58.61,
                 fov: 0.25,
                 title: "NGC 3324 - Cosmic Cliffs",
                 description: "Located about 7600 light-years away in the Carina Nebula, the 'Cosmic Cliffs' are a stellar nursery where dozens of young stars are being born. JWST reveals details of this dynamic region where radiation and stellar winds from massive nearby stars shape the interstellar medium."
             },
             {
-                ra: 10.7333, // Carina Nebula - Mystic Mountain
-                dec: -59.8833,
+                ra: 159.224375,  // Carina Nebula - Mystic Mountain
+                dec: -58.60777778,
                 fov: 0.1,
                 title: "Carina Nebula - Mystic Mountain",
                 description: "This region contains Herbig-Haro objects HH 901 and HH 902, where emerging stellar jets indicate active star formation. The pillar-like formations are being eroded by radiation from nearby massive stars, yet they cradle new stars within their dense dust clouds."
@@ -183,7 +198,7 @@
                 description: "The brightest star-forming region in the Small Magellanic Cloud, NGC 346 contains hundreds of young stellar objects (YSOs) detected by JWST. This region is particularly interesting as it forms stars in a low-metallicity environment, similar to conditions in the early universe."
             },
             {
-                ra: 5.6925, // HH 1 and HH 2
+                ra: 84.08667, // HH 1 and HH 2
                 dec: -6.7147,
                 fov: 0.07,
                 title: "Herbig-Haro Objects HH 1 and HH 2",
@@ -201,6 +216,10 @@
         // Initialize Aladin once the page is loaded
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Document loaded, waiting for A.init to complete');
+            
+            // Make controls and info divs draggable
+            makeDraggable(document.getElementById('waypoint-info'));
+            makeDraggable(document.getElementById('tour-controls'));
             
             // Wait for A.init promise to complete (required for v3 API)
             A.init.then(() => {
@@ -231,6 +250,7 @@
                 // Set up event listeners for the buttons
                 document.getElementById('prev-btn').addEventListener('click', function() {
                     isPlaying = false;
+                    clearTimeout(waypointTimeout);
                     goToWaypoint(currentWaypoint - 1);
                 });
                 
@@ -241,30 +261,27 @@
                         return;
                     }
                     
-                    if (isPlaying) {
-                        // If playing, pause the tour
-                        isPlaying = false;
-                        clearTimeout(waypointTimeout);
-                        document.getElementById('next-btn').innerText = 'Next';
-                    } else {
-                        // If not playing, advance to the next waypoint or start the tour
-                        isPlaying = true;
-                        document.getElementById('next-btn').innerText = 'Pause';
-                        goToWaypoint(currentWaypoint + 1);
-                        
-                        // Auto-play functionality
-                        function autoAdvance() {
-                            if (isPlaying && currentWaypoint < waypoints.length - 1) {
-                                goToWaypoint(currentWaypoint + 1);
-                                waypointTimeout = setTimeout(autoAdvance, 10000); // 10 seconds per waypoint
-                            } else if (currentWaypoint === waypoints.length - 1) {
-                                document.getElementById('next-btn').innerText = 'Tour Complete';
-                                isPlaying = false;
-                            }
+                    // Just advance to next waypoint without auto-playing
+                    isPlaying = false;
+                    clearTimeout(waypointTimeout);
+                    goToWaypoint(currentWaypoint + 1);
+                });
+                
+                document.getElementById('start-btn').addEventListener('click', function() {
+                    // Start auto-playing the tour from current position
+                    isPlaying = true;
+                    goToWaypoint(currentWaypoint);
+                    
+                    function autoAdvance() {
+                        if (isPlaying && currentWaypoint < waypoints.length - 1) {
+                            goToWaypoint(currentWaypoint + 1);
+                            waypointTimeout = setTimeout(autoAdvance, 10000); // 10 seconds per waypoint
+                        } else if (currentWaypoint === waypoints.length - 1) {
+                            isPlaying = false;
                         }
-                        
-                        waypointTimeout = setTimeout(autoAdvance, 10000);
                     }
+                    
+                    waypointTimeout = setTimeout(autoAdvance, 10000);
                 });
                 
                 document.getElementById('reset-btn').addEventListener('click', function() {
@@ -310,25 +327,44 @@
             updateProgressBar();
             
             // Update button text for the first and last waypoints
-            if (currentWaypoint === 0 && !isPlaying) {
-                document.getElementById('next-btn').innerText = 'Start Tour';
-            } else if (currentWaypoint === waypoints.length - 1) {
-                document.getElementById('next-btn').innerText = 'Tour Complete';
+            if (currentWaypoint === waypoints.length - 1) {
+                document.getElementById('next-btn').innerText = 'Restart';
                 isPlaying = false;
+                clearTimeout(waypointTimeout);
             } else {
-                document.getElementById('next-btn').innerText = isPlaying ? 'Pause' : 'Next';
+                document.getElementById('next-btn').innerText = 'Next';
             }
             
-            // Multi-step animation with custom FOV animation
+            // Get previous waypoint for distance calculation
+            const prevIndex = currentWaypoint > 0 ? currentWaypoint - 1 : 0;
+            const prevWaypoint = waypoints[prevIndex];
             
-            // Step 1: Zoom out to 5 degrees
-            animateFov(aladin.getFov(), 5.0, 1500, function() {
-                // Step 2: Go to the new coordinates
+            // Calculate distance between current and previous waypoints
+            const distance = Math.sqrt(
+                Math.pow(waypoint.ra - prevWaypoint.ra, 2) + 
+                Math.pow(waypoint.dec - prevWaypoint.dec, 2)
+            );
+            
+            // If waypoints are close (within 0.1 degrees), skip zoom out step
+            if (distance < 0.1 && currentWaypoint > 0) {
+                console.log("Close waypoints detected, skipping zoom out step");
+                // Go directly to the new coordinates
                 aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2, function() {
-                    // Step 3: Zoom in to target FOV
-                    animateFov(5.0, waypoint.fov, 1500);
+                    // Then zoom in to target FOV
+                    aladin.zoomToFoV(waypoint.fov, 5);
+                    //animateFov(aladin.getFov(), waypoint.fov, 5);
                 });
-            });
+            } else {
+                // Multi-step animation with custom FOV animation
+                // Step 1: Zoom out to 5 degrees
+                aladin.zoomToFoV(5.0, 5, function() {
+                    // Step 2: Go to the new coordinates
+                    aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2, function() {
+                        // Step 3: Zoom in to target FOV
+                        aladin.zoomToFoV(waypoint.fov, 5);
+                    });
+                });
+            }
         }
         
         // Custom FOV animation function using setFoV

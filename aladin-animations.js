@@ -174,9 +174,12 @@ function showTourInfo(waypoint, tourInfoDiv, tourTitle, tourDescription) {
 function animateToWaypoint(fromWaypoint, toWaypoint, durationMs, aladin, tourInfoDiv, tourTitle, tourDescription, callback) {
     if (!aladin) {
         console.log("Aladin not initialized");
-        if (callback) callback();
+        if (typeof callback === 'function') callback();
         return;
     }
+    
+    // Create a safe callback function
+    const safeCallback = typeof callback === 'function' ? callback : function() {};
 
     // Convert galactic coordinates to RA/Dec
     const fromCoords = galacticToEquatorial(
@@ -211,59 +214,171 @@ function animateToWaypoint(fromWaypoint, toWaypoint, durationMs, aladin, tourInf
 
     console.log(`Animation sequence: ${zoomOutTime}s zoom out, ${positionAnimationTime}s position change, ${zoomInTime}s zoom in`);
 
+    // Check if the current FOV is already close to original FOV to avoid unnecessary animation
+    if (Math.abs(fromWaypoint.fov - originalFov) < 0.1) {
+        console.log("Current FOV already close to target zoom-out FOV, skipping first animation phase");
+        // Skip straight to position animation
+        aladin.setFoV(originalFov);
+        
+        console.log(`Moving to new position in ${positionAnimationTime}s`);
+        try {
+            // Try to use Aladin's built-in animation if available
+            aladin.animateToRaDec(toCoords.ra, toCoords.dec, positionAnimationTime);
+        } catch (e) {
+            console.error("Error using animateToRaDec:", e);
+            // Fallback to manual position animation
+            animatePosition(fromCoords, toCoords, positionAnimationTime, aladin);
+        }
+        
+        // Wait for position animation to complete
+        setTimeout(() => {
+            // Update tour info after position change
+            showTourInfo(toWaypoint, tourInfoDiv, tourTitle, tourDescription);
+            
+            // Phase 3: Finally zoom to the target FOV
+            console.log(`Zooming to target FOV ${toWaypoint.fov} in ${zoomInTime}s`);
+            animateFov(originalFov, toWaypoint.fov, zoomInTime * 1000, aladin, safeCallback);
+        }, positionAnimationTime * 1000);
+        
+        return;
+    }
+
+    // If we need the full animation sequence
+    console.log(`Zooming out to FOV ${originalFov} in ${zoomOutTime}s`);
+    
+    // Explicitly set FOV first to ensure the start value is correct
+    aladin.setFoV(fromWaypoint.fov);
+    
     // Phase 1: First zoom out to the original FOV quickly
     console.log(`Zooming out to FOV ${originalFov} in ${zoomOutTime}s`);
     animateFov(fromWaypoint.fov, originalFov, zoomOutTime * 1000, aladin, () => {
         // Phase 2: Then animate to the new position
         console.log(`Moving to new position in ${positionAnimationTime}s`);
-        aladin.animateToRaDec(toCoords.ra, toCoords.dec, positionAnimationTime);
-
-        // Wait for position animation to complete
-        setTimeout(() => {
-            // Update tour info after position change
-            showTourInfo(toWaypoint, tourInfoDiv, tourTitle, tourDescription);
-
-            // Phase 3: Finally zoom to the target FOV
-            console.log(`Zooming to target FOV ${toWaypoint.fov} in ${zoomInTime}s`);
-            animateFov(originalFov, toWaypoint.fov, zoomInTime * 1000, aladin, () => {
-                if (callback) callback();
+        
+        try {
+            // Try to use Aladin's built-in animation if available
+            aladin.animateToRaDec(toCoords.ra, toCoords.dec, positionAnimationTime);
+            
+            // Wait for position animation to complete
+            setTimeout(() => {
+                // Update tour info after position change
+                showTourInfo(toWaypoint, tourInfoDiv, tourTitle, tourDescription);
+    
+                // Phase 3: Finally zoom to the target FOV
+                console.log(`Zooming to target FOV ${toWaypoint.fov} in ${zoomInTime}s`);
+                animateFov(originalFov, toWaypoint.fov, zoomInTime * 1000, aladin, safeCallback);
+            }, positionAnimationTime * 1000);
+        } catch (e) {
+            console.error("Error using animateToRaDec:", e);
+            // Fallback to manual position animation
+            animatePosition(fromCoords, toCoords, positionAnimationTime, aladin, () => {
+                // Update tour info after position change
+                showTourInfo(toWaypoint, tourInfoDiv, tourTitle, tourDescription);
+    
+                // Phase 3: Finally zoom to the target FOV
+                console.log(`Zooming to target FOV ${toWaypoint.fov} in ${zoomInTime}s`);
+                animateFov(originalFov, toWaypoint.fov, zoomInTime * 1000, aladin, safeCallback);
             });
-        }, positionAnimationTime * 1000);
+        }
     });
+    
+    console.log("Animation sequence initiated for " + toWaypoint.title);
 }
 
 // Animate FOV change over time
 function animateFov(startFov, endFov, duration, aladin, callback) {
+    // Ensure callback is a function or use an empty function
+    const safeCallback = typeof callback === 'function' ? callback : function() {};
+    
+    // Validate parameters
+    if (!aladin || typeof aladin.setFoV !== 'function') {
+        console.error("Invalid Aladin instance in animateFov");
+        safeCallback(); // Call the callback anyway to continue the chain
+        return;
+    }
+    
+    // Handle array inputs for FOV parameters by taking first element
+    let startFovValue = startFov;
+    let endFovValue = endFov;
+    
+    // Handle startFov
+    if (Array.isArray(startFovValue)) {
+        startFovValue = startFovValue[0] || 1.0;
+        console.log("startFov is an array, using first value:", startFovValue);
+    }
+    
+    // Handle endFov
+    if (Array.isArray(endFovValue)) {
+        endFovValue = endFovValue[0] || 1.0;
+        console.log("endFov is an array, using first value:", endFovValue);
+    }
+    
+    // Ensure we have valid numbers
+    if (typeof startFovValue !== 'number' || isNaN(startFovValue)) {
+        console.warn("Invalid startFov, using default:", startFovValue);
+        startFovValue = 1.0;
+    }
+    
+    if (typeof endFovValue !== 'number' || isNaN(endFovValue)) {
+        console.warn("Invalid endFov, using default:", endFovValue);
+        endFovValue = 1.0;
+    }
+    
+    // Handle identical FOVs to avoid unnecessary animation
+    if (Math.abs(startFovValue - endFovValue) < 0.0001) {
+        console.log("Skipping FOV animation as start and end are the same");
+        try {
+            aladin.setFoV(endFovValue);
+        } catch (e) {
+            console.error("Error setting FOV:", e);
+        }
+        safeCallback();
+        return;
+    }
+    
     const steps = 20;
     const stepDuration = duration / steps;
     let currentStep = 0;
+    console.log("animateFov", startFovValue, endFovValue, duration);
 
     function doFovStep() {
-        currentStep++;
-        const progress = currentStep / steps;
+        try {
+            currentStep++;
+            const progress = currentStep / steps;
 
-        // Easing function
-        const easedProgress = progress < 0.5
-            ? 2 * progress * progress
-            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            // Easing function
+            const easedProgress = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 
-        // Calculate current FOV
-        const currentFov = startFov + (endFov - startFov) * easedProgress;
+            // Calculate current FOV
+            const currentFov = startFovValue + (endFovValue - startFovValue) * easedProgress;
 
-        // Set the FOV
-        aladin.setFoV(currentFov);
+            // Set the FOV
+            aladin.setFoV(currentFov);
 
-        // Continue or complete
-        if (currentStep < steps) {
-            setTimeout(doFovStep, stepDuration);
-        } else {
-            aladin.setFoV(endFov); // Make sure we end at the exact target FOV
-            if (callback) callback();
+            // Continue or complete
+            if (currentStep < steps) {
+                setTimeout(doFovStep, stepDuration);
+            } else {
+                aladin.setFoV(endFovValue); // Make sure we end at the exact target FOV
+                console.log("FOV animation complete:", endFovValue);
+                safeCallback(); // Use the safe callback that's guaranteed to be a function
+            }
+        } catch (error) {
+            console.error("Error in FOV animation step:", error);
+            // Ensure the callback is called even if there's an error
+            safeCallback();
         }
     }
 
     // Start FOV animation
-    setTimeout(doFovStep, 10);
+    try {
+        setTimeout(doFovStep, 10);
+    } catch (error) {
+        console.error("Error starting FOV animation:", error);
+        safeCallback();
+    }
 }
 
 // Calculate appropriate animation duration based on distance and FOV change
@@ -302,6 +417,61 @@ function calculateAnimationDuration(fromWaypoint, toWaypoint, aladin) {
     return duration;
 }
 
+// Animate position change manually over time
+function animatePosition(fromCoords, toCoords, durationSecs, aladin, callback) {
+    console.log("Using manual position animation");
+    
+    // Ensure callback is a function or use an empty function
+    const safeCallback = typeof callback === 'function' ? callback : function() {};
+    
+    const steps = 30; // More steps for smoother animation
+    const stepDuration = (durationSecs * 1000) / steps;
+    let currentStep = 0;
+    
+    // Precalculate the distance to be covered
+    const dRa = toCoords.ra - fromCoords.ra;
+    const dDec = toCoords.dec - fromCoords.dec;
+    
+    console.log(`Animating position from (${fromCoords.ra}, ${fromCoords.dec}) to (${toCoords.ra}, ${toCoords.dec})`);
+    
+    function doPositionStep() {
+        try {
+            currentStep++;
+            const progress = currentStep / steps;
+            
+            // Easing function (ease in-out)
+            const easedProgress = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            
+            // Calculate current position
+            const ra = fromCoords.ra + dRa * easedProgress;
+            const dec = fromCoords.dec + dDec * easedProgress;
+            
+            // Set the position
+            aladin.gotoRaDec(ra, dec);
+            
+            // Continue or complete
+            if (currentStep < steps) {
+                setTimeout(doPositionStep, stepDuration);
+            } else {
+                // Make sure we end at the exact target position
+                aladin.gotoRaDec(toCoords.ra, toCoords.dec);
+                console.log("Position animation complete");
+                safeCallback();
+            }
+        } catch (error) {
+            console.error("Error in position animation step:", error);
+            // Ensure the callback is called even if there's an error
+            aladin.gotoRaDec(toCoords.ra, toCoords.dec);
+            safeCallback();
+        }
+    }
+    
+    // Start position animation
+    setTimeout(doPositionStep, 10);
+}
+
 // Export functions for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -311,6 +481,7 @@ if (typeof module !== 'undefined' && module.exports) {
         showTourInfo,
         animateToWaypoint,
         animateFov,
+        animatePosition,
         calculateAnimationDuration
     };
 } else {
@@ -322,6 +493,7 @@ if (typeof module !== 'undefined' && module.exports) {
         showTourInfo,
         animateToWaypoint,
         animateFov,
+        animatePosition,
         calculateAnimationDuration
     };
 } 

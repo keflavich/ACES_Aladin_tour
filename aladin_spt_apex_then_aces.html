@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>ACES Continuum ALADIN Lite Tour</title>
+    <link rel="stylesheet" href="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        #aladin-lite-div {
+            width: 100%;
+            height: 100vh;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            margin-left: 15%;
+            transition: all 0.3s ease;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        select {
+            padding: 8px;
+            margin: 5px;
+        }
+        .tour-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 400px;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .opacity-control {
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .opacity-control label {
+            min-width: 60px;
+        }
+        .opacity-control input[type="range"] {
+            width: 100px;
+        }
+        .opacity-value {
+            min-width: 30px;
+            text-align: right;
+        }
+        #toggle-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+        #toggle-controls:hover {
+            background-color: #45a049;
+        }
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+        .controls-title {
+            font-weight: bold;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading ALADIN Lite... Please wait.</div>
+    <div id="controls">
+        <div class="controls-header">
+            <h2 class="controls-title"> </h2>
+            <button id="toggle-controls" title="Hide Controls">Hide</button>
+        </div>
+        <button id="start-tour">Start Tour</button>
+        <button id="reset-view">Reset View</button>
+        <select id="hips-source">
+            <option value="local">Local HiPS (Generated)</option>
+            <option value="gns">Galactic Nucleus Survey [default]</option>
+            <option value="2mass">2MASS colored</option>
+            <option value="dss">DSS colored</option>
+            <option value="atlasgal">ATLASGAL</option>
+            <option value="spitzer">Spitzer</option>
+            <option value="act-planck">ACT-PLANCK DR4/DR6 Color</option>
+            <option value="herschel-color">Herschel Color</option>
+            <option value="herschel-spire-rgb">Herschel SPIRE RGB</option>
+            <option value="hi4pi">HI4PI TPK</option>
+            <option value="herschel-spire-color">Herschel SPIRE Color</option>
+            <option value="spt3g-rgb">SPT-3G RGB Composite (Local)</option>
+            <option value="spt3g-90">SPT-3G 90 GHz</option>
+            <option value="spt3g-150">SPT-3G 150 GHz</option>
+            <option value="spt3g-220">SPT-3G 220 GHz</option>
+        </select>
+        <button id="test-coords" style="background-color: #ff6600;">Test Coords</button>
+        <button id="debug-button" style="background-color: #888;">Debug</button>
+        <div class="opacity-control">
+            <label>Opacity:</label>
+            <input type="range" id="opacity-slider" min="0" max="100" value="100">
+            <span class="opacity-value">100%</span>
+        </div>
+    </div>
+    <div id="aladin-lite-div"></div>
+    <div id="tour-info" class="tour-info hidden">
+        <h3 id="tour-title"></h3>
+        <p id="tour-description"></p>
+    </div>
+
+    <!-- Load scripts at the end -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js" charset="utf-8"></script>
+    <!-- Add astronomy.js for coordinate conversion -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/astronomy-js@1.0.1/astronomy.min.js"></script>
+    <!-- Add our animation library -->
+    <script type="text/javascript" src="aladin-animations.js"></script>
+
+    <script type="text/javascript">
+        // Tour waypoints
+            const tourWaypoints = [
+                {
+                galacticCoords: {lon: -0.01, lat: 0.001},
+                    fov: 1.5,
+                    title: "ACES Galactic Center Overview",
+                description: "Overview of the ALMA data for the Galactic Center.",
+                pauseTime: 0  // Start immediately
+                },
+                {
+                galacticCoords: {lon: 359.944, lat: -0.046},
+                    fov: 0.4,
+                    title: "Sgr A* Central Region",
+                description: "Zoomed view of the central region around Sgr A*.",
+                pauseTime: 1000  // 4 seconds at this waypoint
+            },
+            {
+                galacticCoords: {lon: 0.66, lat: -0.05},
+                fov: 0.15,
+                title: "Sgr B2",
+                description: "Structures in the eastern part of the galactic center.",
+                pauseTime: 4000  // 4 seconds at this waypoint
+            },
+            {
+                galacticCoords: {lon: 359.85, lat: -0.08},
+                    fov: 0.3,
+                    title: "Southern Filaments",
+                description: "Filamentary structures in the southern part of the field.",
+                pauseTime: 4000  // 4 seconds at this waypoint
+            },
+            {
+                galacticCoords: {lon: 0.02467, lat: -0.0727},
+                radecCoords: {ra: 266.49060146, dec: -28.95296738},
+                fov: 0.05,
+                title: "MUBLO",
+                description: "The MUBLO - Millimeter Ultra Broad-Line Object.",
+                pauseTime: 6000  // 6 seconds at this interesting feature
+            },
+            {
+                galacticCoords: {lon: 359.944, lat: -0.046},
+                    fov: 1.5,
+                    title: "Full ACES Continuum Overview",
+                description: "Returning to the full view of the ACES continuum mosaic.",
+                pauseTime: 4000  // 4 seconds at final waypoint
+            }
+        ];
+
+        // Global variables
+        let aladin = null;
+        let tourRunning = false;
+        let tourInterval = null;
+        let tourIndex = 0;
+        let localHipsOverlay = null;
+
+        // DOM elements
+        const loadingDiv = document.getElementById('loading');
+        const tourInfoDiv = document.getElementById('tour-info');
+        const tourTitle = document.getElementById('tour-title');
+        const tourDescription = document.getElementById('tour-description');
+
+        // Initialize when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Aladin
+            initAladin();
+
+            // Initialize toggle controls button
+            const toggleControlsBtn = document.getElementById('toggle-controls');
+            const controlsDiv = document.getElementById('controls');
+
+            // Make sure all control elements are initially visible
+            Array.from(controlsDiv.children).slice(1).forEach(el => {
+                el.style.display = 'block';
+            });
+
+            toggleControlsBtn.addEventListener('click', function() {
+                // Store all content except the header
+                const controlsContent = Array.from(controlsDiv.children).slice(1);
+                const isHidden = this.textContent === 'Show';
+
+                // Toggle visibility of all elements except the header
+                controlsContent.forEach(el => {
+                    el.style.display = isHidden ? 'block' : 'none';
+                });
+
+                // Update button text
+                this.textContent = isHidden ? 'Hide' : 'Show';
+                this.title = isHidden ? 'Hide Controls' : 'Show Controls';
+
+                // Adjust controls div size
+                if (!isHidden) {
+                    controlsDiv.style.width = 'auto';
+                    controlsDiv.style.height = 'auto';
+                } else {
+                    controlsDiv.style.width = '';
+                    controlsDiv.style.height = '';
+                }
+            });
+
+            // Initialize opacity slider
+            const opacitySlider = document.getElementById('opacity-slider');
+            const opacityValue = document.querySelector('.opacity-value');
+
+            opacitySlider.addEventListener('input', function() {
+                const value = this.value;
+                opacityValue.textContent = value + '%';
+
+                // Convert percentage to 0-1 range
+                const opacity = value / 100;
+
+                // Apply opacity to the overlay image layer
+                if (aladin) {
+                    try {
+                        const overlayImageLayer = aladin.getOverlayImageLayer();
+                        if (overlayImageLayer) {
+                            overlayImageLayer.setAlpha(opacity);
+                        }
+                    } catch (e) {
+                        console.warn('Error setting overlay image layer opacity:', e);
+                    }
+                }
+            });
+        });
+
+        // Initialize Aladin viewer using v3 API
+        function initAladin() {
+            console.log('Starting Aladin Lite v3 initialization...');
+
+            // First wait for A.init to complete (v3 API requirement)
+            A.init.then(() => {
+                console.log('A.init completed, creating Aladin instance');
+
+                // Create Aladin Lite instance
+                aladin = A.aladin('#aladin-lite-div', {
+                    survey: "P/GALACTICNUCLEUS/DR1/color",
+                    cooFrame: 'galactic',
+                    target: "359.944 -0.046",
+                    fov: 1.5,
+                    showReticle: true,
+                    showLayersControl: true,
+                    showFullscreenControl: true,
+                    showFrame: true
+                });
+
+                console.log('Aladin instance created');
+
+                // Hide loading message
+                loadingDiv.classList.add('hidden');
+
+                // Set initial view
+                goToWaypoint(tourWaypoints[0]);
+
+                // Try to load local HiPS
+                setTimeout(() => loadLocalHips(), 1000);
+
+                // Check for stored survey selection
+                const storedSurvey = localStorage.getItem('selectedSurvey');
+                if (storedSurvey) {
+                    console.log('Restoring stored survey:', storedSurvey);
+                    localStorage.removeItem('selectedSurvey');
+
+                    // Set dropdown and change survey
+                    document.getElementById('hips-source').value = storedSurvey;
+                    document.getElementById('hips-source').dispatchEvent(new Event('change'));
+                }
+            }).catch(err => {
+                console.error('Failed to initialize Aladin:', err);
+                loadingDiv.textContent = 'Error loading Aladin. Please refresh the page.';
+            });
+        }
+
+        // Load local HiPS data
+        function loadLocalHips() {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+
+            loadingDiv.textContent = 'Loading local HiPS data...';
+            loadingDiv.classList.remove('hidden');
+
+            try {
+                console.log('Loading local HiPS data...');
+
+                // Remove any existing local HiPS overlay
+                if (localHipsOverlay) {
+                    console.log('Removing existing local HiPS overlay');
+                    try {
+                        aladin.removeOverlay(localHipsOverlay);
+                    } catch (e) {
+                        console.warn('Error removing overlay:', e);
+                    }
+                    localHipsOverlay = null;
+                }
+
+                // Path to local HiPS from the survey map
+                const hipsUrl = './UNK.AUTH_P_ACES12mMosaicFeathered';
+                console.log('Loading local HiPS from:', hipsUrl);
+
+                aladin.setOverlayImageLayer(hipsUrl);
+
+                // Try to load the Allsky.jpg directly as a background image
+                fetch(`${hipsUrl}/Allsky.jpg`)
+                    .then(response => {
+                        if (response.ok) {
+                            console.log('Found Allsky.jpg - loading as background');
+                            // We would use this information, but we'll keep the catalog marker
+                            // for now as it's more reliable
+                        } else {
+                            console.warn('Allsky.jpg not available');
+                        }
+                    })
+                    .catch(err => {
+                        console.warn('Error checking for Allsky.jpg:', err);
+                    });
+
+                // Hide loading message
+                loadingDiv.classList.add('hidden');
+
+                // Update tour info with warning
+                showTourInfo({
+                    ...tourWaypoints[0],
+                    description: tourWaypoints[0].description +
+                        "<br><span style='color:yellow'>Using a placeholder visualization. Local HiPS loading is not fully supported in this browser.</span>"
+                });
+
+            } catch (e) {
+                console.error('Failed to load local HiPS:', e);
+                loadingDiv.textContent = 'Could not load HiPS data.';
+                setTimeout(() => loadingDiv.classList.add('hidden'), 2000);
+
+                // Show the info without the error
+                showTourInfo(tourWaypoints[0]);
+            }
+        }
+
+        // Change survey source
+        document.getElementById('hips-source').addEventListener('change', function(e) {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+
+            const source = e.target.value;
+            console.log('Changing survey to:', source);
+
+            loadingDiv.textContent = 'Loading selected survey...';
+            loadingDiv.classList.remove('hidden');
+
+            // Define survey mapping for v3 API
+            const surveyMap = {
+                'local': './UNK.AUTH_P_ACES12mMosaicFeathered',
+                '2mass': 'P/2MASS/color',
+                'gns': 'P/GALACTICNUCLEUS/DR1/color',
+                'dss': 'P/DSS2/color',
+                'atlasgal': 'P/ATLASGAL/APEXPlanck',
+                'spitzer': 'P/SPITZER/color',
+                'act-planck': 'P/ACT-PLANCK/DR4DR6/Color_MW',
+                'herschel-color': 'ESAVO/P/Herschel/color',
+                'herschel-spire-rgb': 'ESAVO/P/HERSCHEL/SPIRE_RGBnorm',
+                'hi4pi': 'ov-gso/P/HI4PI/TPK',
+                'herschel-spire-color': 'ESOAVO/P/HERSCHEL/SPIRE-color',
+                'spt3g-90': './UNK.AUTH_P_spt3g_90',
+                'spt3g-150': './UNK.AUTH_P_spt3g_150',
+                'spt3g-220': './UNK.AUTH_P_spt3g_220'
+            };
+
+            // Special cases
+            if (source === 'local') {
+                // Load local HiPS
+                loadLocalHips();
+                return;
+            }
+
+            if (source === 'spt3g-rgb') {
+                // Load SPT-3G RGB composite without clearing existing overlays
+                loadSpt3gRgbComposite();
+                return;
+            }
+
+            // For all other cases, we remove existing overlays and set the base layer
+            // Don't Remove any existing overlays
+            // try {
+            //     const overlays = aladin.getOverlays();
+            //     if (overlays && overlays.length > 0) {
+            //         console.log('Removing existing overlays');
+            //         overlays.forEach(overlay => {
+            //             if (overlay.type === 'imageOverlay') {
+            //                 aladin.removeOverlay(overlay);
+            //             }
+            //         });
+            //     }
+            // } catch (e) {
+            //     console.warn('Error removing overlays:', e);
+            // }
+
+            // // Reset any local HiPS overlay
+            // if (localHipsOverlay) {
+            //     console.log('Removing local HiPS overlay');
+            //     try {
+            //         aladin.removeOverlay(localHipsOverlay);
+            //     } catch (e) {
+            //         console.warn('Error removing overlay:', e);
+            //     }
+            //     localHipsOverlay = null;
+            // }
+
+            // Regular survey loading
+            const surveyId = surveyMap[source] || 'P/SPITZER/color';
+            console.log('Setting base image layer to:', surveyId);
+
+            try {
+                aladin.addNewImageLayer(surveyId);
+                loadingDiv.classList.add('hidden');
+            } catch (e) {
+                console.error('Error changing survey:', e);
+                loadingDiv.textContent = 'Survey change failed.';
+                setTimeout(() => loadingDiv.classList.add('hidden'), 2000);
+            }
+        });
+
+        // Convert galactic coordinates to equatorial (RA/Dec) using astronomy.js library
+        function galacticToEquatorial(lon, lat) {
+            // Use our animation module
+            return AladinAnimations.galacticToEquatorial(lon, lat, aladin);
+        }
+
+        // Test coordinate conversion
+        document.getElementById('test-coords').addEventListener('click', function() {
+            // Create test overlay
+            const testDiv = document.createElement('div');
+            testDiv.style.position = 'fixed';
+            testDiv.style.top = '50%';
+            testDiv.style.left = '50%';
+            testDiv.style.transform = 'translate(-50%, -50%)';
+            testDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            testDiv.style.color = 'white';
+            testDiv.style.padding = '20px';
+            testDiv.style.borderRadius = '5px';
+            testDiv.style.maxWidth = '80%';
+            testDiv.style.maxHeight = '80%';
+            testDiv.style.overflow = 'auto';
+            testDiv.style.zIndex = '2000';
+            testDiv.style.fontFamily = 'monospace';
+            testDiv.style.fontSize = '12px';
+
+            // Close button
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Close';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '10px';
+            closeButton.addEventListener('click', function() {
+                document.body.removeChild(testDiv);
+            });
+
+            // Test information
+            let testHtml = '<h3>Coordinate Conversion Tests</h3>';
+            testHtml += '<p>This compares our conversion with known accurate coordinates.</p>';
+            testHtml += '<table border="1" cellpadding="5" style="border-collapse: collapse;">';
+            testHtml += '<tr><th>Location</th><th>Galactic (l,b)</th><th>Expected (RA,Dec)</th><th>Converted (RA,Dec)</th><th>Difference</th></tr>';
+
+            // Test cases (known locations)
+            const testCases = [
+                {
+                    name: "Sgr A*",
+                    gal: { lon: 359.944, lat: -0.046 },
+                    expected: { ra: 266.4168, dec: -29.0078 } // 17h45m40s, -29°00'28"
+                },
+                {
+                    name: "Sgr B2",
+                    gal: { lon: 0.6667, lat: -0.0362 },
+                    expected: { ra: 266.8350, dec: -28.3853 } // 17h47m20.4s, -28°23'07"
+                },
+                {
+                    name: "MUBLO",
+                    gal: { lon: 0.02467, lat: -0.0727 },
+                    expected: { ra: 266.4906, dec: -28.9530 }
+                },
+                // Test each waypoint
+                ...tourWaypoints.map((wp, idx) => {
+                    // Skip waypoints that are already in our test cases
+                    if (wp.title === "MUBLO") return null;
+
+                    return {
+                        name: `Waypoint ${idx+1}: ${wp.title}`,
+                        gal: { lon: wp.galacticCoords.lon, lat: wp.galacticCoords.lat },
+                        expected: wp.radecCoords || null // Use provided RA/Dec if available
+                    };
+                }).filter(item => item !== null) // Remove null entries
+            ];
+
+            // Run tests
+            for (const test of testCases) {
+                const result = galacticToEquatorial(test.gal.lon, test.gal.lat);
+
+                // Format for display
+                const galStr = `(${test.gal.lon.toFixed(4)}, ${test.gal.lat.toFixed(4)})`;
+                const expectedStr = test.expected ?
+                    `(${test.expected.ra.toFixed(4)}, ${test.expected.dec.toFixed(4)})` :
+                    "N/A";
+                const convertedStr = `(${result.ra.toFixed(4)}, ${result.dec.toFixed(4)})`;
+
+                // Calculate difference if expected values are available
+                let diffStr = "N/A";
+                if (test.expected) {
+                    const raDiff = Math.abs(result.ra - test.expected.ra);
+                    const decDiff = Math.abs(result.dec - test.expected.dec);
+                    const totalDiff = Math.sqrt(raDiff*raDiff + decDiff*decDiff);
+                    diffStr = totalDiff.toFixed(4) + "°";
+                }
+
+                // Color-code the difference
+                let rowStyle = '';
+                if (test.expected) {
+                    const diff = Math.sqrt(
+                        Math.pow(result.ra - test.expected.ra, 2) +
+                        Math.pow(result.dec - test.expected.dec, 2)
+                    );
+                    if (diff < 0.01) rowStyle = 'background-color: rgba(0, 128, 0, 0.2);'; // Good match (green)
+                    else if (diff < 0.1) rowStyle = 'background-color: rgba(255, 165, 0, 0.2);'; // Fair match (orange)
+                    else rowStyle = 'background-color: rgba(255, 0, 0, 0.2);'; // Poor match (red)
+                }
+
+                // Add row to table
+                testHtml += `<tr style="${rowStyle}">
+                    <td>${test.name}</td>
+                    <td>${galStr}</td>
+                    <td>${expectedStr}</td>
+                    <td>${convertedStr}</td>
+                    <td>${diffStr}</td>
+                </tr>`;
+
+                // For expected values, also add the sexagesimal notation
+                if (test.expected) {
+                    testHtml += `<tr style="${rowStyle}">
+                        <td colspan="2"></td>
+                        <td>${formatRADec(test.expected.ra, true)}<br>${formatRADec(test.expected.dec, false)}</td>
+                        <td>${formatRADec(result.ra, true)}<br>${formatRADec(result.dec, false)}</td>
+                        <td></td>
+                    </tr>`;
+                }
+            }
+
+            testHtml += '</table>';
+
+            // Add manual test form
+            testHtml += `
+            <h3>Test Custom Coordinates</h3>
+            <div style="margin-top: 15px">
+                <div>
+                    <label>Galactic Longitude: </label>
+                    <input type="text" id="test-lon" value="0.6667" style="width: 80px; background: #333; color: white; border: 1px solid #666;">
+                    <label>Latitude: </label>
+                    <input type="text" id="test-lat" value="-0.0362" style="width: 80px; background: #333; color: white; border: 1px solid #666;">
+                    <button id="convert-coords" style="margin-left: 10px;">Convert</button>
+                </div>
+                <div id="conversion-result" style="margin-top: 10px; padding: 10px; background: #222; border-radius: 5px;"></div>
+            </div>`;
+
+            // Add content to div
+            testDiv.innerHTML = testHtml;
+            testDiv.appendChild(closeButton);
+            document.body.appendChild(testDiv);
+
+            // Add event listener for custom coordinate conversion
+            document.getElementById('convert-coords').addEventListener('click', function() {
+                const lon = parseFloat(document.getElementById('test-lon').value);
+                const lat = parseFloat(document.getElementById('test-lat').value);
+
+                if (isNaN(lon) || isNaN(lat)) {
+                    document.getElementById('conversion-result').innerHTML =
+                        '<span style="color: red;">Please enter valid numbers</span>';
+                    return;
+                }
+
+                const result = galacticToEquatorial(lon, lat);
+
+                document.getElementById('conversion-result').innerHTML =
+                    `Galactic (${lon.toFixed(4)}, ${lat.toFixed(4)}) → ` +
+                    `Equatorial (${result.ra.toFixed(4)}, ${result.dec.toFixed(4)})<br>` +
+                    `RA: ${formatRADec(result.ra, true)}<br>` +
+                    `Dec: ${formatRADec(result.dec, false)}`;
+
+                // Offer to go to these coordinates
+                const gotoButton = document.createElement('button');
+                gotoButton.textContent = 'Go to this position';
+                gotoButton.style.marginTop = '10px';
+                gotoButton.addEventListener('click', function() {
+                    aladin.gotoRaDec(result.ra, result.dec);
+                    document.getElementById('conversion-result').innerHTML +=
+                        '<br><span style="color: green;">Going to position...</span>';
+                });
+                document.getElementById('conversion-result').appendChild(gotoButton);
+            });
+        });
+
+        // Helper function to format RA/Dec in sexagesimal notation
+        function formatRADec(decimal, isRA) {
+            return AladinAnimations.formatRADec(decimal, isRA);
+        }
+
+        // Go to a specific waypoint
+        function goToWaypoint(waypoint) {
+            AladinAnimations.goToWaypoint(
+                waypoint, 
+                aladin, 
+                tourInfoDiv, 
+                tourTitle, 
+                tourDescription
+            );
+        }
+
+        // Display tour information
+        function showTourInfo(waypoint) {
+            AladinAnimations.showTourInfo(
+                waypoint,
+                tourInfoDiv,
+                tourTitle,
+                tourDescription
+            );
+        }
+
+        // Animate between waypoints using Aladin's built-in animateToRaDec
+        function animateToWaypoint(fromWaypoint, toWaypoint, durationMs, callback) {
+            AladinAnimations.animateToWaypoint(
+                fromWaypoint,
+                toWaypoint,
+                durationMs,
+                aladin,
+                tourInfoDiv,
+                tourTitle,
+                tourDescription,
+                callback
+            );
+        }
+
+        // Animate FOV change over time
+        function animateFov(startFov, endFov, duration, callback) {
+            AladinAnimations.animateFov(
+                startFov,
+                endFov,
+                duration,
+                aladin,
+                callback
+            );
+        }
+
+        // Start tour button
+        document.getElementById('start-tour').addEventListener('click', function() {
+            if (!aladin) {
+                alert('Aladin not ready yet. Please wait.');
+                return;
+            }
+
+            if (tourRunning) {
+                // Stop tour if running
+                clearTimeout(tourInterval);
+                tourRunning = false;
+                this.textContent = 'Start Tour';
+            } else {
+                // Start tour
+                tourRunning = true;
+                this.textContent = 'Stop Tour';
+
+                // Begin from the first waypoint
+                tourIndex = 0;
+                goToWaypoint(tourWaypoints[tourIndex]);
+
+                // Function to advance the tour
+                function advanceTour() {
+                    if (!tourRunning) return;
+
+                    const currentWaypoint = tourWaypoints[tourIndex];
+                    tourIndex = (tourIndex + 1) % tourWaypoints.length;
+                    const nextWaypoint = tourWaypoints[tourIndex];
+
+                    // Get animation duration based on distance and FOV change
+                    const animationDuration = calculateAnimationDuration(currentWaypoint, nextWaypoint);
+
+                    // Animate to next waypoint
+                    animateToWaypoint(currentWaypoint, nextWaypoint, animationDuration, function() {
+                        // Pause at each waypoint for the specified time (or default if not set)
+                        if (tourRunning) {
+                            const pauseTime = nextWaypoint.pauseTime !== undefined ?
+                                nextWaypoint.pauseTime : 4000; // Default 4 seconds
+
+                            console.log(`Pausing at waypoint "${nextWaypoint.title}" for ${pauseTime}ms`);
+                            tourInterval = setTimeout(advanceTour, pauseTime);
+                        }
+                    });
+                }
+
+                // Start advancing immediately if first waypoint has zero pause time
+                const startDelay = tourWaypoints[0].pauseTime !== undefined ?
+                    tourWaypoints[0].pauseTime : 3000; // Default to 3 seconds
+
+                console.log(`Starting tour with initial delay of ${startDelay}ms`);
+                tourInterval = setTimeout(advanceTour, startDelay);
+            }
+        });
+
+        // Reset view button
+        document.getElementById('reset-view').addEventListener('click', function() {
+            if (!aladin) {
+                alert('Aladin not ready yet. Please wait.');
+                return;
+            }
+
+            // Stop tour if running
+            if (tourRunning) {
+                clearTimeout(tourInterval);
+                tourRunning = false;
+                document.getElementById('start-tour').textContent = 'Start Tour';
+            }
+
+            // Reset to first waypoint
+            tourIndex = 0;
+            goToWaypoint(tourWaypoints[0]);
+        });
+
+        // Debug button
+        document.getElementById('debug-button').addEventListener('click', function() {
+            if (!aladin) {
+                alert('Aladin not initialized');
+                return;
+            }
+
+            // Create debug overlay
+            const debugDiv = document.createElement('div');
+            debugDiv.style.position = 'fixed';
+            debugDiv.style.top = '50%';
+            debugDiv.style.left = '50%';
+            debugDiv.style.transform = 'translate(-50%, -50%)';
+            debugDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            debugDiv.style.color = 'white';
+            debugDiv.style.padding = '20px';
+            debugDiv.style.borderRadius = '5px';
+            debugDiv.style.maxWidth = '80%';
+            debugDiv.style.maxHeight = '80%';
+            debugDiv.style.overflow = 'auto';
+            debugDiv.style.zIndex = '2000';
+            debugDiv.style.fontFamily = 'monospace';
+            debugDiv.style.fontSize = '12px';
+
+            // Close button
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Close';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '10px';
+            closeButton.addEventListener('click', function() {
+                document.body.removeChild(debugDiv);
+            });
+            debugDiv.appendChild(closeButton);
+
+            // Debug information
+            let debugHtml = '<h3>Aladin v3 Debug Information</h3>';
+
+            // Try to load HiPS properties
+            fetch('./UNK.AUTH_P_ACES12mMosaicFeathered/properties')
+                .then(response => response.text())
+                .then(text => {
+                    debugHtml += '<h4>HiPS Properties</h4>';
+                    debugHtml += '<pre>' + text + '</pre>';
+                    updateDebugContent();
+                })
+                .catch(error => {
+                    debugHtml += '<h4>HiPS Properties Error</h4>';
+                    debugHtml += '<pre>Failed to load: ' + error.message + '</pre>';
+                    updateDebugContent();
+                });
+
+            // Aladin status
+            debugHtml += '<h4>Aladin Status</h4>';
+            debugHtml += '<pre>';
+            debugHtml += 'Aladin Initialized: ' + (aladin ? 'Yes' : 'No') + '\n';
+
+            // Get current view parameters
+            try {
+                const view = aladin.getViewParams();
+                debugHtml += 'Current View: ' + JSON.stringify(view, null, 2) + '\n';
+            } catch (e) {
+                debugHtml += 'Error getting view params: ' + e.message + '\n';
+            }
+
+            // Current survey info
+            try {
+                const currentSurvey = aladin.getBaseImageLayer();
+                debugHtml += '\nCurrent Base Survey: ' + (currentSurvey ? currentSurvey.id : 'None') + '\n';
+                if (currentSurvey) {
+                    const surveyInfo = {
+                        id: currentSurvey.id,
+                        name: currentSurvey.name,
+                        maxOrder: currentSurvey.maxOrder
+                    };
+                    debugHtml += JSON.stringify(surveyInfo, null, 2) + '\n';
+                }
+            } catch (e) {
+                debugHtml += 'Error getting survey info: ' + e.message + '\n';
+            }
+
+            // Check overlays
+            try {
+                const overlays = aladin.getOverlays();
+                debugHtml += '\nOverlays: ' + (overlays && overlays.length > 0 ? overlays.length : 'None') + '\n';
+                if (overlays && overlays.length > 0) {
+                    overlays.forEach((overlay, index) => {
+                        debugHtml += 'Overlay #' + (index + 1) + ':\n';
+                        const overlayInfo = {
+                            name: overlay.name || 'Unnamed',
+                            type: overlay.type || 'Unknown'
+                        };
+                        debugHtml += JSON.stringify(overlayInfo, null, 2) + '\n';
+                    });
+                }
+            } catch (e) {
+                debugHtml += 'Error checking overlays: ' + e.message + '\n';
+            }
+
+            // Available methods
+            debugHtml += '\nAvailable Methods:\n';
+            for (const key in aladin) {
+                if (typeof aladin[key] === 'function') {
+                    debugHtml += '- ' + key + '()\n';
+                }
+            }
+            debugHtml += '</pre>';
+
+            function updateDebugContent() {
+                debugDiv.innerHTML = debugHtml;
+                debugDiv.appendChild(closeButton);
+            }
+
+            updateDebugContent();
+            document.body.appendChild(debugDiv);
+        });
+
+        // Calculate appropriate animation duration based on distance and FOV change
+        function calculateAnimationDuration(fromWaypoint, toWaypoint) {
+            return AladinAnimations.calculateAnimationDuration(
+                fromWaypoint,
+                toWaypoint,
+                aladin
+            );
+        }
+
+        // Helper function to update opacity for all additional layers
+        function updateAdditionalLayersOpacity(opacity) {
+            if (!aladin) return;
+
+            try {
+                // Get all checkboxes for layers that are currently checked
+                const checkedLayers = Array.from(
+                    document.querySelectorAll('.layer-controls input[type="checkbox"]:checked')
+                ).map(checkbox => checkbox.getAttribute('data-layer'));
+
+                // Apply the opacity to each layer
+                checkedLayers.forEach(layerId => {
+                    const overlay = aladin.getOverlayImageLayer(layerId);
+                    if (overlay) {
+                        overlay.setAlpha(opacity);
+                    }
+                });
+            } catch (e) {
+                console.warn('Error updating layer opacities:', e);
+            }
+        }
+
+        // Function to load and configure the SPT-3G RGB composite
+        function loadSpt3gRgbComposite() {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+
+            loadingDiv.textContent = 'Creating SPT-3G RGB composite...';
+            loadingDiv.classList.remove('hidden');
+
+            try {
+                console.log('Setting up SPT-3G RGB composite...');
+
+                // Get existing overlays - but we won't remove them
+                const overlays = aladin.getOverlays();
+                console.log('Existing overlays:', overlays ? overlays.length : 0);
+
+                // Define the files to use for each channel
+                const redSurveyId = './UNK.AUTH_P_spt3g_220';   // 220 GHz for red channel
+                const greenSurveyId = './UNK.AUTH_P_spt3g_150'; // 150 GHz for green channel
+                const blueSurveyId = './UNK.AUTH_P_spt3g_90';   // 90 GHz for blue channel
+
+                // Add green channel as overlay instead of changing base layer
+                console.log('Adding green channel overlay from', greenSurveyId);
+                try {
+                    const greenSurvey = aladin.newImageSurvey(greenSurveyId, {
+                        imgFormat: 'fits',
+                        colormap: 'green',
+                        minCut: -0.2,
+                        maxCut: 5.3,
+                        additive: true,
+                        stretch: 'asinh'
+                    });
+
+                    // Apply the green overlay
+                    aladin.setOverlayImageLayer(greenSurveyId, 'SPT-3G 150 GHz (Green)');
+
+                    // Fine-tune the green overlay
+                    const greenOverlay = aladin.getOverlayImageLayer(greenSurveyId);
+                    if (greenOverlay) {
+                        greenOverlay.setAlpha(0.8);  // Slight transparency for better blending
+                        greenOverlay.setColormap('green', {stretch: 'asinh'});
+                    }
+                } catch (e) {
+                    console.error('Error setting up green channel:', e);
+                }
+
+                // Set up red channel as overlay
+                console.log('Setting up red channel from', redSurveyId);
+                try {
+                    const redSurvey = aladin.newImageSurvey(redSurveyId, {
+                        imgFormat: 'fits',
+                        colormap: 'red',
+                        minCut: 0.34,
+                        maxCut: 2.75,
+                        additive: true,
+                        stretch: 'asinh'
+                    });
+
+                    // Apply the red overlay
+                    aladin.setOverlayImageLayer(redSurveyId, 'SPT-3G 220 GHz (Red)');
+
+                    // Fine-tune the red overlay
+                    const redOverlay = aladin.getOverlayImageLayer(redSurveyId);
+                    if (redOverlay) {
+                        redOverlay.setAlpha(0.8);  // Slight transparency for better blending
+                        redOverlay.setColormap('red', {stretch: 'asinh'});
+                    }
+                } catch (e) {
+                    console.error('Error setting up red channel:', e);
+                }
+
+                // Set up blue channel as overlay
+                console.log('Setting up blue channel from', blueSurveyId);
+                try {
+                    const blueSurvey = aladin.newImageSurvey(blueSurveyId, {
+                        imgFormat: 'fits',
+                        colormap: 'blue',
+                        minCut: -0.01,
+                        maxCut: 2.27,
+                        additive: true,
+                        stretch: 'asinh'
+                    });
+
+                    // Apply the blue overlay
+                    aladin.setOverlayImageLayer(blueSurveyId, 'SPT-3G 90 GHz (Blue)');
+
+                    // Fine-tune the blue overlay
+                    const blueOverlay = aladin.getOverlayImageLayer(blueSurveyId);
+                    if (blueOverlay) {
+                        blueOverlay.setAlpha(0.8);  // Slight transparency for better blending
+                        blueOverlay.setColormap('blue', {stretch: 'asinh'});
+                    }
+                } catch (e) {
+                    console.error('Error setting up blue channel:', e);
+                }
+
+                // Hide loading message
+                loadingDiv.classList.add('hidden');
+
+                console.log('SPT-3G RGB composite created successfully');
+
+                // Update tour info to explain the composite
+                showTourInfo({
+                    title: "SPT-3G RGB Composite",
+                    description: "This is an RGB composite created from SPT-3G data: 220 GHz (red), 150 GHz (green), and 90 GHz (blue). These different frequencies reveal different aspects of the submillimeter emission in the Galactic Center region."
+                });
+            } catch (e) {
+                console.error('Error setting up SPT-3G RGB composite:', e);
+                loadingDiv.textContent = 'Failed to create SPT-3G RGB composite';
+                setTimeout(() => loadingDiv.classList.add('hidden'), 2000);
+            }
+        }
+    </script>
+</body>
+</html>

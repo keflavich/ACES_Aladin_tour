@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>James Webb Space Telescope (JWST) Tour - Herbig-Haro Objects and Star Formation</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        height: 100%;
+    }
+    #aladin-lite-div {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+    }
+    #controlsDiv {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    .tourControls {
+        margin-top: 10px;
+    }
+    .tourControls button {
+        background: #3498db;
+        border: none;
+        color: white;
+        padding: 8px 15px;
+        margin-right: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .tourControls button:hover {
+        background: #2980b9;
+    }
+    .waypoint {
+        margin-bottom: 15px;
+    }
+    .waypointTitle {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .waypointDesc {
+        font-size: 0.9em;
+        margin-bottom: 5px;
+        max-width: 300px;
+    }
+    #waypointInfoDiv {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        max-width: 350px;
+    }
+    .hidden {
+        display: none;
+    }
+    #loadingDiv {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1001;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+<div id="aladin-lite-div"></div>
+<div id="loadingDiv">Loading JWST Tour... Please wait.</div>
+<div id="controlsDiv">
+    <h3>JWST Tour: Herbig-Haro Objects & Star Formation</h3>
+    <div class="tourControls">
+        <button id="startTourBtn">Start Tour</button>
+        <button id="pauseTourBtn">Pause</button>
+        <button id="resumeTourBtn" class="hidden">Resume</button>
+        <button id="nextBtn">Next</button>
+        <button id="prevBtn">Previous</button>
+    </div>
+</div>
+<div id="waypointInfoDiv" class="hidden">
+    <div id="waypointTitle" class="waypointTitle"></div>
+    <div id="waypointDesc" class="waypointDesc"></div>
+</div>
+
+<!-- Load jQuery first -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Use the u-strasbg.fr domain instead of cds.unistra.fr -->
+<script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+
+<script type="text/javascript">
+    let aladin;
+
+        console.log('Document loaded, waiting for A.init to complete');
+        
+        // Wait for A.init promise to complete (required for v3 API)
+        A.init.then(() => {
+            console.log('A.init completed, creating Aladin instance');
+            
+            // Initialize Aladin Lite
+            aladin = A.aladin('#aladin-lite-div', {
+                survey: "https://alasky.cds.unistra.fr/JWST-outreach/CDS_P_JWST_EPO/",
+                fov: 1.0,
+                cooFrame: 'J2000',
+                showReticle: false,
+                showZoomControl: true,
+                showFullscreenControl: true,
+                showLayersControl: true,
+                showGotoControl: true,
+                showShareControl: false,
+                showFrame: true,
+                fullScreen: false
+            });
+        });
+</script>
+</body>
+</html>

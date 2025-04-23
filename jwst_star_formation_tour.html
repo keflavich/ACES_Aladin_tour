@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWST Star Formation Tour</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+            color: #fff;
+        }
+        
+        #aladin-lite-div {
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #tour-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #tour-controls button {
+            background-color: #2962FF;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        #tour-controls button:hover {
+            background-color: #0D47A1;
+        }
+        
+        #waypoint-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            max-width: 400px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+        
+        #waypoint-title {
+            font-size: 1.4em;
+            margin: 0 0 10px 0;
+            color: #2962FF;
+        }
+        
+        #waypoint-description {
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        #progress-bar {
+            height: 5px;
+            background-color: #444;
+            width: 200px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        #progress {
+            height: 100%;
+            background-color: #2962FF;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        #current-waypoint {
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        #loading-div {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="aladin-lite-div"></div>
+    
+    <div id="loading-div">Loading JWST Star Formation Tour... Please wait.</div>
+    
+    <div id="waypoint-info">
+        <h2 id="waypoint-title">Welcome to JWST Star Formation Tour</h2>
+        <p id="waypoint-description">
+            This tour will explore some of the most spectacular star-forming regions and Herbig-Haro objects observed by the James Webb Space Telescope. Click "Start Tour" to begin the journey through stellar nurseries.
+        </p>
+    </div>
+    
+    <div id="tour-controls">
+        <button id="prev-btn">Previous</button>
+        <div id="progress-bar"><div id="progress"></div></div>
+        <span id="current-waypoint">0/8</span>
+        <button id="next-btn">Start Tour</button>
+        <button id="reset-btn">Reset</button>
+    </div>
+
+    <script>
+        let aladin;
+        let currentWaypoint = 0;
+        let isPlaying = false;
+        let waypointTimeout;
+
+        // JWST HIPS URL
+        const jwstHipsUrl = "P/JWST/EPO/";
+        
+        // Define waypoints for the tour
+        const waypoints = [
+            {
+                ra: 130.43375, // Welcome/Introduction
+                dec: -59.87333,
+                fov: 0.8,
+                title: "Welcome to JWST Star Formation Tour",
+                description: "This tour will explore spectacular star-forming regions and Herbig-Haro objects observed by the James Webb Space Telescope. JWST's infrared capabilities reveal the hidden processes of star birth in unprecedented detail."
+            },
+            {
+                ra: 10.61095, // HH 46/47
+                dec: -51.01060,
+                fov: 0.08,
+                title: "Herbig-Haro 46/47",
+                description: "Located 1470 light years away in the constellation Vela, this is a pair of actively forming stars. JWST's NIRCam reveals the stars surrounded by a disc of gas and dust, with bipolar jets extending outward as the young stars gather mass from their surroundings."
+            },
+            {
+                ra: 10.61095, // HH 46/47 zoom in
+                dec: -51.01060,
+                fov: 0.03,
+                title: "Herbig-Haro 46/47 - Closer Look",
+                description: "The jets from these young stars slam into surrounding gas and dust, creating shock fronts visible as bright knots. These features help astronomers understand the dynamics of mass retention and ejection during star formation."
+            },
+            {
+                ra: 10.6125, // NGC 3324 - Cosmic Cliffs
+                dec: -58.62,
+                fov: 0.25,
+                title: "NGC 3324 - Cosmic Cliffs",
+                description: "Located about 7600 light-years away in the Carina Nebula, the 'Cosmic Cliffs' are a stellar nursery where dozens of young stars are being born. JWST reveals details of this dynamic region where radiation and stellar winds from massive nearby stars shape the interstellar medium."
+            },
+            {
+                ra: 10.7333, // Carina Nebula - Mystic Mountain
+                dec: -59.8833,
+                fov: 0.1,
+                title: "Carina Nebula - Mystic Mountain",
+                description: "This region contains Herbig-Haro objects HH 901 and HH 902, where emerging stellar jets indicate active star formation. The pillar-like formations are being eroded by radiation from nearby massive stars, yet they cradle new stars within their dense dust clouds."
+            },
+            {
+                ra: 84.6792, // NGC 346 in SMC
+                dec: -72.1708,
+                fov: 0.12,
+                title: "NGC 346 - Star Formation in the Small Magellanic Cloud",
+                description: "The brightest star-forming region in the Small Magellanic Cloud, NGC 346 contains hundreds of young stellar objects (YSOs) detected by JWST. This region is particularly interesting as it forms stars in a low-metallicity environment, similar to conditions in the early universe."
+            },
+            {
+                ra: 5.6925, // HH 1 and HH 2
+                dec: -6.7147,
+                fov: 0.07,
+                title: "Herbig-Haro Objects HH 1 and HH 2",
+                description: "Located in the Orion constellation about 1500 light-years from Earth, HH 1 and HH 2 are among the most studied Herbig-Haro objects. They represent opposite ends of a bipolar jet from a young star hidden in a dense molecular cloud between them."
+            },
+            {
+                ra: 130.43375, // Tour conclusion
+                dec: -59.87333,
+                fov: 1.2,
+                title: "Star Formation Journey Complete",
+                description: "We've explored several spectacular regions where JWST has revealed the processes of star formation in unprecedented detail. These observations help astronomers understand how stars like our Sun form and evolve, shedding light on the origins of planetary systems like our own."
+            }
+        ];
+
+        // Initialize Aladin once the page is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Document loaded, waiting for A.init to complete');
+            
+            // Wait for A.init promise to complete (required for v3 API)
+            A.init.then(() => {
+                console.log('A.init completed, creating Aladin instance');
+                
+                aladin = A.aladin('#aladin-lite-div', {
+                    survey: "P/2MASS/color",
+                    fov: waypoints[0].fov,
+                    target: waypoints[0].ra + ' ' + waypoints[0].dec,
+                    cooFrame: 'J2000',
+                    showReticle: false,
+                    showZoomControl: false,
+                    showFullscreenControl: false,
+                    showLayersControl: false,
+                    showGotoControl: false,
+                    showFrame: false,
+                    showCooGrid: false
+                });
+
+                aladin.setOverlayImageLayer('P/JWST/EPO');
+                
+                // Hide loading message
+                document.getElementById('loading-div').style.display = 'none';
+
+                updateWaypointInfo();
+                updateProgressBar();
+                
+                // Set up event listeners for the buttons
+                document.getElementById('prev-btn').addEventListener('click', function() {
+                    isPlaying = false;
+                    goToWaypoint(currentWaypoint - 1);
+                });
+                
+                document.getElementById('next-btn').addEventListener('click', function() {
+                    if (currentWaypoint === waypoints.length - 1) {
+                        // If at the last waypoint, reset to the beginning
+                        goToWaypoint(0);
+                        return;
+                    }
+                    
+                    if (isPlaying) {
+                        // If playing, pause the tour
+                        isPlaying = false;
+                        clearTimeout(waypointTimeout);
+                        document.getElementById('next-btn').innerText = 'Next';
+                    } else {
+                        // If not playing, advance to the next waypoint or start the tour
+                        isPlaying = true;
+                        document.getElementById('next-btn').innerText = 'Pause';
+                        goToWaypoint(currentWaypoint + 1);
+                        
+                        // Auto-play functionality
+                        function autoAdvance() {
+                            if (isPlaying && currentWaypoint < waypoints.length - 1) {
+                                goToWaypoint(currentWaypoint + 1);
+                                waypointTimeout = setTimeout(autoAdvance, 10000); // 10 seconds per waypoint
+                            } else if (currentWaypoint === waypoints.length - 1) {
+                                document.getElementById('next-btn').innerText = 'Tour Complete';
+                                isPlaying = false;
+                            }
+                        }
+                        
+                        waypointTimeout = setTimeout(autoAdvance, 10000);
+                    }
+                });
+                
+                document.getElementById('reset-btn').addEventListener('click', function() {
+                    isPlaying = false;
+                    clearTimeout(waypointTimeout);
+                    goToWaypoint(0);
+                });
+            }).catch(err => {
+                console.error('Failed to initialize Aladin:', err);
+                document.getElementById('loading-div').textContent = 'Error loading Aladin. Please refresh the page.';
+            });
+        });
+
+        // Function to update the waypoint information
+        function updateWaypointInfo() {
+            document.getElementById('waypoint-title').innerText = waypoints[currentWaypoint].title;
+            document.getElementById('waypoint-description').innerText = waypoints[currentWaypoint].description;
+            document.getElementById('current-waypoint').innerText = (currentWaypoint + 1) + '/' + waypoints.length;
+        }
+
+        // Function to update the progress bar
+        function updateProgressBar() {
+            const progress = ((currentWaypoint) / (waypoints.length - 1)) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        // Function to go to a specific waypoint with animation
+        function goToWaypoint(index) {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+            
+            clearTimeout(waypointTimeout);
+            
+            currentWaypoint = index;
+            if (currentWaypoint < 0) currentWaypoint = 0;
+            if (currentWaypoint >= waypoints.length) currentWaypoint = waypoints.length - 1;
+            
+            const waypoint = waypoints[currentWaypoint];
+            
+            updateWaypointInfo();
+            updateProgressBar();
+            
+            // Update button text for the first and last waypoints
+            if (currentWaypoint === 0 && !isPlaying) {
+                document.getElementById('next-btn').innerText = 'Start Tour';
+            } else if (currentWaypoint === waypoints.length - 1) {
+                document.getElementById('next-btn').innerText = 'Tour Complete';
+                isPlaying = false;
+            } else {
+                document.getElementById('next-btn').innerText = isPlaying ? 'Pause' : 'Next';
+            }
+            
+            // Multi-step animation with custom FOV animation
+            
+            // Step 1: Zoom out to 5 degrees
+            animateFov(aladin.getFov(), 5.0, 1500, function() {
+                // Step 2: Go to the new coordinates
+                aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2, function() {
+                    // Step 3: Zoom in to target FOV
+                    animateFov(5.0, waypoint.fov, 1500);
+                });
+            });
+        }
+        
+        // Custom FOV animation function using setFoV
+        function animateFov(startFov, endFov, duration, callback) {
+            const steps = 30;
+            const stepDuration = duration / steps;
+            let currentStep = 0;
+            
+            function doFovStep() {
+                currentStep++;
+                const progress = currentStep / steps;
+                
+                // Easing function for smoother animation
+                const easedProgress = progress < 0.5 
+                    ? 2 * progress * progress 
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    
+                // Calculate current FOV
+                const currentFov = startFov + (endFov - startFov) * easedProgress;
+                
+                // Set the FOV
+                aladin.setFov(currentFov);
+                
+                // Continue or complete
+                if (currentStep < steps) {
+                    setTimeout(doFovStep, stepDuration);
+                } else {
+                    aladin.setFov(endFov); // Make sure we end at the exact target FOV
+                    if (callback) callback();
+                }
+            }
+            
+            // Start animation
+            doFovStep();
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,558 @@
+<!doctype html>
+<html>
+<head>
+    <title>AVM Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .upload-section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .btn {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background-color: #3367d6;
+        }
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        #processed-image {
+            max-width: 100%;
+            max-height: 400px;
+            border: 1px solid #ddd;
+        }
+        #metadata {
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        #aladin-lite-div {
+            width: 100%;
+            height: 500px;
+            margin-top: 20px;
+        }
+        #debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .debug-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+      <h1>AVM Image Viewer</h1>
+
+      <div class="upload-section">
+        <p>Use a local image with AVM metadata:</p>
+        <button id="test-btn" class="btn">Test Local Image</button>
+        <button id="upload-btn" class="btn">Upload Custom Image</button>
+        <input type="file" id="file-input" accept="image/*" style="display: none;">
+      </div>
+
+      <div id="result"></div>
+
+      <div class="image-container">
+        <img id="processed-image" src="" alt="Processed image">
+      </div>
+
+      <div id="metadata"></div>
+
+      <div id="debug-info"></div>
+
+      <div id="aladin-lite-div"></div>
+    </div>
+
+    <script type="text/javascript" src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js" charset="utf-8"></script>
+    <script src="avm.js"></script>
+    <script>
+        // Debug logging function
+        function logDebug(message, data) {
+            const debugDiv = document.getElementById('debug-info');
+            const timestamp = new Date().toISOString().substring(11, 19);
+
+            if (typeof data !== 'undefined') {
+                let dataStr;
+                try {
+                    dataStr = JSON.stringify(data, null, 2);
+                } catch (e) {
+                    dataStr = String(data);
+                }
+
+                debugDiv.innerHTML += `[${timestamp}] ${message}\n${dataStr}\n\n`;
+            } else {
+                debugDiv.innerHTML += `[${timestamp}] ${message}\n\n`;
+            }
+
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+        }
+
+        // Function to process an image with AVM metadata
+        function processImage(url) {
+            logDebug(`Processing image: ${url}`);
+            document.getElementById('result').innerHTML = '<p>Processing image...</p>';
+
+            try {
+                // For URL strings, we'll fetch the data first
+                if (typeof url === 'string' && (url.startsWith('http') || url.startsWith('./'))) {
+                    logDebug('Fetching image data via fetch API');
+
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            logDebug(`Image fetch successful for ${url}, getting array buffer`);
+                            return response.arrayBuffer();
+                        })
+                        .then(buffer => {
+                            logDebug(`Got buffer of size: ${buffer.byteLength} bytes`);
+
+                            // Debug check on the buffer contents
+                            const view = new Uint8Array(buffer, 0, 16);
+                            const hexString = Array.from(view).map(b => b.toString(16).padStart(2, '0')).join(' ');
+                            logDebug(`First 16 bytes: ${hexString}`);
+
+                            // Check if this is a PNG file (PNG signature: 89 50 4E 47 0D 0A 1A 0A)
+                            if (view[0] === 0x89 && view[1] === 0x50 && view[2] === 0x4E && view[3] === 0x47) {
+                                logDebug("PNG signature detected - parsing PNG file");
+                                // For PNG files, we need to extract XMP metadata differently
+                                const dataURL = URL.createObjectURL(new Blob([buffer]));
+                                const img = new Image();
+                                img.onload = function() {
+                                    logDebug("PNG loaded into image object", { width: img.width, height: img.height });
+                                    processPNG(img, buffer, url);
+                                };
+                                img.onerror = function() {
+                                    logDebug("Error loading PNG as image");
+                                    processAVMFromBuffer(buffer, url);
+                                };
+                                img.src = dataURL;
+                            } else {
+                                processAVMFromBuffer(buffer, url);
+                            }
+                        })
+                        .catch(error => {
+                            logDebug(`Error fetching image: ${error.message}`);
+                            document.getElementById('result').innerHTML =
+                                `<p class="error">Error fetching image: ${error.message}</p>`;
+                        });
+                } else {
+                    // Direct data (from file input) or data URL
+                    processAVMFromBuffer(url, 'Uploaded image');
+                }
+            } catch (e) {
+                logDebug(`Error in processImage: ${e.message}`, e);
+                document.getElementById('result').innerHTML =
+                    `<p class="error">Error processing image: ${e.message}</p>`;
+            }
+        }
+
+        // Special handling for PNG files
+        function processPNG(img, buffer, imageUrl) {
+            try {
+                logDebug("Processing PNG file with special handling");
+                document.getElementById('processed-image').src = img.src;
+
+                // Create AVM instance with the buffer
+                logDebug('Creating AVM instance for PNG');
+                const avmInstance = new AVM(buffer);
+
+                // Log AVM instance properties
+                logDebug('AVM instance created', {
+                    instanceType: typeof avmInstance,
+                    isAVMInstance: avmInstance instanceof AVM,
+                    properties: Object.keys(avmInstance)
+                });
+
+                logDebug('Calling loadImage method on PNG');
+                avmInstance.loadImage(function(avm) {
+                    try {
+                        logDebug('AVM processing complete for PNG', {
+                            hasWCS: avm.wcsdata,
+                            wcsKeys: Object.keys(avm.wcs),
+                            hasTags: !!avm.tags,
+                            tagCount: avm.tags ? Object.keys(avm.tags).length : 0,
+                            xmpLength: avm.xmp ? avm.xmp.length : 0
+                        });
+
+                        processPNGResults(avm, imageUrl);
+                    } catch (e) {
+                        logDebug(`Error in PNG AVM callback: ${e.message}`, e);
+                        document.getElementById('result').innerHTML =
+                            `<p class="error">Error processing PNG AVM data: ${e.message}</p>`;
+
+                        // Fallback to showing the image at least
+                        document.getElementById('processed-image').src = imageUrl;
+                    }
+                });
+            } catch (e) {
+                logDebug(`Error in processPNG: ${e.message}`, e);
+                document.getElementById('result').innerHTML =
+                    `<p class="error">Error in PNG processing: ${e.message}</p>`;
+            }
+        }
+
+        // Process results from PNG AVM extraction
+        function processPNGResults(avm, imageUrl) {
+            try {
+                // Display AVM metadata if available
+                if (avm.tags && Object.keys(avm.tags).length > 0) {
+                    document.getElementById('result').innerHTML =
+                        '<p class="success">AVM metadata successfully extracted from PNG!</p>';
+
+                    displayAVMMetadata(avm);
+
+                    // Show WCS data if available
+                    if (avm.wcs && Object.keys(avm.wcs).length > 0) {
+                        logDebug('Found WCS data in PNG', avm.wcs);
+                        displayWCSData(avm.wcs);
+                        initAladin(avm.wcs, imageUrl);
+                    } else {
+                        logDebug('No WCS data found in PNG');
+                        document.getElementById('result').innerHTML +=
+                            '<p class="error">No WCS data found in the PNG image.</p>';
+                    }
+                } else {
+                    logDebug('No AVM tags found in PNG');
+                    document.getElementById('result').innerHTML =
+                        '<p class="error">No AVM metadata found in the PNG image.</p>';
+                }
+            } catch (e) {
+                logDebug(`Error in processPNGResults: ${e.message}`, e);
+                document.getElementById('result').innerHTML +=
+                    `<p class="error">Error displaying PNG results: ${e.message}</p>`;
+            }
+        }
+
+        // Process an ArrayBuffer with AVM
+        function processAVMFromBuffer(buffer, imageUrl) {
+            try {
+                logDebug('Creating AVM instance');
+
+                // Check if AVM constructor is defined
+                if (typeof AVM !== 'function') {
+                    throw new Error("AVM constructor is not defined! Check the AVM.js file.");
+                }
+
+                // Log constructor details
+                logDebug('AVM constructor', {
+                    type: typeof AVM,
+                    properties: Object.getOwnPropertyNames(AVM),
+                    prototype: Object.getOwnPropertyNames(AVM.prototype)
+                });
+
+                // Create an instance
+                const avmInstance = new AVM(buffer);
+
+                logDebug('Calling loadImage method');
+                avmInstance.loadImage(function(avm) {
+                    try {
+                        logDebug('AVM processing complete', {
+                            hasWCS: avm.wcsdata,
+                            wcsKeys: Object.keys(avm.wcs),
+                            hasTags: !!avm.tags,
+                            tagCount: avm.tags ? Object.keys(avm.tags).length : 0
+                        });
+
+                        // Display the image
+                        document.getElementById('processed-image').src = imageUrl;
+
+                        // Display AVM metadata if available
+                        if (avm.tags && Object.keys(avm.tags).length > 0) {
+                            document.getElementById('result').innerHTML =
+                                '<p class="success">AVM metadata successfully extracted!</p>';
+
+                            displayAVMMetadata(avm);
+
+                            // Show WCS data if available
+                            if (avm.wcs && Object.keys(avm.wcs).length > 0) {
+                                logDebug('Found WCS data', avm.wcs);
+                                displayWCSData(avm.wcs);
+                                initAladin(avm.wcs, imageUrl);
+                            } else {
+                                logDebug('No WCS data found');
+                                document.getElementById('result').innerHTML +=
+                                    '<p class="error">No WCS data found in the image.</p>';
+                            }
+                        } else {
+                            logDebug('No AVM tags found');
+                            document.getElementById('result').innerHTML =
+                                '<p class="error">No AVM metadata found in the image.</p>';
+                        }
+                    } catch (e) {
+                        logDebug(`Error processing AVM data: ${e.message}`, e);
+                        document.getElementById('result').innerHTML =
+                            `<p class="error">Error processing AVM data: ${e.message}</p>`;
+                    }
+                });
+            } catch (e) {
+                logDebug(`Error creating AVM instance: ${e.message}`, e);
+                logDebug('Error details:', {
+                    errorName: e.name,
+                    errorStack: e.stack
+                });
+                document.getElementById('result').innerHTML =
+                    `<p class="error">Error creating AVM instance: ${e.message}</p>`;
+            }
+        }
+
+        // Display AVM metadata in a table
+        function displayAVMMetadata(avm) {
+            const metadata = document.getElementById('metadata');
+            metadata.innerHTML = '<h3>AVM Metadata</h3>';
+
+            const table = document.createElement('table');
+            const headerRow = table.insertRow();
+            const headerCell1 = document.createElement('th');
+            const headerCell2 = document.createElement('th');
+            headerCell1.textContent = 'Property';
+            headerCell2.textContent = 'Value';
+            headerRow.appendChild(headerCell1);
+            headerRow.appendChild(headerCell2);
+
+            for (const key in avm.tags) {
+                if (avm.tags[key]) {
+                    const row = table.insertRow();
+                    const cell1 = row.insertCell(0);
+                    const cell2 = row.insertCell(1);
+                    cell1.textContent = key;
+                    cell2.textContent = Array.isArray(avm.tags[key])
+                        ? avm.tags[key].join(', ')
+                        : avm.tags[key];
+                }
+            }
+
+            metadata.appendChild(table);
+        }
+
+        // Display WCS data in a table
+        function displayWCSData(wcs) {
+            const metadata = document.getElementById('metadata');
+
+            const wcsTable = document.createElement('table');
+            const wcsHeaderRow = wcsTable.insertRow();
+            const wcsHeaderCell1 = document.createElement('th');
+            const wcsHeaderCell2 = document.createElement('th');
+            wcsHeaderCell1.textContent = 'WCS Property';
+            wcsHeaderCell2.textContent = 'Value';
+            wcsHeaderRow.appendChild(wcsHeaderCell1);
+            wcsHeaderRow.appendChild(wcsHeaderCell2);
+
+            for (const key in wcs) {
+                if (wcs[key] !== undefined) {
+                    const row = wcsTable.insertRow();
+                    const cell1 = row.insertCell(0);
+                    const cell2 = row.insertCell(1);
+                    cell1.textContent = key;
+                    cell2.textContent = wcs[key];
+                }
+            }
+
+            const wcsHeader = document.createElement('h3');
+            wcsHeader.textContent = 'WCS Data';
+            metadata.appendChild(wcsHeader);
+            metadata.appendChild(wcsTable);
+        }
+
+        // Initialize Aladin with WCS data
+        function initAladin(wcs, imageUrl) {
+            try {
+                logDebug('Initializing Aladin with WCS data');
+
+                // Determine coordinate frame
+                const isGalactic = wcs.CTYPE1 && wcs.CTYPE1.includes('GLON');
+                const frame = isGalactic ? 'galactic' : 'equatorial';
+
+                // Extract projection type (last 3 characters of CTYPE1)
+                const projection = wcs.CTYPE1 ? wcs.CTYPE1.slice(-3) : 'TAN';
+
+                // Prepare reference values
+                const referenceValue = [wcs.CRVAL1, wcs.CRVAL2];
+                const referencePixel = [wcs.CRPIX1, wcs.CRPIX2];
+
+                // Prepare CD matrix
+                let cdMatrix;
+                if (wcs.CD1_1 !== undefined) {
+                    cdMatrix = [
+                        [wcs.CD1_1, wcs.CD1_2 || 0],
+                        [wcs.CD2_1 || 0, wcs.CD2_2 || 0]
+                    ];
+                } else if (wcs.CDELT1 !== undefined) {
+                    // Convert CDELT/CROTA to CD matrix
+                    const rotation = wcs.CROTA2 || 0;
+                    const radRotation = rotation * Math.PI / 180;
+                    const cos = Math.cos(radRotation);
+                    const sin = Math.sin(radRotation);
+                    cdMatrix = [
+                        [wcs.CDELT1 * cos, -wcs.CDELT2 * sin],
+                        [wcs.CDELT1 * sin, wcs.CDELT2 * cos]
+                    ];
+                } else {
+                    // Default values if none is found
+                    cdMatrix = [
+                        [-0.00013888888888, 0],
+                        [0, 0.00013888888888]
+                    ];
+                }
+
+                logDebug('Aladin setup parameters', {
+                    frame,
+                    projection,
+                    referenceValue,
+                    referencePixel,
+                    cdMatrix
+                });
+
+                // Initialize Aladin
+                const aladin = A.aladin('#aladin-lite-div', {
+                    cooFrame: frame,
+                    survey: 'P/DSS2/color',
+                    fov: 1.0,
+                    target: `${referenceValue[0]} ${referenceValue[1]} ${frame}`,
+                    showReticle: true,
+                    showFrameControl: true,
+                    fullScreen: false
+                });
+
+                logDebug('Aladin initialized, adding image overlay');
+
+                // Add the image as an overlay
+                const overlay = A.graphicOverlay({
+                    color: '#00FF00'
+                });
+                aladin.addOverlay(overlay);
+
+                // Create and add an image layer with the WCS
+                const imageOverlay = A.imageOverlay(imageUrl, {
+                    transparency: 0.8,
+                    astrometry: {
+                        frame,
+                        projection,
+                        referenceValue,
+                        referencePixel,
+                        cdMatrix
+                    }
+                });
+
+                logDebug('Adding image overlay to Aladin');
+                aladin.addImageOverlay(imageOverlay);
+
+                logDebug('Setting field of view');
+                aladin.setFoV(1.0);
+
+                logDebug('Aladin setup complete');
+            } catch (e) {
+                logDebug(`Error initializing Aladin: ${e.message}`, e);
+            }
+        }
+
+        // Initialize the test button
+        document.getElementById('test-btn').addEventListener('click', function() {
+            logDebug('Test button clicked, using local test image');
+            // Clear previous results
+            document.getElementById('metadata').innerHTML = '';
+            document.getElementById('processed-image').src = '';
+            document.getElementById('debug-info').innerHTML = '<div class="debug-title">Debug Log:</div>';
+            // Process the local test image
+            processImage('./MUSTANG_12m_feather_noaxes.png');
+        });
+
+        // Handle file upload button
+        document.getElementById('upload-btn').addEventListener('click', function() {
+            document.getElementById('file-input').click();
+        });
+
+        // Handle file selection
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Clear previous results
+                document.getElementById('metadata').innerHTML = '';
+                document.getElementById('processed-image').src = '';
+                document.getElementById('debug-info').innerHTML = '<div class="debug-title">Debug Log:</div>';
+
+                logDebug(`File selected: ${file.name} (${file.type}, ${file.size} bytes)`);
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logDebug('File loaded into memory');
+                    processImage(e.target.result);
+                };
+                reader.onerror = function(e) {
+                    logDebug(`Error reading file: ${e.target.error}`);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        // Initialize the debug log on page load
+        window.addEventListener('load', function() {
+            document.getElementById('debug-info').innerHTML = '<div class="debug-title">Debug Log:</div>';
+            logDebug('Page loaded. Click "Test Local Image" to process the sample image.');
+        });
+    </script>
+</body>
+</html>

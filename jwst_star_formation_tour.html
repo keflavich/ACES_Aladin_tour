@@ -28,7 +28,10 @@
         <div id="progress-bar"><div id="progress"></div></div>
         <span id="current-waypoint">0/8</span>
         <button id="next-btn">Next</button>
-        <button id="next-btn-fast">Next Fast</button>
+        <!--<button id="next-btn-fast">Next Fast</button>-->
+        <select id="waypoint-dropdown" style="background-color: #2962FF; color: white; border: none; padding: 8px; border-radius: 5px; margin-left: 5px; margin-right: 5px; cursor: pointer; font-size: 14px; position: relative; z-index: 120; min-width: 150px; -webkit-appearance: menulist; -moz-appearance: menulist; appearance: menulist;">
+            <option value="">Jump to...</option>
+        </select>
         <button id="start-btn">Start Tour</button>
         <button id="reset-btn">Reset</button>
         <label id="loop-label" style="color:white; cursor:pointer; font-size:14px;">
@@ -78,12 +81,12 @@
                 description: "The Orion Nebula."
             },
             {
-                ra: 83.82,
-                dec: -5.39,
-                fov: 0.2,
-                title: "M42",
+                ra: 83.81145833,
+                dec:  -5.36397222,
+                fov: 0.0917,
+                title: "M42 - BN/KL",
                 description: "The Orion BN/KL region",
-                url: "https://keflavich.github.io/avm_images/Trapezium_GEMS_mosaic_redblueorange_normed_large_contrast_bright_photoshop.jpg"
+                url: "https://keflavich.github.io/avm_images/GINSBURG_P_Trapezium_GEMS_mosaic_redblueorange_normed_large_contrast_bright_photoshop"
             },
             { 
                 ra: 55.98491667,
@@ -97,7 +100,7 @@
                 ra: 55.98691667,
                 dec:   32.01347222,
                 fov: 0.08,
-                title: "Herbig-Haro 211",
+                title: "Herbig-Haro 211 zoom",
                 description: "HH 211",
                 url: "https://cdn.esawebb.org/archives/images/large/weic2322b.jpg"
             },
@@ -186,6 +189,18 @@
             makeDraggable(document.getElementById('waypoint-info'));
             makeDraggable(document.getElementById('tour-controls'));
             
+            // Prevent dropdown from being affected by draggable behavior
+            const dropdown = document.getElementById('waypoint-dropdown');
+            dropdown.addEventListener('mousedown', function(e) {
+                e.stopPropagation(); // Stop the event from bubbling up
+            });
+            dropdown.addEventListener('click', function(e) {
+                e.stopPropagation(); // Stop the event from bubbling up
+            });
+            dropdown.addEventListener('focus', function(e) {
+                e.stopPropagation(); // Stop the event from bubbling up
+            });
+            
             // Wait for A.init promise to complete (required for v3 API)
             A.init.then(() => {
                 console.log('A.init completed, creating Aladin instance');
@@ -201,7 +216,9 @@
                     showLayersControl: true,
                     showGotoControl: true,
                     showFrame: false,
-                    showCooGrid: false
+                    showCooGrid: false,
+                    showSimbadPointerControl: true,
+                    showSettingsControl: true
                 });
 
                 aladin.addNewImageLayer('P/JWST/EPO');
@@ -209,6 +226,9 @@
                 // Hide loading message
                 document.getElementById('loading-div').style.display = 'none';
 
+                // Populate waypoint dropdown
+                populateWaypointDropdown();
+                
                 updateWaypointInfo();
                 updateProgressBar();
                 goToWaypointFast(0);
@@ -220,17 +240,17 @@
                     goToWaypoint(currentWaypoint - 1);
                 });
 
-                document.getElementById('next-btn-fast').addEventListener('click', function() {
-                    console.log("Clicked next-btn-fast.  Current waypoint: ", currentWaypoint);
-                    if (currentWaypoint === waypoints.length - 1) {
-                        // If at the last waypoint, reset to the beginning
-                        goToWaypointFast(0);
-                        return;
-                    } else {
-                        isPlaying = false;
-                        goToWaypointFast(currentWaypoint + 1);
-                    }
-                });
+                // document.getElementById('next-btn-fast').addEventListener('click', function() {
+                //     console.log("Clicked next-btn-fast.  Current waypoint: ", currentWaypoint);
+                //     if (currentWaypoint === waypoints.length - 1) {
+                //         // If at the last waypoint, reset to the beginning
+                //         goToWaypointFast(0);
+                //         return;
+                //     } else {
+                //         isPlaying = false;
+                //         goToWaypointFast(currentWaypoint + 1);
+                //     }
+                // });
                 
                 document.getElementById('next-btn').addEventListener('click', function() {
                     if (currentWaypoint === waypoints.length - 1) {
@@ -262,6 +282,18 @@
                 document.getElementById('loop-checkbox').addEventListener('change', function() {
                     loopTour = this.checked;
                 });
+
+                // Set up waypoint dropdown event listener
+                document.getElementById('waypoint-dropdown').addEventListener('change', function() {
+                    const selectedIndex = parseInt(this.value);
+                    if (!isNaN(selectedIndex)) {
+                        isPlaying = false;
+                        clearTimeout(waypointTimeout);
+                        goToWaypoint(selectedIndex);
+                        // Reset dropdown to default after selection
+                        this.selectedIndex = 0;
+                    }
+                });
             }).catch(err => {
                 console.error('Failed to initialize Aladin:', err);
                 document.getElementById('loading-div').textContent = 'Error loading Aladin. Please refresh the page.';
@@ -278,18 +310,45 @@
             updateNextButtonText();
         }
 
+        // Function to populate the waypoint dropdown
+        function populateWaypointDropdown() {
+            const dropdown = document.getElementById('waypoint-dropdown');
+            // Clear existing options except the first one
+            while (dropdown.options.length > 1) {
+                dropdown.remove(1);
+            }
+            
+            // Add all waypoints
+            waypoints.forEach((waypoint, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.text = `${index+1}. ${waypoint.title}`;
+                dropdown.appendChild(option);
+            });
+        }
+
         // Function to update the next button text
         function updateNextButtonText() {
             if (currentWaypoint === waypoints.length - 1) {
                 // At last waypoint, show restart text
                 document.getElementById('next-btn').innerText = 'Restart';
-                document.getElementById('next-btn-fast').innerText = 'Restart Fast';
+                //document.getElementById('next-btn-fast').innerText = 'Restart Fast';
             } else {
                 // Show the next region name
                 const nextWaypoint = waypoints[currentWaypoint + 1];
                 document.getElementById('next-btn').innerText = 'Next: ' + nextWaypoint.title;
-                document.getElementById('next-btn-fast').innerText = 'Next Fast: ' + nextWaypoint.title;
+                //document.getElementById('next-btn-fast').innerText = 'Next Fast: ' + nextWaypoint.title;
             }
+            
+            // Highlight the current waypoint in the dropdown
+            const dropdown = document.getElementById('waypoint-dropdown');
+            Array.from(dropdown.options).forEach((option, index) => {
+                if (index > 0 && parseInt(option.value) === currentWaypoint) {
+                    option.style.backgroundColor = '#0D47A1';
+                } else if (index > 0) {
+                    option.style.backgroundColor = '';
+                }
+            });
         }
 
         // Function to update the progress bar
@@ -322,7 +381,11 @@
             
             // Display image if available
             if (waypoint.url) {
-                aladin.displayJPG(waypoint.url);
+                if (waypoint.url.endsWith('.jpg')) {
+                    aladin.displayJPG(waypoint.url);
+                } else {
+                    aladin.addNewImageLayer(waypoint.url);
+                }
             }
             
             // Jump directly to the location
@@ -377,7 +440,11 @@
                     if (interruptAnimation) return;
 
                     if (waypoints[index].url) {
-                        aladin.displayJPG(waypoints[index].url);
+                        if (waypoints[index].url.endsWith('.jpg')) {
+                            aladin.displayJPG(waypoints[index].url);
+                        } else {
+                            aladin.addNewImageLayer(waypoints[index].url);
+                        }
                     }
             
                     // Then zoom in to target FOV

@@ -36,6 +36,9 @@ function makeDraggable(element) {
         // Set the element's new position
         element.style.top = (element.offsetTop - pos2) + "px";
         element.style.left = (element.offsetLeft - pos1) + "px";
+        if (element.style.bottom) {
+            element.style.bottom = (element.offsetBottom - pos2) + "px";
+        }
         // Reset margin to avoid interference with positioning
         element.style.margin = "0";
     }

@@ -2,119 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
     <title>JWST Star Formation Tour</title>
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
     <!-- Add draggable functionality -->
     <script type="text/javascript" src="draggable.js"></script>
     <link rel="stylesheet" href="default.css">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
-            background-color: #000;
-            color: #fff;
-        }
-        
-        #aladin-lite-div {
-            width: 100%;
-            height: 100vh;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        
-        #tour-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 10px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: move;
-            user-select: none;
-        }
-        
-        #tour-controls button {
-            background-color: #2962FF;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-        
-        #tour-controls button:hover {
-            background-color: #0D47A1;
-        }
-        
-        #waypoint-info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            max-width: 400px;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            z-index: 100;
-            cursor: move;
-            user-select: none;
-        }
-        
-        #waypoint-title {
-            font-size: 1.4em;
-            margin: 0 0 10px 0;
-            color: #2962FF;
-        }
-        
-        #waypoint-description {
-            font-size: 0.9em;
-            line-height: 1.5;
-        }
-        
-        #progress-bar {
-            height: 5px;
-            background-color: #444;
-            width: 200px;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        
-        #progress {
-            height: 100%;
-            background-color: #2962FF;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        #current-waypoint {
-            min-width: 40px;
-            text-align: center;
-        }
-        
-        #loading-div {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 1000;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="draggable.css">
 </head>
 <body>
     <div id="aladin-lite-div"></div>
@@ -133,8 +28,12 @@
         <div id="progress-bar"><div id="progress"></div></div>
         <span id="current-waypoint">0/8</span>
         <button id="next-btn">Next</button>
+        <button id="next-btn-fast">Next Fast</button>
         <button id="start-btn">Start Tour</button>
         <button id="reset-btn">Reset</button>
+        <label id="loop-label" style="color:white; cursor:pointer; font-size:14px;">
+            <input type="checkbox" id="loop-checkbox" style="margin-right:5px;"> Loop Tour
+        </label>
     </div>
 
     <script>
@@ -142,6 +41,22 @@
         let currentWaypoint = 0;
         let isPlaying = false;
         let waypointTimeout;
+        let loopTour = false; // Flag to enable continuous looping
+        let interruptAnimation = false; // Flag to interrupt ongoing animations
+
+        // Function to advance to the next waypoint
+        function autoAdvance() {
+            if (!isPlaying) return;
+            if (currentWaypoint < waypoints.length - 1) {
+                goToWaypoint(currentWaypoint + 1);
+            } else if (loopTour) {
+                goToWaypoint(0);
+            } else {
+                isPlaying = false;
+                return;
+            }
+            waypointTimeout = setTimeout(autoAdvance, 10000);
+        }
 
         // JWST HIPS URL
         const jwstHipsUrl = "P/JWST/EPO/";
@@ -152,15 +67,63 @@
                 ra: 83.82,
                 dec: -5.39,
                 fov: 0.8,
-                title: "Welcome to JWST Star Formation Tour",
+                title: "A tour of JWST Star Formation",
                 description: "This tour will explore spectacular star-forming regions and Herbig-Haro objects observed by the James Webb Space Telescope. JWST's infrared capabilities reveal the hidden processes of star birth in unprecedented detail."
+            },
+            {
+                ra: 83.82,
+                dec: -5.39,
+                fov: 0.4,
+                title: "M42",
+                description: "The Orion Nebula."
+            },
+            {
+                ra: 83.82,
+                dec: -5.39,
+                fov: 0.2,
+                title: "M42",
+                description: "The Orion BN/KL region",
+                url: "https://keflavich.github.io/avm_images/Trapezium_GEMS_mosaic_redblueorange_normed_large_contrast_bright_photoshop.jpg"
+            },
+            { 
+                ra: 55.98491667,
+                dec:  32.02897222,
+                fov: 0.16,
+                title: "Herbig-Haro 211",
+                description: "HH 211",
+                url: "https://cdn.esawebb.org/archives/images/large/weic2322b.jpg"
+            },
+            { 
+                ra: 55.98691667,
+                dec:   32.01347222,
+                fov: 0.08,
+                title: "Herbig-Haro 211",
+                description: "HH 211",
+                url: "https://cdn.esawebb.org/archives/images/large/weic2322b.jpg"
+            },
+            { 
+                ra: 55.97591667,
+                dec:  32.05455556,
+                fov: 0.08,
+                title: "IC 348",
+                description: "IC 348",
+                //url: "https://cdn.esawebb.org/archives/images/large/weic2322b.jpg"
+            },
+            { 
+                ra: 166.48416667,
+                dec:  -77.55880556,
+                fov: 0.16,
+                title: "Herbig-Haro 49/50",
+                description: "HH49/50",
+                url: "https://cdn.esawebb.org/archives/images/large/weic2506a.jpg"
             },
             { 
                 ra: 166.48416667,
                 dec:  -77.55880556,
                 fov: 0.08,
                 title: "Herbig-Haro 49/50",
-                description: "HH49/50"
+                description: "HH49/50 zoomed in",
+                url: "https://cdn.esawebb.org/archives/images/large/weic2506a.jpg"
             },
             {
                 ra: 126.43270833, 
@@ -191,22 +154,24 @@
                 description: "This region contains Herbig-Haro objects HH 901 and HH 902, where emerging stellar jets indicate active star formation. The pillar-like formations are being eroded by radiation from nearby massive stars, yet they cradle new stars within their dense dust clouds."
             },
             {
-                ra: 84.6792, // NGC 346 in SMC
-                dec: -72.1708,
+                ra: 84.67665, // 30 Dor
+                dec: -69.1009,
                 fov: 0.12,
-                title: "NGC 346 - Star Formation in the Small Magellanic Cloud",
-                description: "The brightest star-forming region in the Small Magellanic Cloud, NGC 346 contains hundreds of young stellar objects (YSOs) detected by JWST. This region is particularly interesting as it forms stars in a low-metallicity environment, similar to conditions in the early universe."
+                title: "30 Doradus",
+                description: "The brightest star-forming region in the Large Magellanic Cloud.",
+                url: "https://cdn.esawebb.org/archives/images/large/weic2212a.jpg"
             },
             {
                 ra: 84.08667, // HH 1 and HH 2
                 dec: -6.7147,
                 fov: 0.07,
-                title: "Herbig-Haro Objects HH 1 and HH 2",
-                description: "Located in the Orion constellation about 1500 light-years from Earth, HH 1 and HH 2 are among the most studied Herbig-Haro objects. They represent opposite ends of a bipolar jet from a young star hidden in a dense molecular cloud between them."
+                title: "Herbig-Haro Objects HH 1 and HH 2 (Hubble)",
+                description: "Located in the Orion constellation about 1500 light-years from Earth, HH 1 and HH 2 are among the most studied Herbig-Haro objects. They represent opposite ends of a bipolar jet from a young star hidden in a dense molecular cloud between them.",
+                url: "https://cdn.esahubble.org/archives/images/large/potw2242a.jpg"
             },
             {
-                ra: 130.43375, // Tour conclusion
-                dec: -59.87333,
+                ra: 83.82,
+                dec: -5.39,
                 fov: 1.2,
                 title: "Star Formation Journey Complete",
                 description: "We've explored several spectacular regions where JWST has revealed the processes of star formation in unprecedented detail. These observations help astronomers understand how stars like our Sun form and evolve, shedding light on the origins of planetary systems like our own."
@@ -231,27 +196,40 @@
                     target: waypoints[0].ra + ' ' + waypoints[0].dec,
                     cooFrame: 'J2000',
                     showReticle: false,
-                    showZoomControl: false,
-                    showFullscreenControl: false,
-                    showLayersControl: false,
-                    showGotoControl: false,
+                    showZoomControl: true,
+                    showFullscreenControl: true,
+                    showLayersControl: true,
+                    showGotoControl: true,
                     showFrame: false,
                     showCooGrid: false
                 });
 
-                aladin.setOverlayImageLayer('P/JWST/EPO');
+                aladin.addNewImageLayer('P/JWST/EPO');
                 
                 // Hide loading message
                 document.getElementById('loading-div').style.display = 'none';
 
                 updateWaypointInfo();
                 updateProgressBar();
+                goToWaypointFast(0);
                 
                 // Set up event listeners for the buttons
                 document.getElementById('prev-btn').addEventListener('click', function() {
                     isPlaying = false;
                     clearTimeout(waypointTimeout);
                     goToWaypoint(currentWaypoint - 1);
+                });
+
+                document.getElementById('next-btn-fast').addEventListener('click', function() {
+                    console.log("Clicked next-btn-fast.  Current waypoint: ", currentWaypoint);
+                    if (currentWaypoint === waypoints.length - 1) {
+                        // If at the last waypoint, reset to the beginning
+                        goToWaypointFast(0);
+                        return;
+                    } else {
+                        isPlaying = false;
+                        goToWaypointFast(currentWaypoint + 1);
+                    }
                 });
                 
                 document.getElementById('next-btn').addEventListener('click', function() {
@@ -272,15 +250,6 @@
                     isPlaying = true;
                     goToWaypoint(currentWaypoint);
                     
-                    function autoAdvance() {
-                        if (isPlaying && currentWaypoint < waypoints.length - 1) {
-                            goToWaypoint(currentWaypoint + 1);
-                            waypointTimeout = setTimeout(autoAdvance, 10000); // 10 seconds per waypoint
-                        } else if (currentWaypoint === waypoints.length - 1) {
-                            isPlaying = false;
-                        }
-                    }
-                    
                     waypointTimeout = setTimeout(autoAdvance, 10000);
                 });
                 
@@ -288,6 +257,10 @@
                     isPlaying = false;
                     clearTimeout(waypointTimeout);
                     goToWaypoint(0);
+                });
+
+                document.getElementById('loop-checkbox').addEventListener('change', function() {
+                    loopTour = this.checked;
                 });
             }).catch(err => {
                 console.error('Failed to initialize Aladin:', err);
@@ -300,6 +273,23 @@
             document.getElementById('waypoint-title').innerText = waypoints[currentWaypoint].title;
             document.getElementById('waypoint-description').innerText = waypoints[currentWaypoint].description;
             document.getElementById('current-waypoint').innerText = (currentWaypoint + 1) + '/' + waypoints.length;
+            
+            // Update next button text to show the next region name
+            updateNextButtonText();
+        }
+
+        // Function to update the next button text
+        function updateNextButtonText() {
+            if (currentWaypoint === waypoints.length - 1) {
+                // At last waypoint, show restart text
+                document.getElementById('next-btn').innerText = 'Restart';
+                document.getElementById('next-btn-fast').innerText = 'Restart Fast';
+            } else {
+                // Show the next region name
+                const nextWaypoint = waypoints[currentWaypoint + 1];
+                document.getElementById('next-btn').innerText = 'Next: ' + nextWaypoint.title;
+                document.getElementById('next-btn-fast').innerText = 'Next Fast: ' + nextWaypoint.title;
+            }
         }
 
         // Function to update the progress bar
@@ -308,13 +298,50 @@
             document.getElementById('progress').style.width = progress + '%';
         }
 
+        function goToWaypointFast(index) {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+            
+            // Signal to interrupt any ongoing animation
+            interruptAnimation = true;
+            clearTimeout(waypointTimeout);
+            
+            // Update current waypoint state
+            currentWaypoint = index;
+            if (currentWaypoint < 0) currentWaypoint = 0;
+            if (currentWaypoint >= waypoints.length) currentWaypoint = waypoints.length - 1;
+            
+            // Get the waypoint data
+            const waypoint = waypoints[currentWaypoint];
+            
+            // Update display info
+            updateWaypointInfo();
+            updateProgressBar();
+            
+            // Display image if available
+            if (waypoint.url) {
+                aladin.displayJPG(waypoint.url);
+            }
+            
+            // Jump directly to the location
+            aladin.setFov(waypoint.fov);
+            aladin.gotoRaDec(waypoint.ra, waypoint.dec);
+            
+            // Reset interrupt flag
+            interruptAnimation = false;
+        }
+
         // Function to go to a specific waypoint with animation
         function goToWaypoint(index) {
             if (!aladin) {
                 console.error('Aladin not initialized yet');
                 return;
             }
-            
+
+            // Reset interrupt flag at the start of a new animation
+            interruptAnimation = false;
             clearTimeout(waypointTimeout);
             
             currentWaypoint = index;
@@ -326,16 +353,12 @@
             updateWaypointInfo();
             updateProgressBar();
             
-            // Update button text for the first and last waypoints
-            if (currentWaypoint === waypoints.length - 1) {
-                document.getElementById('next-btn').innerText = 'Restart';
+            // Only stop the tour if we're at the last waypoint and not looping
+            if (currentWaypoint === waypoints.length - 1 && !loopTour) {
                 isPlaying = false;
                 clearTimeout(waypointTimeout);
-            } else {
-                document.getElementById('next-btn').innerText = 'Next';
             }
             
-            // Get previous waypoint for distance calculation
             const prevIndex = currentWaypoint > 0 ? currentWaypoint - 1 : 0;
             const prevWaypoint = waypoints[prevIndex];
             
@@ -346,22 +369,63 @@
             );
             
             // If waypoints are close (within 0.1 degrees), skip zoom out step
-            if (distance < 0.1 && currentWaypoint > 0) {
+            if (distance < 0.2 && currentWaypoint > 0) {
                 console.log("Close waypoints detected, skipping zoom out step");
                 // Go directly to the new coordinates
                 aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2, function() {
+                    // Check if animation was interrupted
+                    if (interruptAnimation) return;
+
+                    if (waypoints[index].url) {
+                        aladin.displayJPG(waypoints[index].url);
+                    }
+            
                     // Then zoom in to target FOV
-                    aladin.zoomToFoV(waypoint.fov, 5);
-                    //animateFov(aladin.getFov(), waypoint.fov, 5);
+                    aladin.zoomToFoV(waypoint.fov, 5, function() {
+                        // Check if animation was interrupted
+                        if (interruptAnimation) return;
+                        
+                        // If this is the last waypoint and looping is on, schedule the next waypoint
+                        if (isPlaying && currentWaypoint === waypoints.length - 1 && loopTour) {
+                            console.log("End of tour reached, looping back to start");
+                            clearTimeout(waypointTimeout);
+                            waypointTimeout = setTimeout(function() {
+                                if (interruptAnimation) return;
+                                goToWaypoint(0);
+                            }, 5000); // Wait 5 seconds at the end before looping
+                        }
+                    });
                 });
             } else {
                 // Multi-step animation with custom FOV animation
                 // Step 1: Zoom out to 5 degrees
-                aladin.zoomToFoV(5.0, 5, function() {
+                aladin.zoomToFoV(4.0, 3, function() {
+                    // Check if animation was interrupted
+                    if (interruptAnimation) return;
+                    
                     // Step 2: Go to the new coordinates
                     aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2, function() {
+                        // Check if animation was interrupted
+                        if (interruptAnimation) return;
+
+                        if (waypoints[index].url) {
+                            aladin.displayJPG(waypoints[index].url);
+                        }
                         // Step 3: Zoom in to target FOV
-                        aladin.zoomToFoV(waypoint.fov, 5);
+                        aladin.zoomToFoV(waypoint.fov, 5, function() {
+                            // Check if animation was interrupted
+                            if (interruptAnimation) return;
+                            
+                            // If this is the last waypoint and looping is on, schedule the next waypoint
+                            if (isPlaying && currentWaypoint === waypoints.length - 1 && loopTour) {
+                                console.log("End of tour reached, looping back to start");
+                                clearTimeout(waypointTimeout);
+                                waypointTimeout = setTimeout(function() {
+                                    if (interruptAnimation) return;
+                                    goToWaypoint(0);
+                                }, 5000); // Wait 5 seconds at the end before looping
+                            }
+                        });
                     });
                 });
             }

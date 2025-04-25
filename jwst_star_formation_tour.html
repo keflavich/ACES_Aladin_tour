@@ -86,7 +86,7 @@
                 fov: 0.0917,
                 title: "M42 - BN/KL",
                 description: "The Orion BN/KL region",
-                url: "https://keflavich.github.io/avm_images/GINSBURG_P_Trapezium_GEMS_mosaic_redblueorange_normed_large_contrast_bright_photoshop"
+                url: "https://data.rc.ufl.edu/pub/adamginsburg/avm_images/GINSBURG_P_Trapezium_GEMS_mosaic_redblueorange_normed_large_contrast_bright_photoshop"
             },
             { 
                 ra: 55.98491667,
@@ -173,6 +173,30 @@
                 url: "https://cdn.esahubble.org/archives/images/large/potw2242a.jpg"
             },
             {
+                ra: 266.416667,
+                dec: -29.008333,
+                fov: 0.8,
+                title: "ACES",
+                description: "ACES in the Galactic Center",
+                url: "https://data.rc.ufl.edu/pub/adamginsburg/avm_images/GINSBURG_P_MUSTANG_ACES_feather"
+            },
+            {
+                ra: 266.83311023,
+                dec:  -28.37178279,
+                fov: 0.006,
+                title: "Sgr B2N",
+                description: "Sgr B2N",
+                url: "https://data.rc.ufl.edu/pub/adamginsburg/avm_images/GINSBURG_P_SgrB2N_RGB"
+            },
+            {
+                ra: 266.83500789,
+                dec: -28.38527462,
+                fov: 0.006,
+                title: "Sgr B2M",
+                description: "Sgr B2M",
+                url: "https://data.rc.ufl.edu/pub/adamginsburg/avm_images/GINSBURG_P_SgrB2M_RGB"
+            },
+            {
                 ra: 83.82,
                 dec: -5.39,
                 fov: 1.2,
@@ -215,10 +239,11 @@
                     showFullscreenControl: true,
                     showLayersControl: true,
                     showGotoControl: true,
-                    showFrame: false,
+                    showFrame: true,
                     showCooGrid: false,
                     showSimbadPointerControl: true,
-                    showSettingsControl: true
+                    showSettingsControl: true,
+                    showShareControl: true,
                 });
 
                 aladin.addNewImageLayer('P/JWST/EPO');
@@ -384,6 +409,7 @@
                 if (waypoint.url.endsWith('.jpg')) {
                     aladin.displayJPG(waypoint.url);
                 } else {
+                    console.log("Adding new image layer: ", waypoint.url);
                     aladin.addNewImageLayer(waypoint.url);
                 }
             }
@@ -441,8 +467,10 @@
 
                     if (waypoints[index].url) {
                         if (waypoints[index].url.endsWith('.jpg')) {
+                            console.log("Displaying JPG: ", waypoints[index].url);
                             aladin.displayJPG(waypoints[index].url);
                         } else {
+                            console.log("Adding new image layer: ", waypoints[index].url);
                             aladin.addNewImageLayer(waypoints[index].url);
                         }
                     }
@@ -476,7 +504,13 @@
                         if (interruptAnimation) return;
 
                         if (waypoints[index].url) {
-                            aladin.displayJPG(waypoints[index].url);
+                            if (waypoints[index].url.endsWith('.jpg')) {
+                                console.log("Displaying JPG: ", waypoints[index].url);
+                                aladin.displayJPG(waypoints[index].url);
+                            } else {
+                                console.log("Adding new image layer: ", waypoints[index].url);
+                                aladin.addNewImageLayer(waypoints[index].url);
+                            }
                         }
                         // Step 3: Zoom in to target FOV
                         aladin.zoomToFoV(waypoint.fov, 5, function() {

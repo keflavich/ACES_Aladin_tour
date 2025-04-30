@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="draggable.css">
     <link rel="stylesheet" href="default.css">
 </head>
+
 <body>
     <div id="loading">Loading ALADIN Lite... Please wait.</div>
     <div id="controls" style='margin-left:15%'>
@@ -37,7 +39,8 @@
 
     <!-- Load scripts at the end -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript" src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js" charset="utf-8"></script>
+    <script type="text/javascript" src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js"
+        charset="utf-8"></script>
     <!-- Add astronomy.js for coordinate conversion -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/astronomy-js@1.0.1/astronomy.min.js"></script>
     <!-- Add draggable functionality -->
@@ -45,47 +48,47 @@
 
     <script type="text/javascript">
         // Tour waypoints
-            const tourWaypoints = [
-                {
-                galacticCoords: {lon: -0.01, lat: 0.001},
-                    fov: 1.5,
-                    title: "ACES Galactic Center Overview",
+        const tourWaypoints = [
+            {
+                galacticCoords: { lon: -0.01, lat: 0.001 },
+                fov: 1.5,
+                title: "ACES Galactic Center Overview",
                 description: "Overview of the ALMA data for the Galactic Center.",
                 pauseTime: 0  // Start immediately
-                },
-                {
-                galacticCoords: {lon: 359.944, lat: -0.046},
-                    fov: 0.4,
-                    title: "Sgr A* Central Region",
+            },
+            {
+                galacticCoords: { lon: 359.944, lat: -0.046 },
+                fov: 0.4,
+                title: "Sgr A* Central Region",
                 description: "Zoomed view of the central region around Sgr A*.",
                 pauseTime: 1000  // 4 seconds at this waypoint
             },
             {
-                galacticCoords: {lon: 0.66, lat: -0.05},
+                galacticCoords: { lon: 0.66, lat: -0.05 },
                 fov: 0.15,
                 title: "Sgr B2",
                 description: "Structures in the eastern part of the galactic center.",
                 pauseTime: 4000  // 4 seconds at this waypoint
             },
             {
-                galacticCoords: {lon: 359.85, lat: -0.08},
-                    fov: 0.3,
-                    title: "Southern Filaments",
+                galacticCoords: { lon: 359.85, lat: -0.08 },
+                fov: 0.3,
+                title: "Southern Filaments",
                 description: "Filamentary structures in the southern part of the field.",
                 pauseTime: 4000  // 4 seconds at this waypoint
             },
             {
-                galacticCoords: {lon: 0.02467, lat: -0.0727},
-                radecCoords: {ra: 266.49060146, dec: -28.95296738},
+                galacticCoords: { lon: 0.02467, lat: -0.0727 },
+                radecCoords: { ra: 266.49060146, dec: -28.95296738 },
                 fov: 0.05,
                 title: "MUBLO",
                 description: "The MUBLO - Millimeter Ultra Broad-Line Object.",
                 pauseTime: 6000  // 6 seconds at this interesting feature
             },
             {
-                galacticCoords: {lon: 359.944, lat: -0.046},
-                    fov: 1.5,
-                    title: "Full ACES Continuum Overview",
+                galacticCoords: { lon: 359.944, lat: -0.046 },
+                fov: 1.5,
+                title: "Full ACES Continuum Overview",
                 description: "Returning to the full view of the ACES continuum mosaic.",
                 pauseTime: 4000  // 4 seconds at final waypoint
             }
@@ -105,11 +108,11 @@
         const tourDescription = document.getElementById('tour-description');
 
         // Initialize when document is ready
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Make elements draggable
             makeDraggable(document.getElementById('controls'));
             makeDraggable(document.getElementById('tour-info'));
-            
+
             // Initialize Aladin
             initAladin();
 
@@ -117,7 +120,7 @@
             const opacitySlider = document.getElementById('opacity-slider');
             const opacityValue = document.querySelector('.opacity-value');
 
-            opacitySlider.addEventListener('input', function() {
+            opacitySlider.addEventListener('input', function () {
                 const value = this.value;
                 opacityValue.textContent = value + '%';
 
@@ -210,7 +213,8 @@
                 }
 
                 // Path to local HiPS
-                const hipsUrl = './UNK.AUTH_P_ACES12mMosaicFeatheredColor';
+                const hipsUrl = 'https://data.rc.ufl.edu/pub/adamginsburg/avm_images/GINSBURG_P_MUSTANG_ACES_feather/';
+                const hipsUrl = 'https://keflavich.github.io/avm_images/GINSBURG_P_MUSTANG_ACES_feather/';
                 console.log('Loading local HiPS from:', hipsUrl);
 
                 aladin.setOverlayImageLayer(hipsUrl);
@@ -250,13 +254,13 @@
         }
 
         // Change survey source
-        document.getElementById('hips-source').addEventListener('change', function(e) {
+        document.getElementById('hips-source').addEventListener('change', function (e) {
             if (!aladin) {
                 console.error('Aladin not initialized yet');
                 return;
             }
 
-                const source = e.target.value;
+            const source = e.target.value;
             console.log('Changing survey to:', source);
 
             loadingDiv.textContent = 'Loading selected survey...';
@@ -274,7 +278,7 @@
 
             if (source === 'local') {
                 // Load local HiPS
-                        loadLocalHips();
+                loadLocalHips();
                 return;
             }
 
@@ -407,7 +411,7 @@
         }
 
         // Test coordinate conversion
-        document.getElementById('test-coords').addEventListener('click', function() {
+        document.getElementById('test-coords').addEventListener('click', function () {
             // Create test overlay
             const testDiv = document.createElement('div');
             testDiv.style.position = 'fixed';
@@ -431,7 +435,7 @@
             closeButton.style.position = 'absolute';
             closeButton.style.top = '10px';
             closeButton.style.right = '10px';
-            closeButton.addEventListener('click', function() {
+            closeButton.addEventListener('click', function () {
                 document.body.removeChild(testDiv);
             });
 
@@ -464,7 +468,7 @@
                     if (wp.title === "MUBLO") return null;
 
                     return {
-                        name: `Waypoint ${idx+1}: ${wp.title}`,
+                        name: `Waypoint ${idx + 1}: ${wp.title}`,
                         gal: { lon: wp.galacticCoords.lon, lat: wp.galacticCoords.lat },
                         expected: wp.radecCoords || null // Use provided RA/Dec if available
                     };
@@ -487,7 +491,7 @@
                 if (test.expected) {
                     const raDiff = Math.abs(result.ra - test.expected.ra);
                     const decDiff = Math.abs(result.dec - test.expected.dec);
-                    const totalDiff = Math.sqrt(raDiff*raDiff + decDiff*decDiff);
+                    const totalDiff = Math.sqrt(raDiff * raDiff + decDiff * decDiff);
                     diffStr = totalDiff.toFixed(4) + "°";
                 }
 
@@ -545,7 +549,7 @@
             document.body.appendChild(testDiv);
 
             // Add event listener for custom coordinate conversion
-            document.getElementById('convert-coords').addEventListener('click', function() {
+            document.getElementById('convert-coords').addEventListener('click', function () {
                 const lon = parseFloat(document.getElementById('test-lon').value);
                 const lat = parseFloat(document.getElementById('test-lat').value);
 
@@ -567,7 +571,7 @@
                 const gotoButton = document.createElement('button');
                 gotoButton.textContent = 'Go to this position';
                 gotoButton.style.marginTop = '10px';
-                gotoButton.addEventListener('click', function() {
+                gotoButton.addEventListener('click', function () {
                     aladin.gotoRaDec(result.ra, result.dec);
                     document.getElementById('conversion-result').innerHTML +=
                         '<br><span style="color: green;">Going to position...</span>';
@@ -612,7 +616,7 @@
         }
 
         // Go to a specific waypoint
-            function goToWaypoint(waypoint) {
+        function goToWaypoint(waypoint) {
             if (!aladin) {
                 console.error('Aladin not initialized yet');
                 return;
@@ -634,9 +638,9 @@
 
         // Display tour information
         function showTourInfo(waypoint) {
-                tourTitle.textContent = waypoint.title;
+            tourTitle.textContent = waypoint.title;
             tourDescription.innerHTML = waypoint.description;
-                tourInfoDiv.classList.remove('hidden');
+            tourInfoDiv.classList.remove('hidden');
         }
 
         // Animate between waypoints using Aladin's built-in animateToRaDec
@@ -710,12 +714,12 @@
                 const progress = currentStep / steps;
 
                 // Easing function
-                    const easedProgress = progress < 0.5
-                        ? 2 * progress * progress
-                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                const easedProgress = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 
                 // Calculate current FOV
-                    const currentFov = startFov + (endFov - startFov) * easedProgress;
+                const currentFov = startFov + (endFov - startFov) * easedProgress;
 
                 // Set the FOV
                 aladin.setFoV(currentFov);
@@ -723,60 +727,60 @@
                 // Continue or complete
                 if (currentStep < steps) {
                     setTimeout(doFovStep, stepDuration);
-                    } else {
+                } else {
                     aladin.setFoV(endFov); // Make sure we end at the exact target FOV
-                        if (callback) callback();
-                    }
+                    if (callback) callback();
                 }
+            }
 
             // Start FOV animation
             setTimeout(doFovStep, 10);
-            }
+        }
 
-            // Start tour button
-            document.getElementById('start-tour').addEventListener('click', function() {
+        // Start tour button
+        document.getElementById('start-tour').addEventListener('click', function () {
             if (!aladin) {
                 alert('Aladin not ready yet. Please wait.');
                 return;
             }
 
-                if (tourRunning) {
-                    // Stop tour if running
-                    clearTimeout(tourInterval);
-                    tourRunning = false;
-                    this.textContent = 'Start Tour';
-                } else {
-                    // Start tour
-                    tourRunning = true;
-                    this.textContent = 'Stop Tour';
+            if (tourRunning) {
+                // Stop tour if running
+                clearTimeout(tourInterval);
+                tourRunning = false;
+                this.textContent = 'Start Tour';
+            } else {
+                // Start tour
+                tourRunning = true;
+                this.textContent = 'Stop Tour';
 
-                    // Begin from the first waypoint
-                    tourIndex = 0;
-                    goToWaypoint(tourWaypoints[tourIndex]);
+                // Begin from the first waypoint
+                tourIndex = 0;
+                goToWaypoint(tourWaypoints[tourIndex]);
 
-                    // Function to advance the tour
-                    function advanceTour() {
+                // Function to advance the tour
+                function advanceTour() {
                     if (!tourRunning) return;
 
-                        const currentWaypoint = tourWaypoints[tourIndex];
-                        tourIndex = (tourIndex + 1) % tourWaypoints.length;
-                        const nextWaypoint = tourWaypoints[tourIndex];
+                    const currentWaypoint = tourWaypoints[tourIndex];
+                    tourIndex = (tourIndex + 1) % tourWaypoints.length;
+                    const nextWaypoint = tourWaypoints[tourIndex];
 
                     // Get animation duration based on distance and FOV change
                     const animationDuration = calculateAnimationDuration(currentWaypoint, nextWaypoint);
 
                     // Animate to next waypoint
-                    animateToWaypoint(currentWaypoint, nextWaypoint, animationDuration, function() {
+                    animateToWaypoint(currentWaypoint, nextWaypoint, animationDuration, function () {
                         // Pause at each waypoint for the specified time (or default if not set)
-                            if (tourRunning) {
+                        if (tourRunning) {
                             const pauseTime = nextWaypoint.pauseTime !== undefined ?
                                 nextWaypoint.pauseTime : 4000; // Default 4 seconds
 
                             console.log(`Pausing at waypoint "${nextWaypoint.title}" for ${pauseTime}ms`);
                             tourInterval = setTimeout(advanceTour, pauseTime);
-                            }
-                        });
-                    }
+                        }
+                    });
+                }
 
                 // Start advancing immediately if first waypoint has zero pause time
                 const startDelay = tourWaypoints[0].pauseTime !== undefined ?
@@ -784,30 +788,30 @@
 
                 console.log(`Starting tour with initial delay of ${startDelay}ms`);
                 tourInterval = setTimeout(advanceTour, startDelay);
-                }
-            });
+            }
+        });
 
-            // Reset view button
-            document.getElementById('reset-view').addEventListener('click', function() {
+        // Reset view button
+        document.getElementById('reset-view').addEventListener('click', function () {
             if (!aladin) {
                 alert('Aladin not ready yet. Please wait.');
                 return;
             }
 
-                // Stop tour if running
-                if (tourRunning) {
-                    clearTimeout(tourInterval);
-                    tourRunning = false;
-                    document.getElementById('start-tour').textContent = 'Start Tour';
-                }
+            // Stop tour if running
+            if (tourRunning) {
+                clearTimeout(tourInterval);
+                tourRunning = false;
+                document.getElementById('start-tour').textContent = 'Start Tour';
+            }
 
-                // Reset to first waypoint
+            // Reset to first waypoint
             tourIndex = 0;
-                goToWaypoint(tourWaypoints[0]);
+            goToWaypoint(tourWaypoints[0]);
         });
 
         // Debug button
-        document.getElementById('debug-button').addEventListener('click', function() {
+        document.getElementById('debug-button').addEventListener('click', function () {
             if (!aladin) {
                 alert('Aladin not initialized');
                 return;
@@ -836,7 +840,7 @@
             closeButton.style.position = 'absolute';
             closeButton.style.top = '10px';
             closeButton.style.right = '10px';
-            closeButton.addEventListener('click', function() {
+            closeButton.addEventListener('click', function () {
                 document.body.removeChild(debugDiv);
             });
             debugDiv.appendChild(closeButton);
@@ -958,4 +962,5 @@
         }
     </script>
 </body>
+
 </html>

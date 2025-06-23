@@ -129,7 +129,8 @@
                 console.log('A.init completed, creating Aladin instance');
 
                 aladin = A.aladin('#aladin-lite-div', {
-                    survey: "IPAC/P/GLIMPSE360",
+                    survey: "P/2MASS/color",
+                    // survey: "IPAC/P/GLIMPSE360",
                     fov: waypoints[0].fov,
                     target: waypoints[0].ra + ' ' + waypoints[0].dec,
                     cooFrame: 'J2000',

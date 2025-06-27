@@ -74,8 +74,10 @@
                 ra: 266.416667,
                 dec: -29.008333,
                 fov: 3.0,
-                transition_fov: 5,
-                transition_time: 10,
+                transition_fov: 3.0,
+                transition_time: 2,
+                zoom_out_time: 0,
+                zoom_in_time: 2,
                 title: "The CMZ",
                 description: "The Central Molecular Zone seen with MEERKAT and Spitzer.  Color composite by Ashley Barnes.",
                 url: "https://keflavich.github.io/avm_images/rgb_final_uncropped_hips/"
@@ -84,8 +86,10 @@
                 ra: 266.416667,
                 dec: -29.008333,
                 fov: 0.8,
-                transition_fov: 5,
-                transition_time: 10,
+                transition_fov: 3.0,
+                transition_time: 3,
+                zoom_out_time: 2,
+                zoom_in_time: 3,
                 title: "ACES",
                 description: "The ALMA Central Molecular Zone survey (ACES) combined with the Green Bank Telescope's MUSTANG survey in the Galactic Center.  This is the highest-resolution millimeter image produced of the Galactic Center.",
                 url: "https://keflavich.github.io/avm_images/MUSTANG_12m_feather_noaxes_hips/"
@@ -96,6 +100,8 @@
                 fov: 0.006,
                 transition_fov: 1,
                 transition_time: 5,
+                zoom_out_time: 3,
+                zoom_in_time: 5,
                 title: "Sgr B2N",
                 description: "Sagittarius B2 North is the most massive site of ongoing star formation in the Milky Way.  Within a region less than a tenth of a parsec across, thousands of solar masses of gas are flowing into a central massive-star-forming protocluster birthing several proto-O-stars within only a few thousand astronomical units.  Data by Nazar Budaiev.",
                 url: "https://keflavich.github.io/avm_images/GINSBURG_P_SgrB2N_RGB"
@@ -106,6 +112,8 @@
                 fov: 0.006,
                 transition_fov: 0.012,
                 transition_time: 5,
+                zoom_out_time: 3,
+                zoom_in_time: 5,
                 title: "Sgr B2M",
                 description: "Sgr B2M is the most massive embedded star cluster in the Galactic Center.  The image shows several HII regions, sites where massive stars have ionized their surroundings, within a tiny volume.   Data by Nazar Budaiev.",
                 url: "https://keflavich.github.io/avm_images/GINSBURG_P_SgrB2M_RGB"
@@ -349,7 +357,7 @@
 
             const waypoint = waypoints[currentWaypoint];
 
-            updateWaypointInfo();
+            // Only update progress bar immediately, delay waypoint info until animation starts
             updateProgressBar();
 
             // Only stop the tour if we're at the last waypoint and not looping
@@ -368,8 +376,10 @@
             );
 
             // If waypoints are close (within 0.1 degrees), skip zoom out step
-            if (distance < 0.2 && currentWaypoint > 0) {
+            if (distance < 0.2) {
                 console.log("Close waypoints detected, skipping zoom out step");
+                // Update waypoint info right before starting the movement animation
+                updateWaypointInfo();
                 // Go directly to the new coordinates
                 aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2, function () {
                     // Check if animation was interrupted
@@ -404,12 +414,14 @@
             } else {
                 // Multi-step animation with custom FOV animation
                 // Step 1: Zoom out to 5 degrees
-                aladin.zoomToFoV(waypoint.transition_fov, 3, function () {
+                aladin.zoomToFoV(waypoint.transition_fov, waypoint.zoom_out_time, function () {
                     // Check if animation was interrupted
                     if (interruptAnimation) return;
 
+                    // Update waypoint info right before starting the movement animation
+                    updateWaypointInfo();
                     // Step 2: Go to the new coordinates
-                    aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2, function () {
+                    aladin.animateToRaDec(waypoint.ra, waypoint.dec, waypoint.transition_time, function () {
                         // Check if animation was interrupted
                         if (interruptAnimation) return;
 
@@ -423,7 +435,7 @@
                             }
                         }
                         // Step 3: Zoom in to target FOV
-                        aladin.zoomToFoV(waypoint.fov, 5, function () {
+                        aladin.zoomToFoV(waypoint.fov, waypoint.zoom_in_time, function () {
                             // Check if animation was interrupted
                             if (interruptAnimation) return;
 

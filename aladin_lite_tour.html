@@ -67,11 +67,19 @@
             waypointTimeout = setTimeout(autoAdvance, 10000);
         }
 
-        // JWST HIPS URL
-        const jwstHipsUrl = "P/JWST/EPO/";
 
         // Define waypoints for the tour
         const waypoints = [
+            {
+                ra: 266.416667,
+                dec: -29.008333,
+                fov: 3.0,
+                transition_fov: 5,
+                transition_time: 10,
+                title: "The CMZ",
+                description: "The Central Molecular Zone seen with MEERKAT and Spitzer.  Color composite by Ashley Barnes.",
+                url: "https://keflavich.github.io/avm_images/rgb_final_uncropped_hips/"
+            },
             {
                 ra: 266.416667,
                 dec: -29.008333,
@@ -79,8 +87,8 @@
                 transition_fov: 5,
                 transition_time: 10,
                 title: "ACES",
-                description: "ACES in the Galactic Center",
-                url: "https://keflavich.github.io/avm_images/GINSBURG_P_MUSTANG_ACES_feather"
+                description: "The ALMA Central Molecular Zone survey (ACES) combined with the Green Bank Telescope's MUSTANG survey in the Galactic Center.  This is the highest-resolution millimeter image produced of the Galactic Center.",
+                url: "https://keflavich.github.io/avm_images/MUSTANG_12m_feather_noaxes_hips/"
             },
             {
                 ra: 266.83311023,
@@ -89,17 +97,17 @@
                 transition_fov: 1,
                 transition_time: 5,
                 title: "Sgr B2N",
-                description: "Sgr B2N",
+                description: "Sagittarius B2 North is the most massive site of ongoing star formation in the Milky Way.  Within a region less than a tenth of a parsec across, thousands of solar masses of gas are flowing into a central massive-star-forming protocluster birthing several proto-O-stars within only a few thousand astronomical units.  Data by Nazar Budaiev.",
                 url: "https://keflavich.github.io/avm_images/GINSBURG_P_SgrB2N_RGB"
             },
             {
-                ra: 266.83500789,
-                dec: -28.38527462,
+                ra: 266.833992,
+                dec: -28.38459,
                 fov: 0.006,
                 transition_fov: 0.012,
                 transition_time: 5,
                 title: "Sgr B2M",
-                description: "Sgr B2M",
+                description: "Sgr B2M is the most massive embedded star cluster in the Galactic Center.  The image shows several HII regions, sites where massive stars have ionized their surroundings, within a tiny volume.   Data by Nazar Budaiev.",
                 url: "https://keflavich.github.io/avm_images/GINSBURG_P_SgrB2M_RGB"
             },
         ];
@@ -146,7 +154,9 @@
                     showShareControl: true,
                 });
 
-                aladin.addNewImageLayer('P/JWST/EPO');
+
+                aladin.addNewImageLayer('https://keflavich.github.io/avm_images/rgb_final_uncropped_hips/');
+                //aladin.addNewImageLayer('https://keflavich.github.io/avm_images/AshFigureWithACES_MUSTANGfirst/');
 
                 // Hide loading message
                 document.getElementById('loading-div').style.display = 'none';

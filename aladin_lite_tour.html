@@ -11,6 +11,285 @@
     <script type="text/javascript" src="draggable.js"></script>
     <link rel="stylesheet" href="default.css">
     <link rel="stylesheet" href="draggable.css">
+    <style>
+        /* Mobile-friendly improvements */
+        #progress-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #progress-bar {
+            flex: 1;
+            height: 4px !important;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #progress {
+            height: 100%;
+            background: #2962FF;
+            transition: width 0.3s ease;
+        }
+
+        #current-waypoint {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        #tour-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 100vw;
+            box-sizing: border-box;
+            padding: 0 10px;
+        }
+
+        /* Desktop: only as wide as needed */
+        @media (min-width: 769px) {
+            #tour-controls {
+                width: fit-content;
+                padding: 0;
+            }
+        }
+
+        #tour-controls button {
+            background: #2962FF;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            min-width: 48px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+        }
+
+        #tour-controls button:hover {
+            background: #1976D2;
+        }
+
+        #tour-controls button:active {
+            background: #0D47A1;
+        }
+
+        #tour-controls button:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        #tour-controls button:disabled:hover {
+            background: #666;
+        }
+
+        #waypoint-info {
+            max-width: 90vw;
+            transition: all 0.3s ease;
+        }
+
+        /* Override any default positioning for mobile */
+        @media (max-width: 768px) {
+            #waypoint-info {
+                position: relative !important;
+                left: auto !important;
+                right: auto !important;
+                top: auto !important;
+                bottom: auto !important;
+                width: fit-content !important;
+                max-width: calc(100vw - 20px) !important;
+                margin: 10px auto !important;
+            }
+        }
+
+        #waypoint-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+        }
+
+                #waypoint-title {
+            font-size: 24px;
+            margin: 0;
+            flex: 0 1 auto;
+            line-height: 1.2;
+        }
+
+                #expand-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: normal;
+            transition: opacity 0.2s ease;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        #expand-btn:hover {
+            opacity: 1;
+        }
+
+        #waypoint-content {
+            margin-top: 10px;
+        }
+
+        #waypoint-description {
+            font-size: 16px;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+                /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+            #tour-controls {
+                gap: 6px;
+                padding: 0 5px;
+            }
+
+            #tour-controls button {
+                padding: 12px 14px;
+                font-size: 18px;
+                min-width: 46px;
+                min-height: 46px;
+                flex: 0 1 auto;
+            }
+
+            #waypoint-dropdown {
+                width: 32px !important;
+                padding: 12px 4px !important;
+                font-size: 14px !important;
+            }
+
+                        #waypoint-info {
+                padding: 20px 15px;
+                margin: 10px auto !important;
+                max-width: calc(100vw - 20px);
+                position: relative !important;
+                left: auto !important;
+                right: auto !important;
+                top: auto !important;
+                bottom: auto !important;
+                width: fit-content !important;
+            }
+
+            #waypoint-info.collapsed #waypoint-content {
+                display: none;
+            }
+
+            #waypoint-info.expanded {
+                position: fixed !important;
+                top: 10px !important;
+                left: 10px !important;
+                right: 10px !important;
+                bottom: auto !important;
+                max-height: 70vh;
+                overflow-y: auto;
+                z-index: 1000;
+                background: rgba(0, 0, 0, 0.9);
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+                width: auto !important;
+                margin: 0 !important;
+            }
+
+                        #waypoint-title {
+                font-size: 28px;
+                font-weight: bold;
+            }
+
+            #waypoint-description {
+                font-size: 16px;
+            }
+
+            #expand-btn {
+                font-size: 16px;
+            }
+        }
+
+        /* Very narrow screens (iPhone SE, etc.) */
+        @media (max-width: 400px) {
+            #tour-controls {
+                gap: 4px;
+                padding: 0 3px;
+            }
+
+            #tour-controls button {
+                padding: 10px 12px;
+                font-size: 16px;
+                min-width: 40px;
+                min-height: 40px;
+                flex: 1 1 auto;
+                max-width: 60px;
+            }
+
+            #waypoint-dropdown {
+                width: 28px !important;
+                padding: 10px 2px !important;
+                font-size: 12px !important;
+                flex: 0 0 28px;
+            }
+
+            #progress-container {
+                margin: 0 3px 8px 3px;
+                padding: 6px 10px;
+            }
+
+                        #waypoint-info {
+                margin: 10px auto !important;
+                padding: 18px 12px;
+                max-width: calc(100vw - 15px);
+                position: relative !important;
+                left: auto !important;
+                right: auto !important;
+                top: auto !important;
+                bottom: auto !important;
+                width: fit-content !important;
+            }
+
+            #waypoint-info.expanded {
+                top: 5px !important;
+                left: 5px !important;
+                right: 5px !important;
+                max-height: 75vh;
+                padding: 15px;
+                margin: 0 !important;
+            }
+
+                        #waypoint-title {
+                font-size: 24px;
+                font-weight: bold;
+            }
+
+            #waypoint-description {
+                font-size: 15px;
+            }
+
+            #expand-btn {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -19,29 +298,33 @@
     <div id="loading-div">Loading ACES Star Formation Tour... Please wait.</div>
 
     <div id="waypoint-info">
-        <h2 id="waypoint-title">Welcome to the ACES Central Molecular Zone Tour</h2>
-        <p id="waypoint-description">
-        This is a brief tour through the ACES view of the Central Molecular Zone.  Click "Start Tour" to begin.
-        </p>
+        <div id="waypoint-header">
+            <button id="expand-btn" title="Expand/Collapse Info">▶</button>
+            <h2 id="waypoint-title">Welcome to the ACES Central Molecular Zone Tour</h2>
+        </div>
+        <div id="waypoint-content">
+            <p id="waypoint-description">
+            This is a brief tour through the ACES view of the Central Molecular Zone.  Click "Start Tour" to begin.
+            </p>
+        </div>
     </div>
 
-    <div id="tour-controls">
-        <button id="prev-btn">Previous</button>
+    <div id="progress-container">
         <div id="progress-bar">
             <div id="progress"></div>
         </div>
         <span id="current-waypoint">0</span>
-        <button id="next-btn">Next</button>
-        <!--<button id="next-btn-fast">Next Fast</button>-->
-        <select id="waypoint-dropdown"
-            style="background-color: #2962FF; color: white; border: none; padding: 8px; border-radius: 5px; margin-left: 5px; margin-right: 5px; cursor: pointer; font-size: 14px; position: relative; z-index: 120; min-width: 150px; -webkit-appearance: menulist; -moz-appearance: menulist; appearance: menulist;">
-            <option value="">Jump to...</option>
+    </div>
+
+    <div id="tour-controls">
+        <button id="prev-btn" title="Previous">‹</button>
+        <button id="next-btn" title="Next">›</button>
+        <button id="start-btn" title="Start/Play Tour">▶</button>
+        <button id="reset-btn" title="Reset">⟲</button>
+        <select id="waypoint-dropdown" title="Jump to waypoint"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 36px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="">≫</option>
         </select>
-        <button id="start-btn">Start Tour</button>
-        <button id="reset-btn">Reset</button>
-        <label id="loop-label" style="color:white; cursor:pointer; font-size:14px;">
-            <input type="checkbox" id="loop-checkbox" style="margin-right:5px;"> Loop Tour
-        </label>
     </div>
 
     <script>
@@ -49,8 +332,84 @@
         let currentWaypoint = 0;
         let isPlaying = false;
         let waypointTimeout;
-        let loopTour = false; // Flag to enable continuous looping
+        let loopTour = true; // Flag to enable continuous looping (default on)
         let interruptAnimation = false; // Flag to interrupt ongoing animations
+        let currentImageLayer = null; // Track the most recently added image layer
+        let isInfoExpanded = false; // Track info panel state
+
+        // Initialize mobile info panel
+        function initializeMobileInfoPanel() {
+            const infoPanel = document.getElementById('waypoint-info');
+            const expandBtn = document.getElementById('expand-btn');
+
+            // Set initial state based on screen size
+            if (window.innerWidth <= 768) {
+                infoPanel.classList.add('collapsed');
+                isInfoExpanded = false;
+                expandBtn.innerHTML = '▶';
+                expandBtn.title = 'Expand Info';
+                infoPanel.draggableEnabled = false;
+            } else {
+                infoPanel.classList.remove('collapsed', 'expanded');
+                expandBtn.style.display = 'none';
+                infoPanel.draggableEnabled = true;
+            }
+
+            // Add expand button event listener
+            expandBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleInfoPanel();
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    // Desktop view - hide expand button and reset state
+                    infoPanel.classList.remove('collapsed', 'expanded');
+                    expandBtn.style.display = 'none';
+                    isInfoExpanded = false;
+                    // Enable dragging on desktop
+                    if (!infoPanel.draggableEnabled) {
+                        makeDraggable(infoPanel);
+                        infoPanel.draggableEnabled = true;
+                    }
+                } else {
+                    // Mobile view - show expand button and set collapsed state
+                    expandBtn.style.display = 'block';
+                    if (!isInfoExpanded) {
+                        infoPanel.classList.add('collapsed');
+                        infoPanel.classList.remove('expanded');
+                    }
+                    // Disable dragging on mobile by removing event listeners
+                    if (infoPanel.draggableEnabled) {
+                        infoPanel.style.cursor = 'default';
+                        infoPanel.draggableEnabled = false;
+                    }
+                }
+            });
+        }
+
+        // Toggle info panel expand/collapse
+        function toggleInfoPanel() {
+            const infoPanel = document.getElementById('waypoint-info');
+            const expandBtn = document.getElementById('expand-btn');
+
+            if (isInfoExpanded) {
+                // Collapse
+                infoPanel.classList.remove('expanded');
+                infoPanel.classList.add('collapsed');
+                expandBtn.innerHTML = '▶';
+                expandBtn.title = 'Expand Info';
+                isInfoExpanded = false;
+            } else {
+                // Expand
+                infoPanel.classList.remove('collapsed');
+                infoPanel.classList.add('expanded');
+                expandBtn.innerHTML = '▼';
+                expandBtn.title = 'Collapse Info';
+                isInfoExpanded = true;
+            }
+        }
 
         // Function to advance to the next waypoint
         function autoAdvance() {
@@ -91,7 +450,11 @@
                 zoom_in_time: 3,
                 title: "ACES",
                 description: "The ALMA Central Molecular Zone survey (ACES) combined with the Green Bank Telescope's MUSTANG survey in the Galactic Center.  This is the highest-resolution millimeter image produced of the Galactic Center.",
-                url: "./MUSTANG_12m_feather_noaxes_hips/"
+                url: "./MUSTANG_12m_feather_noaxes_hips/",
+                fade_enabled: true,
+                fade_out_time: 1.5,
+                fade_delay: 0.5,
+                fade_in_time: 1.5
             },
             {
                 ra: 266.835223,
@@ -103,7 +466,11 @@
                 zoom_in_time: 3,
                 title: "Sgr B2 with ALMA",
                 description: "The medium-resolution view of Sgr B2 with ALMA from Ginsburg+ 2018. ",
-                url: "./feathered_MGPS_ALMATCTE7m_hips/"
+                url: "./feathered_MGPS_ALMATCTE7m_hips/",
+                fade_enabled: true,
+                fade_out_time: 1.5,
+                fade_delay: 0.5,
+                fade_in_time: 1.5
             },
             {
                 ra: 266.83311023,
@@ -115,7 +482,11 @@
                 zoom_in_time: 5,
                 title: "Sgr B2N",
                 description: "Sagittarius B2 North is the most massive site of ongoing star formation in the Milky Way.  Within a region less than a tenth of a parsec across, thousands of solar masses of gas are flowing into a central massive-star-forming protocluster birthing several proto-O-stars within only a few thousand astronomical units.  Data by Nazar Budaiev.",
-                url: "./GINSBURG_P_SgrB2N_RGB/"
+                url: "./GINSBURG_P_SgrB2N_RGB/",
+                fade_enabled: true,
+                fade_out_time: 2,
+                fade_delay: 0.5,
+                fade_in_time: 2
             },
             {
                 ra: 266.833992,
@@ -127,7 +498,11 @@
                 zoom_in_time: 5,
                 title: "Sgr B2M",
                 description: "Sgr B2M is the most massive embedded star cluster in the Galactic Center.  The image shows several HII regions, sites where massive stars have ionized their surroundings, within a tiny volume.   Data by Nazar Budaiev.",
-                url: "./GINSBURG_P_SgrB2M_RGB/"
+                url: "./GINSBURG_P_SgrB2M_RGB/",
+                fade_enabled: true,
+                fade_out_time: 1,
+                fade_delay: 0.5,
+                fade_in_time: 1
             },
         ];
 
@@ -135,9 +510,15 @@
         document.addEventListener('DOMContentLoaded', function () {
             console.log('Document loaded, waiting for A.init to complete');
 
-            // Make controls and info divs draggable
-            makeDraggable(document.getElementById('waypoint-info'));
+                        // Make controls and info divs draggable (only on desktop)
+            if (window.innerWidth > 768) {
+                makeDraggable(document.getElementById('waypoint-info'));
+            }
+            makeDraggable(document.getElementById('progress-container'));
             makeDraggable(document.getElementById('tour-controls'));
+
+            // Initialize mobile info panel state
+            initializeMobileInfoPanel();
 
             // Prevent dropdown from being affected by draggable behavior
             const dropdown = document.getElementById('waypoint-dropdown');
@@ -156,8 +537,9 @@
                 console.log('A.init completed, creating Aladin instance');
 
                 aladin = A.aladin('#aladin-lite-div', {
-                    survey: "P/2MASS/color",
+                    survey: './rgb_final_uncropped_hips/',
                     // survey: "IPAC/P/GLIMPSE360",
+                    //;'"P/2MASS/color",
                     fov: waypoints[0].fov,
                     target: waypoints[0].ra + ' ' + waypoints[0].dec,
                     cooFrame: 'GAL',
@@ -174,7 +556,7 @@
                 });
 
 
-                aladin.addNewImageLayer('./rgb_final_uncropped_hips/');
+                currentImageLayer = aladin.addNewImageLayer('./rgb_final_uncropped_hips/');
                 //aladin.addNewImageLayer('https://keflavich.github.io/avm_images/AshFigureWithACES_MUSTANGfirst/');
 
                 // Hide loading message
@@ -237,9 +619,7 @@
                     goToWaypoint(0);
                 });
 
-                document.getElementById('loop-checkbox').addEventListener('change', function () {
-                    loopTour = this.checked;
-                });
+
 
                 // Set up waypoint dropdown event listener
                 document.getElementById('waypoint-dropdown').addEventListener('change', function () {
@@ -247,7 +627,7 @@
                     if (!isNaN(selectedIndex)) {
                         isPlaying = false;
                         clearTimeout(waypointTimeout);
-                        goToWaypoint(selectedIndex);
+                        jumpToWaypointWithLayers(selectedIndex);
                         // Reset dropdown to default after selection
                         this.selectedIndex = 0;
                     }
@@ -263,6 +643,23 @@
             document.getElementById('waypoint-title').innerText = waypoints[currentWaypoint].title;
             document.getElementById('waypoint-description').innerText = waypoints[currentWaypoint].description;
             document.getElementById('current-waypoint').innerText = (currentWaypoint + 1) + '/' + waypoints.length;
+
+            // Update button states
+            updateButtonStates();
+        }
+
+        // Function to update button states
+        function updateButtonStates() {
+            const prevBtn = document.getElementById('prev-btn');
+
+            // Disable previous button at first waypoint
+            if (currentWaypoint === 0) {
+                prevBtn.disabled = true;
+                prevBtn.title = 'Previous (unavailable)';
+            } else {
+                prevBtn.disabled = false;
+                prevBtn.title = 'Previous';
+            }
 
             // Update next button text to show the next region name
             updateNextButtonText();
@@ -288,14 +685,14 @@
         // Function to update the next button text
         function updateNextButtonText() {
             if (currentWaypoint === waypoints.length - 1) {
-                // At last waypoint, show restart text
-                document.getElementById('next-btn').innerText = 'Restart';
-                //document.getElementById('next-btn-fast').innerText = 'Restart Fast';
+                // At last waypoint, show restart symbol
+                document.getElementById('next-btn').innerHTML = '↻';
+                document.getElementById('next-btn').title = 'Restart Tour';
             } else {
-                // Show the next region name
+                // Show next symbol with tooltip showing next waypoint
                 const nextWaypoint = waypoints[currentWaypoint + 1];
-                document.getElementById('next-btn').innerText = 'Next: ' + nextWaypoint.title;
-                //document.getElementById('next-btn-fast').innerText = 'Next Fast: ' + nextWaypoint.title;
+                document.getElementById('next-btn').innerHTML = '›';
+                document.getElementById('next-btn').title = 'Next: ' + nextWaypoint.title;
             }
 
             // Highlight the current waypoint in the dropdown
@@ -343,7 +740,7 @@
                     aladin.displayJPG(waypoint.url);
                 } else {
                     console.log("Adding new image layer: ", waypoint.url);
-                    aladin.addNewImageLayer(waypoint.url);
+                    currentImageLayer = aladin.addNewImageLayer(waypoint.url);
                 }
             }
 
@@ -406,7 +803,7 @@
                             aladin.displayJPG(waypoints[index].url);
                         } else {
                             console.log("Adding new image layer: ", waypoints[index].url);
-                            aladin.addNewImageLayer(waypoints[index].url);
+                            currentImageLayer = aladin.addNewImageLayer(waypoints[index].url);
                         }
                     }
 
@@ -415,18 +812,38 @@
                         // Check if animation was interrupted
                         if (interruptAnimation) return;
 
-                        // Set up auto-advance timeout after animation completes
-                        if (isPlaying) {
-                            if (currentWaypoint === waypoints.length - 1 && loopTour) {
-                                console.log("End of tour reached, looping back to start");
-                                clearTimeout(waypointTimeout);
-                                waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
-                            } else if (currentWaypoint < waypoints.length - 1) {
-                                // Schedule next waypoint after current animation completes
-                                clearTimeout(waypointTimeout);
-                                // Shorter delay from waypoint 0 to 1, normal delay for others
-                                const delay = currentWaypoint === 0 ? 2000 : 10000;
-                                waypointTimeout = setTimeout(autoAdvance, delay);
+                        // Check if fade animation is enabled for this waypoint
+                        if (waypoint.fade_enabled) {
+                            animateFade(waypoint.fade_out_time, waypoint.fade_delay, waypoint.fade_in_time, function() {
+                                // Set up auto-advance timeout after fade animation completes
+                                if (isPlaying) {
+                                    if (currentWaypoint === waypoints.length - 1 && loopTour) {
+                                        console.log("End of tour reached, looping back to start");
+                                        clearTimeout(waypointTimeout);
+                                        waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                    } else if (currentWaypoint < waypoints.length - 1) {
+                                        // Schedule next waypoint after current animation completes
+                                        clearTimeout(waypointTimeout);
+                                        // Shorter delay from waypoint 0 to 1, normal delay for others
+                                        const delay = currentWaypoint === 0 ? 2000 : 10000;
+                                        waypointTimeout = setTimeout(autoAdvance, delay);
+                                    }
+                                }
+                            });
+                        } else {
+                            // No fade animation, set up auto-advance timeout directly
+                            if (isPlaying) {
+                                if (currentWaypoint === waypoints.length - 1 && loopTour) {
+                                    console.log("End of tour reached, looping back to start");
+                                    clearTimeout(waypointTimeout);
+                                    waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                } else if (currentWaypoint < waypoints.length - 1) {
+                                    // Schedule next waypoint after current animation completes
+                                    clearTimeout(waypointTimeout);
+                                    // Shorter delay from waypoint 0 to 1, normal delay for others
+                                    const delay = currentWaypoint === 0 ? 2000 : 10000;
+                                    waypointTimeout = setTimeout(autoAdvance, delay);
+                                }
                             }
                         }
                     });
@@ -451,7 +868,7 @@
                                 aladin.displayJPG(waypoints[index].url);
                             } else {
                                 console.log("Adding new image layer: ", waypoints[index].url);
-                                aladin.addNewImageLayer(waypoints[index].url);
+                                currentImageLayer = aladin.addNewImageLayer(waypoints[index].url);
                             }
                         }
                         // Step 3: Zoom in to target FOV
@@ -459,22 +876,91 @@
                             // Check if animation was interrupted
                             if (interruptAnimation) return;
 
-                            // Set up auto-advance timeout after animation completes
-                            if (isPlaying) {
-                                if (currentWaypoint === waypoints.length - 1 && loopTour) {
-                                    console.log("End of tour reached, looping back to start");
-                                    clearTimeout(waypointTimeout);
-                                    waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
-                                } else if (currentWaypoint < waypoints.length - 1) {
-                                    // Schedule next waypoint after current animation completes
-                                    clearTimeout(waypointTimeout);
-                                    waypointTimeout = setTimeout(autoAdvance, 10000);
+                            // Check if fade animation is enabled for this waypoint
+                            if (waypoint.fade_enabled) {
+                                animateFade(waypoint.fade_out_time, waypoint.fade_delay, waypoint.fade_in_time, function() {
+                                    // Set up auto-advance timeout after fade animation completes
+                                    if (isPlaying) {
+                                        if (currentWaypoint === waypoints.length - 1 && loopTour) {
+                                            console.log("End of tour reached, looping back to start");
+                                            clearTimeout(waypointTimeout);
+                                            waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                        } else if (currentWaypoint < waypoints.length - 1) {
+                                            // Schedule next waypoint after current animation completes
+                                            clearTimeout(waypointTimeout);
+                                            waypointTimeout = setTimeout(autoAdvance, 10000);
+                                        }
+                                    }
+                                });
+                            } else {
+                                // No fade animation, set up auto-advance timeout directly
+                                if (isPlaying) {
+                                    if (currentWaypoint === waypoints.length - 1 && loopTour) {
+                                        console.log("End of tour reached, looping back to start");
+                                        clearTimeout(waypointTimeout);
+                                        waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                    } else if (currentWaypoint < waypoints.length - 1) {
+                                        // Schedule next waypoint after current animation completes
+                                        clearTimeout(waypointTimeout);
+                                        waypointTimeout = setTimeout(autoAdvance, 10000);
+                                    }
                                 }
                             }
                         });
                     });
                 });
             }
+        }
+
+        // Function to jump to a waypoint with all previous layers loaded
+        function jumpToWaypointWithLayers(index) {
+            if (!aladin) {
+                console.error('Aladin not initialized yet');
+                return;
+            }
+
+            // Signal to interrupt any ongoing animation
+            interruptAnimation = true;
+            clearTimeout(waypointTimeout);
+
+            // Update current waypoint state
+            currentWaypoint = index;
+            if (currentWaypoint < 0) currentWaypoint = 0;
+            if (currentWaypoint >= waypoints.length) currentWaypoint = waypoints.length - 1;
+
+            // Get the target waypoint data
+            const waypoint = waypoints[currentWaypoint];
+
+            // Update display info
+            updateWaypointInfo();
+            updateProgressBar();
+
+            // Load all image layers from waypoint 0 up to the selected waypoint
+            for (let i = 0; i <= currentWaypoint; i++) {
+                const wp = waypoints[i];
+                if (wp.url) {
+                    if (wp.url.endsWith('.jpg')) {
+                        console.log("Displaying JPG: ", wp.url);
+                        aladin.displayJPG(wp.url);
+                    } else {
+                        console.log("Adding image layer for waypoint", i, ":", wp.url);
+                        const layer = aladin.addNewImageLayer(wp.url);
+                        // Keep track of the most recent layer
+                        if (i === currentWaypoint) {
+                            currentImageLayer = layer;
+                        }
+                    }
+                }
+            }
+
+            // Jump directly to the target location and FOV
+            aladin.setFov(waypoint.fov);
+            aladin.gotoRaDec(waypoint.ra, waypoint.dec);
+
+            // Reset interrupt flag
+            interruptAnimation = false;
+
+            console.log(`Jumped to waypoint ${currentWaypoint + 1} with all ${currentWaypoint + 1} layers loaded`);
         }
 
         // Custom FOV animation function using setFoV
@@ -509,6 +995,79 @@
 
             // Start animation
             doFovStep();
+        }
+
+                // Fade animation function for image layers
+        function animateFade(fadeOutTime, fadeDelay, fadeInTime, callback) {
+            if (!currentImageLayer) {
+                console.warn('No current image layer to fade');
+                if (callback) callback();
+                return;
+            }
+
+            // Fade out the layer
+            animateLayerOpacity(currentImageLayer, 1, 0, fadeOutTime, function() {
+                // Check if animation was interrupted
+                if (interruptAnimation) {
+                    currentImageLayer.setOpacity(1);
+                    if (callback) callback();
+                    return;
+                }
+
+                // Wait for delay, then fade back in
+                setTimeout(() => {
+                    if (interruptAnimation) {
+                        currentImageLayer.setOpacity(1);
+                        if (callback) callback();
+                        return;
+                    }
+
+                    animateLayerOpacity(currentImageLayer, 0, 1, fadeInTime, callback);
+                }, fadeDelay * 1000);
+            });
+        }
+
+                // Helper function to animate layer opacity
+        function animateLayerOpacity(layer, startOpacity, endOpacity, duration, callback) {
+            const steps = 30;
+            const stepDuration = duration * 1000 / steps;
+            let currentStep = 0;
+
+            function doOpacityStep() {
+                if (interruptAnimation) {
+                    layer.setOpacity(endOpacity);
+                    if (callback) callback();
+                    return;
+                }
+
+                currentStep++;
+                const progress = currentStep / steps;
+
+                // Easing function for smoother animation
+                const easedProgress = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+                // Calculate current opacity
+                const currentOpacity = startOpacity + (endOpacity - startOpacity) * easedProgress;
+
+                // Set the layer opacity
+                layer.setOpacity(currentOpacity);
+
+                // Continue or complete
+                if (currentStep < steps) {
+                    setTimeout(doOpacityStep, stepDuration);
+                } else {
+                    layer.setOpacity(endOpacity); // Make sure we end at the exact target opacity
+                    // Add a small buffer to ensure the final opacity change is fully processed
+                    setTimeout(() => {
+                        if (callback) callback();
+                    }, 50); // 50ms buffer to ensure animation completion
+                }
+            }
+
+            // Start animation
+            doOpacityStep();
         }
     </script>
 </body>

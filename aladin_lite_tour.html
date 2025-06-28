@@ -558,7 +558,7 @@
                 zoom_out_time: 2,
                 zoom_in_time: 3,
                 title: "Sgr B2 with ALMA",
-                description: "The medium-resolution view of Sgr B2 with ALMA from Ginsburg+ 2018. ",
+                description: "The Sgr B2 cloud is our Galaxy's most massive and active star-forming region.  It contains several high-mass protoclusters, Sgr B2 N and M, and a third that's a bit smaller, S. \n  This image shows the medium-resolution view of Sgr B2 with ALMA from Ginsburg+ 2018. ",
                 url: "./feathered_MGPS_ALMATCTE7m_hips/",
                 fade_enabled: true,
                 fade_out_time: 1.5,
@@ -575,7 +575,7 @@
                 zoom_out_time: 3,
                 zoom_in_time: 5,
                 title: "Sgr B2N",
-                description: "Sagittarius B2 North is the most massive site of ongoing star formation in the Milky Way.  Within a region less than a tenth of a parsec across, thousands of solar masses of gas are flowing into a central massive-star-forming protocluster birthing several proto-O-stars within only a few thousand astronomical units.  Data by Nazar Budaiev.",
+                description: "Sagittarius B2 North is the most massive site of ongoing star formation in the Milky Way.  Within a region less than a tenth of a parsec across, thousands of solar masses of gas are flowing into a central massive-star-forming protocluster birthing several proto-O-stars within only a few thousand astronomical units.  \n Data by Nazar Budaiev.",
                 url: "./GINSBURG_P_SgrB2N_RGB/",
                 fade_enabled: true,
                 fade_out_time: 2,
@@ -592,7 +592,7 @@
                 zoom_out_time: 3,
                 zoom_in_time: 5,
                 title: "Sgr B2M",
-                description: "Sgr B2M is the most massive embedded star cluster in the Galactic Center.  The image shows several HII regions, sites where massive stars have ionized their surroundings, within a tiny volume.   Data by Nazar Budaiev.",
+                description: "Sgr B2M is the most massive embedded star cluster in the Galactic Center.  The image shows several HII regions, sites where massive stars have ionized their surroundings, within a tiny volume.   \n Data by Nazar Budaiev.",
                 url: "./GINSBURG_P_SgrB2M_RGB/",
                 fade_enabled: true,
                 fade_out_time: 1,
@@ -668,6 +668,7 @@
                     isPlaying = false;
                     clearTimeout(waypointTimeout);
                     stopCountdown();
+                    updatePlayPauseButton();
                     goToWaypoint(currentWaypoint - 1);
                 });
 
@@ -689,6 +690,7 @@
                         isPlaying = false;
                         clearTimeout(waypointTimeout);
                         stopCountdown();
+                        updatePlayPauseButton();
                         goToWaypoint(0);
                         return;
                     }
@@ -697,25 +699,25 @@
                     isPlaying = false;
                     clearTimeout(waypointTimeout);
                     stopCountdown();
+                    updatePlayPauseButton();
                     goToWaypoint(currentWaypoint + 1);
                 });
 
                 document.getElementById('start-btn').addEventListener('click', function () {
-                    // Start auto-playing the tour from current position
-                    isPlaying = true;
-                    // If starting from waypoint 0, immediately go to waypoint 1 to start the tour
-                    if (currentWaypoint === 0) {
-                        goToWaypoint(1);
+                    if (isPlaying) {
+                        // Pause the tour
+                        pauseTour();
                     } else {
-                        goToWaypoint(currentWaypoint);
+                        // Start/resume the tour
+                        startTour();
                     }
-                    // Note: timeout is now set in goToWaypoint() after animation completes
                 });
 
                 document.getElementById('reset-btn').addEventListener('click', function () {
                     isPlaying = false;
                     clearTimeout(waypointTimeout);
                     stopCountdown();
+                    updatePlayPauseButton();
                     goToWaypoint(0);
                 });
 
@@ -728,6 +730,7 @@
                         isPlaying = false;
                         clearTimeout(waypointTimeout);
                         stopCountdown();
+                        updatePlayPauseButton();
                         jumpToWaypointWithLayers(selectedIndex);
                         // Reset dropdown to default after selection
                         this.selectedIndex = 0;
@@ -764,6 +767,44 @@
 
             // Update next button text to show the next region name
             updateNextButtonText();
+
+            // Update play/pause button
+            updatePlayPauseButton();
+        }
+
+        // Function to update play/pause button appearance
+        function updatePlayPauseButton() {
+            const playBtn = document.getElementById('start-btn');
+            if (isPlaying) {
+                playBtn.innerHTML = '⏸';
+                playBtn.title = 'Pause Tour';
+            } else {
+                playBtn.innerHTML = '▶';
+                playBtn.title = 'Play/Resume Tour';
+            }
+        }
+
+                // Function to start/resume the tour
+        function startTour() {
+            isPlaying = true;
+            interruptAnimation = false;  // Reset interrupt flag for new animations
+            updatePlayPauseButton();
+
+            // If starting from waypoint 0, immediately go to waypoint 1 to start the tour
+            if (currentWaypoint === 0) {
+                goToWaypoint(1);
+            } else {
+                goToWaypoint(currentWaypoint);
+            }
+        }
+
+        // Function to pause the tour
+        function pauseTour() {
+            isPlaying = false;
+            interruptAnimation = true;  // Halt any ongoing animations immediately
+            clearTimeout(waypointTimeout);
+            stopCountdown();
+            updatePlayPauseButton();
         }
 
         // Function to populate the waypoint dropdown
@@ -877,6 +918,7 @@
             if (currentWaypoint === waypoints.length - 1 && !loopTour) {
                 isPlaying = false;
                 clearTimeout(waypointTimeout);
+                updatePlayPauseButton();
             }
 
             // Calculate total transition time and start countdown immediately if playing
@@ -1112,6 +1154,13 @@
             let currentStep = 0;
 
             function doFovStep() {
+                // Check if animation was interrupted
+                if (interruptAnimation) {
+                    aladin.setFov(endFov); // Jump to final FOV
+                    if (callback) callback();
+                    return;
+                }
+
                 currentStep++;
                 const progress = currentStep / steps;
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
-    <title>JWST Star Formation Tour</title>
+    <title>ACES Star Formation Tour</title>
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
     <!-- Add draggable functionality -->
@@ -16,13 +16,12 @@
 <body>
     <div id="aladin-lite-div"></div>
 
-    <div id="loading-div">Loading JWST Star Formation Tour... Please wait.</div>
+    <div id="loading-div">Loading ACES Star Formation Tour... Please wait.</div>
 
     <div id="waypoint-info">
-        <h2 id="waypoint-title">Welcome to JWST Star Formation Tour</h2>
+        <h2 id="waypoint-title">Welcome to the ACES Central Molecular Zone Tour</h2>
         <p id="waypoint-description">
-            This tour will explore some of the most spectacular star-forming regions and Herbig-Haro objects observed by
-            the James Webb Space Telescope. Click "Start Tour" to begin the journey through stellar nurseries.
+        This is a brief tour through the ACES view of the Central Molecular Zone.  Click "Start Tour" to begin.
         </p>
     </div>
 
@@ -31,7 +30,7 @@
         <div id="progress-bar">
             <div id="progress"></div>
         </div>
-        <span id="current-waypoint">0/8</span>
+        <span id="current-waypoint">0</span>
         <button id="next-btn">Next</button>
         <!--<button id="next-btn-fast">Next Fast</button>-->
         <select id="waypoint-dropdown"
@@ -64,7 +63,7 @@
                 isPlaying = false;
                 return;
             }
-            waypointTimeout = setTimeout(autoAdvance, 10000);
+            // Note: timeout is now set in goToWaypoint() after animation completes
         }
 
 
@@ -80,7 +79,7 @@
                 zoom_in_time: 2,
                 title: "The CMZ",
                 description: "The Central Molecular Zone seen with MEERKAT and Spitzer.  Color composite by Ashley Barnes.",
-                url: "https://keflavich.github.io/avm_images/rgb_final_uncropped_hips/"
+                url: "rgb_final_uncropped_hips"
             },
             {
                 ra: 266.416667,
@@ -92,7 +91,7 @@
                 zoom_in_time: 3,
                 title: "ACES",
                 description: "The ALMA Central Molecular Zone survey (ACES) combined with the Green Bank Telescope's MUSTANG survey in the Galactic Center.  This is the highest-resolution millimeter image produced of the Galactic Center.",
-                url: "https://keflavich.github.io/avm_images/MUSTANG_12m_feather_noaxes_hips/"
+                url: "./MUSTANG_12m_feather_noaxes_hips/"
             },
             {
                 ra: 266.83311023,
@@ -104,7 +103,7 @@
                 zoom_in_time: 5,
                 title: "Sgr B2N",
                 description: "Sagittarius B2 North is the most massive site of ongoing star formation in the Milky Way.  Within a region less than a tenth of a parsec across, thousands of solar masses of gas are flowing into a central massive-star-forming protocluster birthing several proto-O-stars within only a few thousand astronomical units.  Data by Nazar Budaiev.",
-                url: "https://keflavich.github.io/avm_images/GINSBURG_P_SgrB2N_RGB"
+                url: "./GINSBURG_P_SgrB2N_RGB/"
             },
             {
                 ra: 266.833992,
@@ -116,7 +115,7 @@
                 zoom_in_time: 5,
                 title: "Sgr B2M",
                 description: "Sgr B2M is the most massive embedded star cluster in the Galactic Center.  The image shows several HII regions, sites where massive stars have ionized their surroundings, within a tiny volume.   Data by Nazar Budaiev.",
-                url: "https://keflavich.github.io/avm_images/GINSBURG_P_SgrB2M_RGB"
+                url: "./GINSBURG_P_SgrB2M_RGB/"
             },
         ];
 
@@ -163,7 +162,7 @@
                 });
 
 
-                aladin.addNewImageLayer('https://keflavich.github.io/avm_images/rgb_final_uncropped_hips/');
+                aladin.addNewImageLayer('./rgb_final_uncropped_hips/');
                 //aladin.addNewImageLayer('https://keflavich.github.io/avm_images/AshFigureWithACES_MUSTANGfirst/');
 
                 // Hide loading message
@@ -211,9 +210,13 @@
                 document.getElementById('start-btn').addEventListener('click', function () {
                     // Start auto-playing the tour from current position
                     isPlaying = true;
-                    goToWaypoint(currentWaypoint);
-
-                    waypointTimeout = setTimeout(autoAdvance, 10000);
+                    // If starting from waypoint 0, immediately go to waypoint 1 to start the tour
+                    if (currentWaypoint === 0) {
+                        goToWaypoint(1);
+                    } else {
+                        goToWaypoint(currentWaypoint);
+                    }
+                    // Note: timeout is now set in goToWaypoint() after animation completes
                 });
 
                 document.getElementById('reset-btn').addEventListener('click', function () {
@@ -400,14 +403,19 @@
                         // Check if animation was interrupted
                         if (interruptAnimation) return;
 
-                        // If this is the last waypoint and looping is on, schedule the next waypoint
-                        if (isPlaying && currentWaypoint === waypoints.length - 1 && loopTour) {
-                            console.log("End of tour reached, looping back to start");
-                            clearTimeout(waypointTimeout);
-                            waypointTimeout = setTimeout(function () {
-                                if (interruptAnimation) return;
-                                goToWaypoint(0);
-                            }, 5000); // Wait 5 seconds at the end before looping
+                        // Set up auto-advance timeout after animation completes
+                        if (isPlaying) {
+                            if (currentWaypoint === waypoints.length - 1 && loopTour) {
+                                console.log("End of tour reached, looping back to start");
+                                clearTimeout(waypointTimeout);
+                                waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                            } else if (currentWaypoint < waypoints.length - 1) {
+                                // Schedule next waypoint after current animation completes
+                                clearTimeout(waypointTimeout);
+                                // Shorter delay from waypoint 0 to 1, normal delay for others
+                                const delay = currentWaypoint === 0 ? 2000 : 10000;
+                                waypointTimeout = setTimeout(autoAdvance, delay);
+                            }
                         }
                     });
                 });
@@ -439,14 +447,17 @@
                             // Check if animation was interrupted
                             if (interruptAnimation) return;
 
-                            // If this is the last waypoint and looping is on, schedule the next waypoint
-                            if (isPlaying && currentWaypoint === waypoints.length - 1 && loopTour) {
-                                console.log("End of tour reached, looping back to start");
-                                clearTimeout(waypointTimeout);
-                                waypointTimeout = setTimeout(function () {
-                                    if (interruptAnimation) return;
-                                    goToWaypoint(0);
-                                }, 5000); // Wait 5 seconds at the end before looping
+                            // Set up auto-advance timeout after animation completes
+                            if (isPlaying) {
+                                if (currentWaypoint === waypoints.length - 1 && loopTour) {
+                                    console.log("End of tour reached, looping back to start");
+                                    clearTimeout(waypointTimeout);
+                                    waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                } else if (currentWaypoint < waypoints.length - 1) {
+                                    // Schedule next waypoint after current animation completes
+                                    clearTimeout(waypointTimeout);
+                                    waypointTimeout = setTimeout(autoAdvance, 10000);
+                                }
                             }
                         });
                     });

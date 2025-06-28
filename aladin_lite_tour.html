@@ -105,7 +105,7 @@
             transition: all 0.3s ease;
         }
 
-        /* Override any default positioning for mobile */
+        /* Override any default positioning for mobile only */
         @media (max-width: 768px) {
             #waypoint-info {
                 position: relative !important;
@@ -116,6 +116,27 @@
                 width: fit-content !important;
                 max-width: calc(100vw - 20px) !important;
                 margin: 10px auto !important;
+            }
+        }
+
+        /* Desktop: static positioning on top-right */
+        @media (min-width: 769px) {
+            #waypoint-info {
+                position: absolute !important;
+                width: auto !important;
+                max-width: 400px !important;
+                margin: 0 !important;
+                left: auto !important;
+                right: 20px !important;
+                top: 20px !important;
+                bottom: auto !important;
+                transform: none !important;
+                min-width: auto !important;
+                max-height: none !important;
+                /* Override any flex or grid positioning that might interfere */
+                flex: none !important;
+                align-self: auto !important;
+                justify-self: auto !important;
             }
         }
 
@@ -348,11 +369,9 @@
                 isInfoExpanded = false;
                 expandBtn.innerHTML = '▶';
                 expandBtn.title = 'Expand Info';
-                infoPanel.draggableEnabled = false;
             } else {
                 infoPanel.classList.remove('collapsed', 'expanded');
                 expandBtn.style.display = 'none';
-                infoPanel.draggableEnabled = true;
             }
 
             // Add expand button event listener
@@ -361,29 +380,19 @@
                 toggleInfoPanel();
             });
 
-            // Handle window resize
+                        // Handle window resize
             window.addEventListener('resize', function() {
                 if (window.innerWidth > 768) {
                     // Desktop view - hide expand button and reset state
                     infoPanel.classList.remove('collapsed', 'expanded');
                     expandBtn.style.display = 'none';
                     isInfoExpanded = false;
-                    // Enable dragging on desktop
-                    if (!infoPanel.draggableEnabled) {
-                        makeDraggable(infoPanel);
-                        infoPanel.draggableEnabled = true;
-                    }
                 } else {
                     // Mobile view - show expand button and set collapsed state
                     expandBtn.style.display = 'block';
                     if (!isInfoExpanded) {
                         infoPanel.classList.add('collapsed');
                         infoPanel.classList.remove('expanded');
-                    }
-                    // Disable dragging on mobile by removing event listeners
-                    if (infoPanel.draggableEnabled) {
-                        infoPanel.style.cursor = 'default';
-                        infoPanel.draggableEnabled = false;
                     }
                 }
             });
@@ -510,10 +519,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             console.log('Document loaded, waiting for A.init to complete');
 
-                        // Make controls and info divs draggable (only on desktop)
-            if (window.innerWidth > 768) {
-                makeDraggable(document.getElementById('waypoint-info'));
-            }
+                        // Make controls draggable (waypoint-info is static)
             makeDraggable(document.getElementById('progress-container'));
             makeDraggable(document.getElementById('tour-controls'));
 

@@ -821,18 +821,16 @@
                         // Check if fade animation is enabled for this waypoint
                         if (waypoint.fade_enabled) {
                             animateFade(waypoint.fade_out_time, waypoint.fade_delay, waypoint.fade_in_time, function() {
-                                // Set up auto-advance timeout after fade animation completes
+                                // Set up auto-advance timeout after fade animation completes (shorter delay since fade provided the dramatic pause)
                                 if (isPlaying) {
                                     if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                         console.log("End of tour reached, looping back to start");
                                         clearTimeout(waypointTimeout);
-                                        waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                        waypointTimeout = setTimeout(autoAdvance, 3000); // Shorter wait before looping
                                     } else if (currentWaypoint < waypoints.length - 1) {
-                                        // Schedule next waypoint after current animation completes
+                                        // Schedule next waypoint with shorter delay since fade already provided pause
                                         clearTimeout(waypointTimeout);
-                                        // Shorter delay from waypoint 0 to 1, normal delay for others
-                                        const delay = currentWaypoint === 0 ? 2000 : 10000;
-                                        waypointTimeout = setTimeout(autoAdvance, delay);
+                                        waypointTimeout = setTimeout(autoAdvance, 2000); // Just 2 seconds after fade
                                     }
                                 }
                             });
@@ -885,16 +883,16 @@
                             // Check if fade animation is enabled for this waypoint
                             if (waypoint.fade_enabled) {
                                 animateFade(waypoint.fade_out_time, waypoint.fade_delay, waypoint.fade_in_time, function() {
-                                    // Set up auto-advance timeout after fade animation completes
+                                    // Set up auto-advance timeout after fade animation completes (shorter delay since fade provided the dramatic pause)
                                     if (isPlaying) {
                                         if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                             console.log("End of tour reached, looping back to start");
                                             clearTimeout(waypointTimeout);
-                                            waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                            waypointTimeout = setTimeout(autoAdvance, 3000); // Shorter wait before looping
                                         } else if (currentWaypoint < waypoints.length - 1) {
-                                            // Schedule next waypoint after current animation completes
+                                            // Schedule next waypoint with shorter delay since fade already provided pause
                                             clearTimeout(waypointTimeout);
-                                            waypointTimeout = setTimeout(autoAdvance, 10000);
+                                            waypointTimeout = setTimeout(autoAdvance, 2000); // Just 2 seconds after fade
                                         }
                                     }
                                 });

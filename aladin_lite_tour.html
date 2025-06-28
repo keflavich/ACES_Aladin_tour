@@ -310,6 +310,39 @@
                 font-size: 14px;
             }
         }
+
+        /* Countdown Timer */
+        #countdown-timer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #countdown-value {
+            color: #2962FF;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            #countdown-timer {
+                bottom: 10px;
+                right: 10px;
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            #countdown-value {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 
@@ -348,6 +381,11 @@
         </select>
     </div>
 
+    <div id="countdown-timer" style="display: none;">
+        <span id="countdown-text">Next in: </span>
+        <span id="countdown-value">5</span>
+    </div>
+
     <script>
         let aladin;
         let currentWaypoint = 0;
@@ -357,6 +395,8 @@
         let interruptAnimation = false; // Flag to interrupt ongoing animations
         let currentImageLayer = null; // Track the most recently added image layer
         let isInfoExpanded = false; // Track info panel state
+        let countdownInterval = null; // Track countdown timer
+        let countdownEndTime = null; // When the countdown should end
 
         // Initialize mobile info panel
         function initializeMobileInfoPanel() {
@@ -420,6 +460,48 @@
             }
         }
 
+        // Countdown timer functions
+        function startCountdown(durationMs) {
+            if (!isPlaying) return;
+
+            stopCountdown(); // Clear any existing countdown
+
+            countdownEndTime = Date.now() + durationMs;
+            const countdownTimer = document.getElementById('countdown-timer');
+            const countdownValue = document.getElementById('countdown-value');
+
+            countdownTimer.style.display = 'block';
+
+            function updateCountdown() {
+                if (!isPlaying || !countdownEndTime) {
+                    stopCountdown();
+                    return;
+                }
+
+                const timeLeft = countdownEndTime - Date.now();
+                if (timeLeft <= 0) {
+                    stopCountdown();
+                    return;
+                }
+
+                const secondsLeft = Math.ceil(timeLeft / 1000);
+                countdownValue.textContent = secondsLeft;
+            }
+
+            // Update immediately and then every 100ms for smooth countdown
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 100);
+        }
+
+        function stopCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            countdownEndTime = null;
+            document.getElementById('countdown-timer').style.display = 'none';
+        }
+
         // Function to advance to the next waypoint
         function autoAdvance() {
             if (!isPlaying) return;
@@ -447,7 +529,8 @@
                 zoom_in_time: 2,
                 title: "The CMZ",
                 description: "The Central Molecular Zone seen with MEERKAT and Spitzer.  Color composite by Ashley Barnes.",
-                url: "rgb_final_uncropped_hips"
+                url: "rgb_final_uncropped_hips",
+                pause_time: 5000  // Brief introduction
             },
             {
                 ra: 266.416667,
@@ -463,7 +546,8 @@
                 fade_enabled: true,
                 fade_out_time: 1.5,
                 fade_delay: 0.5,
-                fade_in_time: 1.5
+                fade_in_time: 1.5,
+                pause_time: 2000  // Short pause after fade
             },
             {
                 ra: 266.835223,
@@ -479,7 +563,8 @@
                 fade_enabled: true,
                 fade_out_time: 1.5,
                 fade_delay: 0.5,
-                fade_in_time: 1.5
+                fade_in_time: 1.5,
+                pause_time: 3000  // Medium pause after fade
             },
             {
                 ra: 266.83311023,
@@ -495,7 +580,8 @@
                 fade_enabled: true,
                 fade_out_time: 2,
                 fade_delay: 0.5,
-                fade_in_time: 2
+                fade_in_time: 2,
+                pause_time: 4000  // Longer pause for detailed view
             },
             {
                 ra: 266.833992,
@@ -511,7 +597,9 @@
                 fade_enabled: true,
                 fade_out_time: 1,
                 fade_delay: 0.5,
-                fade_in_time: 1
+                fade_in_time: 1,
+                pause_time: 3000,  // Final dramatic pause
+                end_of_tour_pause: 5000  // Special pause before looping
             },
         ];
 
@@ -579,6 +667,7 @@
                 document.getElementById('prev-btn').addEventListener('click', function () {
                     isPlaying = false;
                     clearTimeout(waypointTimeout);
+                    stopCountdown();
                     goToWaypoint(currentWaypoint - 1);
                 });
 
@@ -597,6 +686,9 @@
                 document.getElementById('next-btn').addEventListener('click', function () {
                     if (currentWaypoint === waypoints.length - 1) {
                         // If at the last waypoint, reset to the beginning
+                        isPlaying = false;
+                        clearTimeout(waypointTimeout);
+                        stopCountdown();
                         goToWaypoint(0);
                         return;
                     }
@@ -604,6 +696,7 @@
                     // Just advance to next waypoint without auto-playing
                     isPlaying = false;
                     clearTimeout(waypointTimeout);
+                    stopCountdown();
                     goToWaypoint(currentWaypoint + 1);
                 });
 
@@ -622,6 +715,7 @@
                 document.getElementById('reset-btn').addEventListener('click', function () {
                     isPlaying = false;
                     clearTimeout(waypointTimeout);
+                    stopCountdown();
                     goToWaypoint(0);
                 });
 
@@ -633,6 +727,7 @@
                     if (!isNaN(selectedIndex)) {
                         isPlaying = false;
                         clearTimeout(waypointTimeout);
+                        stopCountdown();
                         jumpToWaypointWithLayers(selectedIndex);
                         // Reset dropdown to default after selection
                         this.selectedIndex = 0;
@@ -784,6 +879,43 @@
                 clearTimeout(waypointTimeout);
             }
 
+            // Calculate total transition time and start countdown immediately if playing
+            if (isPlaying && currentWaypoint < waypoints.length - 1) {
+                const prevIndex = currentWaypoint > 0 ? currentWaypoint - 1 : 0;
+                const prevWaypoint = waypoints[prevIndex];
+
+                // Calculate distance to determine if this is close or distant waypoints
+                const distance = Math.sqrt(
+                    Math.pow(waypoint.ra - prevWaypoint.ra, 2) +
+                    Math.pow(waypoint.dec - prevWaypoint.dec, 2)
+                );
+
+                let totalTime = 0;
+
+                if (distance < 0.2) {
+                    // Close waypoints: 2s movement + optional fade + pause
+                    totalTime = 2000; // animateToRaDec time
+                } else {
+                    // Distant waypoints: zoom out + movement + zoom in + optional fade + pause
+                    totalTime = (waypoint.zoom_out_time * 1000) + (waypoint.transition_time * 1000) + (waypoint.zoom_in_time * 1000);
+                }
+
+                // Add fade time if enabled
+                if (waypoint.fade_enabled) {
+                    totalTime += (waypoint.fade_out_time * 1000) + (waypoint.fade_delay * 1000) + (waypoint.fade_in_time * 1000);
+                }
+
+                // Add pause time
+                totalTime += waypoint.pause_time || 2000;
+
+                // Start countdown for total time
+                startCountdown(totalTime);
+            } else if (isPlaying && currentWaypoint === waypoints.length - 1 && loopTour) {
+                // Handle end of tour countdown
+                const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 5000;
+                startCountdown(endPause);
+            }
+
             const prevIndex = currentWaypoint > 0 ? currentWaypoint - 1 : 0;
             const prevWaypoint = waypoints[prevIndex];
 
@@ -821,32 +953,34 @@
                         // Check if fade animation is enabled for this waypoint
                         if (waypoint.fade_enabled) {
                             animateFade(waypoint.fade_out_time, waypoint.fade_delay, waypoint.fade_in_time, function() {
-                                // Set up auto-advance timeout after fade animation completes (shorter delay since fade provided the dramatic pause)
+                                // Set up auto-advance timeout using configurable pause time
                                 if (isPlaying) {
                                     if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                         console.log("End of tour reached, looping back to start");
                                         clearTimeout(waypointTimeout);
-                                        waypointTimeout = setTimeout(autoAdvance, 3000); // Shorter wait before looping
+                                        const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 3000;
+                                        waypointTimeout = setTimeout(autoAdvance, endPause);
                                     } else if (currentWaypoint < waypoints.length - 1) {
-                                        // Schedule next waypoint with shorter delay since fade already provided pause
+                                        // Schedule next waypoint using configurable pause time
                                         clearTimeout(waypointTimeout);
-                                        waypointTimeout = setTimeout(autoAdvance, 2000); // Just 2 seconds after fade
+                                        const pauseTime = waypoint.pause_time || 2000; // Default 2 seconds
+                                        waypointTimeout = setTimeout(autoAdvance, pauseTime);
                                     }
                                 }
                             });
                         } else {
-                            // No fade animation, set up auto-advance timeout directly
+                            // No fade animation, set up auto-advance timeout using configurable pause time
                             if (isPlaying) {
                                 if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                     console.log("End of tour reached, looping back to start");
                                     clearTimeout(waypointTimeout);
-                                    waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                    const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 5000;
+                                    waypointTimeout = setTimeout(autoAdvance, endPause);
                                 } else if (currentWaypoint < waypoints.length - 1) {
-                                    // Schedule next waypoint after current animation completes
+                                    // Schedule next waypoint using configurable pause time
                                     clearTimeout(waypointTimeout);
-                                    // Shorter delay from waypoint 0 to 1, normal delay for others
-                                    const delay = currentWaypoint === 0 ? 2000 : 10000;
-                                    waypointTimeout = setTimeout(autoAdvance, delay);
+                                    const pauseTime = waypoint.pause_time || (currentWaypoint === 0 ? 2000 : 8000); // Default values
+                                    waypointTimeout = setTimeout(autoAdvance, pauseTime);
                                 }
                             }
                         }
@@ -883,30 +1017,34 @@
                             // Check if fade animation is enabled for this waypoint
                             if (waypoint.fade_enabled) {
                                 animateFade(waypoint.fade_out_time, waypoint.fade_delay, waypoint.fade_in_time, function() {
-                                    // Set up auto-advance timeout after fade animation completes (shorter delay since fade provided the dramatic pause)
+                                    // Set up auto-advance timeout using configurable pause time
                                     if (isPlaying) {
                                         if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                             console.log("End of tour reached, looping back to start");
                                             clearTimeout(waypointTimeout);
-                                            waypointTimeout = setTimeout(autoAdvance, 3000); // Shorter wait before looping
+                                            const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 3000;
+                                            waypointTimeout = setTimeout(autoAdvance, endPause);
                                         } else if (currentWaypoint < waypoints.length - 1) {
-                                            // Schedule next waypoint with shorter delay since fade already provided pause
+                                            // Schedule next waypoint using configurable pause time
                                             clearTimeout(waypointTimeout);
-                                            waypointTimeout = setTimeout(autoAdvance, 2000); // Just 2 seconds after fade
+                                            const pauseTime = waypoint.pause_time || 2000; // Default 2 seconds
+                                            waypointTimeout = setTimeout(autoAdvance, pauseTime);
                                         }
                                     }
                                 });
                             } else {
-                                // No fade animation, set up auto-advance timeout directly
+                                // No fade animation, set up auto-advance timeout using configurable pause time
                                 if (isPlaying) {
                                     if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                         console.log("End of tour reached, looping back to start");
                                         clearTimeout(waypointTimeout);
-                                        waypointTimeout = setTimeout(autoAdvance, 5000); // Wait 5 seconds at the end before looping
+                                        const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 5000;
+                                        waypointTimeout = setTimeout(autoAdvance, endPause);
                                     } else if (currentWaypoint < waypoints.length - 1) {
-                                        // Schedule next waypoint after current animation completes
+                                        // Schedule next waypoint using configurable pause time
                                         clearTimeout(waypointTimeout);
-                                        waypointTimeout = setTimeout(autoAdvance, 10000);
+                                        const pauseTime = waypoint.pause_time || 8000; // Default 8 seconds for multi-step
+                                        waypointTimeout = setTimeout(autoAdvance, pauseTime);
                                     }
                                 }
                             }

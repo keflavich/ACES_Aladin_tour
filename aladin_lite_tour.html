@@ -379,6 +379,12 @@
             style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 36px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
             <option value="">≫</option>
         </select>
+        <select id="speed-dropdown" title="Tour speed"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 42px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+        </select>
     </div>
 
     <div id="countdown-timer" style="display: none;">
@@ -397,6 +403,133 @@
         let isInfoExpanded = false; // Track info panel state
         let countdownInterval = null; // Track countdown timer
         let countdownEndTime = null; // When the countdown should end
+
+        // Layer management system to avoid reloading layers
+        let layerCache = new Map(); // URL -> layer object mapping
+        let layerOrder = []; // Track layer order for bringing to front
+        let layerCounter = 0; // Counter for generating unique layer names
+
+        // Speed control system
+        let speedMultiplier = 1; // 1 = normal, 2 = 2x speed, 4 = 4x speed
+
+        // Function to get or create a layer, reusing existing ones
+        function getOrCreateLayer(url) {
+            if (!url) return null;
+
+            // Check if we already have this layer cached
+            if (layerCache.has(url)) {
+                console.log("Reusing existing layer for URL:", url);
+                return layerCache.get(url);
+            }
+
+            // Create a new layer with a unique name
+            layerCounter++;
+            const layerName = `layer_${layerCounter}`;
+
+            console.log("Creating new layer for URL:", url, "with name:", layerName);
+
+            let layer;
+            if (url.endsWith('.jpg')) {
+                // For JPG files, we can't use overlay layers, so handle differently
+                aladin.displayJPG(url);
+                // Store a reference but note it's not a true layer object
+                layerCache.set(url, { isJPG: true, url: url });
+                return layerCache.get(url);
+            } else {
+                // Create an overlay image layer with a unique name
+                const survey = aladin.newImageSurvey(url);
+                layer = survey;
+                aladin.setOverlayImageLayer(survey, layerName);
+
+                // Cache the layer
+                layerCache.set(url, { layer: layer, name: layerName, url: url });
+                layerOrder.push(url);
+
+                return layerCache.get(url);
+            }
+        }
+
+        // Function to bring a layer to the foreground
+        function bringLayerToFront(url) {
+            if (!url || !layerCache.has(url)) return;
+
+            const cachedLayer = layerCache.get(url);
+
+            if (cachedLayer.isJPG) {
+                // For JPG layers, we need to redisplay them
+                console.log("Bringing JPG layer to front:", url);
+                aladin.displayJPG(url);
+                return cachedLayer;
+            }
+
+            // For regular layers, make sure it's visible and has full opacity
+            if (cachedLayer.layer) {
+                console.log("Bringing layer to front:", url, "name:", cachedLayer.name);
+                cachedLayer.layer.setOpacity(1.0);
+
+                // Update the layer order
+                const index = layerOrder.indexOf(url);
+                if (index > -1) {
+                    layerOrder.splice(index, 1);
+                }
+                layerOrder.push(url);
+
+                // Set as current image layer
+                currentImageLayer = cachedLayer.layer;
+
+                // Debug: show cache status
+                if (console.log) {
+                    showLayerCacheStatus();
+                }
+
+                return cachedLayer;
+            }
+        }
+
+        // Function to hide other layers (optional, for cleaner display)
+        function hideOtherLayers(currentUrl) {
+            layerCache.forEach((cachedLayer, url) => {
+                if (url !== currentUrl && !cachedLayer.isJPG && cachedLayer.layer) {
+                    // Reduce opacity instead of completely hiding to maintain performance
+                    cachedLayer.layer.setOpacity(0.1);
+                }
+            });
+        }
+
+        // Function to clear layer cache (useful for reset)
+        function clearLayerCache() {
+            console.log("Clearing layer cache");
+            layerCache.clear();
+            layerOrder = [];
+            layerCounter = 0;
+            currentImageLayer = null;
+        }
+
+        // Function to get current active layer for animations
+        function getCurrentActiveLayer() {
+            // Try to find the most recently activated layer
+            if (layerOrder.length > 0) {
+                const lastUrl = layerOrder[layerOrder.length - 1];
+                const cachedLayer = layerCache.get(lastUrl);
+                if (cachedLayer && !cachedLayer.isJPG && cachedLayer.layer) {
+                    return cachedLayer.layer;
+                }
+            }
+            return currentImageLayer; // Fallback to old system
+        }
+
+        // Debug function to show layer cache status
+        function showLayerCacheStatus() {
+            console.log("=== Layer Cache Status ===");
+            console.log("Total cached layers:", layerCache.size);
+            console.log("Layer order:", layerOrder);
+            layerCache.forEach((cachedLayer, url) => {
+                const type = cachedLayer.isJPG ? "JPG" : "HiPS";
+                const opacity = cachedLayer.layer ? cachedLayer.layer.getAlpha() : "N/A";
+                console.log(`- ${url}: ${type}, opacity: ${opacity}`);
+            });
+            console.log("========================");
+        }
 
         // Initialize mobile info panel
         function initializeMobileInfoPanel() {
@@ -542,7 +675,7 @@
                 zoom_in_time: 3,
                 title: "ACES",
                 description: "The ALMA Central Molecular Zone survey (ACES) combined with the Green Bank Telescope's MUSTANG survey in the Galactic Center.  This is the highest-resolution millimeter image produced of the Galactic Center.",
-                url: "./MUSTANG_12m_feather_noaxes_hips/",
+                url: "MUSTANG_12m_feather_noaxes_hips/",
                 fade_enabled: true,
                 fade_out_time: 1.5,
                 fade_delay: 0.5,
@@ -559,7 +692,7 @@
                 zoom_in_time: 3,
                 title: "Sgr B2 with ALMA",
                 description: "The Sgr B2 cloud is our Galaxy's most massive and active star-forming region.  It contains several high-mass protoclusters, Sgr B2 N and M, and a third that's a bit smaller, S. \n  This image shows the medium-resolution view of Sgr B2 with ALMA from Ginsburg+ 2018. ",
-                url: "./feathered_MGPS_ALMATCTE7m_hips/",
+                url: "feathered_MGPS_ALMATCTE7m_hips/",
                 fade_enabled: true,
                 fade_out_time: 1.5,
                 fade_delay: 0.5,
@@ -576,7 +709,7 @@
                 zoom_in_time: 5,
                 title: "Sgr B2N",
                 description: "Sagittarius B2 North is the most massive site of ongoing star formation in the Milky Way.  Within a region less than a tenth of a parsec across, thousands of solar masses of gas are flowing into a central massive-star-forming protocluster birthing several proto-O-stars within only a few thousand astronomical units.  \n Data by Nazar Budaiev.",
-                url: "./GINSBURG_P_SgrB2N_RGB/",
+                url: "GINSBURG_P_SgrB2N_RGB/",
                 fade_enabled: true,
                 fade_out_time: 2,
                 fade_delay: 0.5,
@@ -593,13 +726,51 @@
                 zoom_in_time: 5,
                 title: "Sgr B2M",
                 description: "Sgr B2M is the most massive embedded star cluster in the Galactic Center.  The image shows several HII regions, sites where massive stars have ionized their surroundings, within a tiny volume.   \n Data by Nazar Budaiev.",
-                url: "./GINSBURG_P_SgrB2M_RGB/",
+                url: "GINSBURG_P_SgrB2M_RGB/",
                 fade_enabled: true,
                 fade_out_time: 1,
                 fade_delay: 0.5,
                 fade_in_time: 1,
                 pause_time: 3000,  // Final dramatic pause
                 end_of_tour_pause: 5000  // Special pause before looping
+            },
+            {
+                ra: 266.833992,
+                dec: -28.38459,
+                fov: 0.006,
+                transition_fov: 0.012,
+                transition_time: 5,
+                zoom_out_time: 3,
+                zoom_in_time: 5,
+                url: "SgrB2_RGB_480-405-187_scaled_hips/",
+                title: "Sgr B2 RGB",
+                description: "The Sgr B2 cloud seen with JWST.  This is a composite of the 405, 356, and 200 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
+                pause_time: 1000
+            },
+            {
+                ra: 266.835223,
+                dec: -28.3958813,
+                fov: 0.1,
+                transition_fov: 0.1,
+                transition_time: 5,
+                zoom_out_time: 3,
+                zoom_in_time: 5,
+                url: "SgrB2_RGB_480-405-187_scaled_hips/",
+                title: "Sgr B2 RGB",
+                description: "The Sgr B2 cloud seen with JWST.  This is a composite of the 405, 356, and 200 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
+            },
+            {
+                ra: 266.541320,
+                dec: -28.7088928,
+                fov: 0.1,
+                transition_fov: 0.5,
+                transition_time: 5,
+                zoom_out_time: 3,
+                zoom_in_time: 5,
+                url: "BrickJWST_1182p2221_405_356_200_hips/",
+                title: "Brick JWST",
+                description: "The Brick JWST image of the Galactic Center.  This is a composite of the 405, 356, and 200 micron bands.  \n Ginsburg et al 2023.",
+                pause_time: 5000
             },
         ];
 
@@ -631,7 +802,7 @@
                 console.log('A.init completed, creating Aladin instance');
 
                 aladin = A.aladin('#aladin-lite-div', {
-                    survey: './rgb_final_uncropped_hips/',
+                    survey: 'rgb_final_uncropped_hips/',
                     // survey: "IPAC/P/GLIMPSE360",
                     //;'"P/2MASS/color",
                     fov: waypoints[0].fov,
@@ -650,8 +821,14 @@
                 });
 
 
-                currentImageLayer = aladin.addNewImageLayer('./rgb_final_uncropped_hips/');
-                //aladin.addNewImageLayer('https://keflavich.github.io/avm_images/AshFigureWithACES_MUSTANGfirst/');
+                // Initialize the first layer using our caching system
+                const initialCachedLayer = getOrCreateLayer('rgb_final_uncropped_hips/');
+                bringLayerToFront('rgb_final_uncropped_hips/');
+
+                // Also cache the first waypoint's layer if it's different
+                if (waypoints[0].url && waypoints[0].url !== 'rgb_final_uncropped_hips/') {
+                    getOrCreateLayer(waypoints[0].url);
+                }
 
                 // Hide loading message
                 document.getElementById('loading-div').style.display = 'none';
@@ -734,6 +911,25 @@
                         jumpToWaypointWithLayers(selectedIndex);
                         // Reset dropdown to default after selection
                         this.selectedIndex = 0;
+                    }
+                });
+
+                // Set up speed dropdown event listener
+                document.getElementById('speed-dropdown').addEventListener('change', function () {
+                    const selectedSpeed = parseFloat(this.value);
+                    if (!isNaN(selectedSpeed) && selectedSpeed > 0) {
+                        speedMultiplier = selectedSpeed;
+                        console.log("Speed multiplier set to:", speedMultiplier);
+
+                        // If currently playing, restart countdown with new timing
+                        if (isPlaying && countdownEndTime) {
+                            const remainingTime = countdownEndTime - Date.now();
+                            if (remainingTime > 0) {
+                                // Adjust remaining time based on new speed
+                                const adjustedTime = remainingTime / speedMultiplier;
+                                startCountdown(adjustedTime);
+                            }
+                        }
                     }
                 });
             }).catch(err => {
@@ -878,12 +1074,11 @@
 
             // Display image if available
             if (waypoint.url) {
-                if (waypoint.url.endsWith('.jpg')) {
-                    aladin.displayJPG(waypoint.url);
-                } else {
-                    console.log("Adding new image layer: ", waypoint.url);
-                    currentImageLayer = aladin.addNewImageLayer(waypoint.url);
-                }
+                console.log("Displaying layer (fast): ", waypoint.url);
+                const cachedLayer = getOrCreateLayer(waypoint.url);
+                bringLayerToFront(waypoint.url);
+                // Optionally hide other layers for cleaner display
+                hideOtherLayers(waypoint.url);
             }
 
             // Jump directly to the location
@@ -978,13 +1173,11 @@
                     if (interruptAnimation) return;
 
                     if (waypoints[index].url) {
-                        if (waypoints[index].url.endsWith('.jpg')) {
-                            console.log("Displaying JPG: ", waypoints[index].url);
-                            aladin.displayJPG(waypoints[index].url);
-                        } else {
-                            console.log("Adding new image layer: ", waypoints[index].url);
-                            currentImageLayer = aladin.addNewImageLayer(waypoints[index].url);
-                        }
+                        console.log("Displaying layer: ", waypoints[index].url);
+                        const cachedLayer = getOrCreateLayer(waypoints[index].url);
+                        bringLayerToFront(waypoints[index].url);
+                        // Optionally hide other layers for cleaner display
+                        hideOtherLayers(waypoints[index].url);
                     }
 
                     // Then zoom in to target FOV
@@ -1043,13 +1236,11 @@
                         if (interruptAnimation) return;
 
                         if (waypoints[index].url) {
-                            if (waypoints[index].url.endsWith('.jpg')) {
-                                console.log("Displaying JPG: ", waypoints[index].url);
-                                aladin.displayJPG(waypoints[index].url);
-                            } else {
-                                console.log("Adding new image layer: ", waypoints[index].url);
-                                currentImageLayer = aladin.addNewImageLayer(waypoints[index].url);
-                            }
+                            console.log("Displaying layer: ", waypoints[index].url);
+                            const cachedLayer = getOrCreateLayer(waypoints[index].url);
+                            bringLayerToFront(waypoints[index].url);
+                            // Optionally hide other layers for cleaner display
+                            hideOtherLayers(waypoints[index].url);
                         }
                         // Step 3: Zoom in to target FOV
                         aladin.zoomToFoV(waypoint.fov, waypoint.zoom_in_time, function () {
@@ -1123,16 +1314,12 @@
             for (let i = 0; i <= currentWaypoint; i++) {
                 const wp = waypoints[i];
                 if (wp.url) {
-                    if (wp.url.endsWith('.jpg')) {
-                        console.log("Displaying JPG: ", wp.url);
-                        aladin.displayJPG(wp.url);
-                    } else {
-                        console.log("Adding image layer for waypoint", i, ":", wp.url);
-                        const layer = aladin.addNewImageLayer(wp.url);
-                        // Keep track of the most recent layer
-                        if (i === currentWaypoint) {
-                            currentImageLayer = layer;
-                        }
+                    console.log("Ensuring layer exists for waypoint", i, ":", wp.url);
+                    const cachedLayer = getOrCreateLayer(wp.url);
+                    // For the current waypoint, bring to front
+                    if (i === currentWaypoint) {
+                        bringLayerToFront(wp.url);
+                        hideOtherLayers(wp.url);
                     }
                 }
             }
@@ -1190,17 +1377,18 @@
 
                 // Fade animation function for image layers
         function animateFade(fadeOutTime, fadeDelay, fadeInTime, callback) {
-            if (!currentImageLayer) {
+            const activeLayer = getCurrentActiveLayer();
+            if (!activeLayer) {
                 console.warn('No current image layer to fade');
                 if (callback) callback();
                 return;
             }
 
             // Fade out the layer
-            animateLayerOpacity(currentImageLayer, 1, 0, fadeOutTime, function() {
+            animateLayerOpacity(activeLayer, 1, 0, fadeOutTime, function() {
                 // Check if animation was interrupted
                 if (interruptAnimation) {
-                    currentImageLayer.setOpacity(1);
+                    activeLayer.setOpacity(1);
                     if (callback) callback();
                     return;
                 }
@@ -1208,12 +1396,12 @@
                 // Wait for delay, then fade back in
                 setTimeout(() => {
                     if (interruptAnimation) {
-                        currentImageLayer.setOpacity(1);
+                        activeLayer.setOpacity(1);
                         if (callback) callback();
                         return;
                     }
 
-                    animateLayerOpacity(currentImageLayer, 0, 1, fadeInTime, callback);
+                    animateLayerOpacity(activeLayer, 0, 1, fadeInTime, callback);
                 }, fadeDelay * 1000);
             });
         }

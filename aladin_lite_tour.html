@@ -499,12 +499,34 @@
             }
         }
 
-        // Function to hide other layers (optional, for cleaner display)
-        function hideOtherLayers(currentUrl) {
+                // Function to hide other layers, keeping the two most recent visible
+        function hideOtherLayers(currentUrl, waypoint = null) {
+            // Determine which layer should be the background layer
+            let backgroundUrl = null;
+
+            if (waypoint && waypoint.fade_layer) {
+                // Use the specified fade_layer
+                backgroundUrl = waypoint.fade_layer;
+                console.log("Showing layers - Current:", currentUrl, "Fade layer:", backgroundUrl);
+            } else {
+                // Use the previous layer in order
+                const currentIndex = layerOrder.indexOf(currentUrl);
+                backgroundUrl = currentIndex > 0 ? layerOrder[currentIndex - 1] : null;
+                console.log("Showing layers - Current:", currentUrl, "Previous:", backgroundUrl);
+            }
+
             layerCache.forEach((cachedLayer, url) => {
-                if (url !== currentUrl && !cachedLayer.isJPG && cachedLayer.layer) {
-                    // Reduce opacity instead of completely hiding to maintain performance
-                    cachedLayer.layer.setOpacity(0.1);
+                if (cachedLayer.isJPG || !cachedLayer.layer) return;
+
+                if (url === currentUrl) {
+                    // Current layer: full opacity
+                    cachedLayer.layer.setOpacity(1.0);
+                } else if (url === backgroundUrl) {
+                    // Background layer (either previous or specified fade_layer): keep visible
+                    cachedLayer.layer.setOpacity(1.0);
+                } else {
+                    // All other layers: hide completely
+                    cachedLayer.layer.setOpacity(0.0);
                 }
             });
         }
@@ -783,7 +805,7 @@
                 zoom_out_time: 3,
                 zoom_in_time: 5,
                 url: "SgrB2_RGB_480-405-187_scaled_hips/",
-                title: "Sgr B2 RGB",
+                title: "Sgr B2M JWST",
                 description: "The Sgr B2 cloud seen with JWST.  This is a composite of the 405, 356, and 200 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
                 pause_time: 1000
             },
@@ -796,8 +818,13 @@
                 zoom_out_time: 3,
                 zoom_in_time: 5,
                 url: "SgrB2_RGB_480-405-187_scaled_hips/",
-                title: "Sgr B2 RGB",
+                fade_layer: "MUSTANG_12m_feather_noaxes_hips/",
+                title: "Sgr B2 JWST",
                 description: "The Sgr B2 cloud seen with JWST.  This is a composite of the 405, 356, and 200 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
+                fade_enabled: true,
+                fade_out_time: 1,
+                fade_delay: 0.5,
+                fade_in_time: 1,
             },
             {
                 ra: 266.541320,
@@ -808,8 +835,13 @@
                 zoom_out_time: 3,
                 zoom_in_time: 5,
                 url: "BrickJWST_1182p2221_405_356_200_hips/",
+                fade_layer: "MUSTANG_12m_feather_noaxes_hips/",
                 title: "Brick JWST",
                 description: "The Brick JWST image of the Galactic Center.  This is a composite of the 405, 356, and 200 micron bands.  \n Ginsburg et al 2023.",
+                fade_enabled: true,
+                fade_out_time: 1,
+                fade_delay: 0.5,
+                fade_in_time: 1,
                 pause_time: 5000
             },
         ];
@@ -1126,9 +1158,16 @@
             if (waypoint.url) {
                 console.log("Displaying layer (fast): ", waypoint.url);
                 const cachedLayer = getOrCreateLayer(waypoint.url);
+
+                // Pre-load fade_layer if specified
+                if (waypoint.fade_layer) {
+                    console.log("Pre-loading fade layer (fast): ", waypoint.fade_layer);
+                    getOrCreateLayer(waypoint.fade_layer);
+                }
+
                 bringLayerToFront(waypoint.url);
                 // Optionally hide other layers for cleaner display
-                hideOtherLayers(waypoint.url);
+                hideOtherLayers(waypoint.url, waypoint);
             }
 
             // Jump directly to the location
@@ -1230,9 +1269,16 @@
                     if (waypoints[index].url) {
                         console.log("Displaying layer: ", waypoints[index].url);
                         const cachedLayer = getOrCreateLayer(waypoints[index].url);
+
+                        // Pre-load fade_layer if specified
+                        if (waypoints[index].fade_layer) {
+                            console.log("Pre-loading fade layer: ", waypoints[index].fade_layer);
+                            getOrCreateLayer(waypoints[index].fade_layer);
+                        }
+
                         bringLayerToFront(waypoints[index].url);
                         // Optionally hide other layers for cleaner display
-                        hideOtherLayers(waypoints[index].url);
+                        hideOtherLayers(waypoints[index].url, waypoints[index]);
                     }
 
                     // Then zoom in to target FOV
@@ -1298,9 +1344,16 @@
                         if (waypoints[index].url) {
                             console.log("Displaying layer: ", waypoints[index].url);
                             const cachedLayer = getOrCreateLayer(waypoints[index].url);
+
+                            // Pre-load fade_layer if specified
+                            if (waypoints[index].fade_layer) {
+                                console.log("Pre-loading fade layer: ", waypoints[index].fade_layer);
+                                getOrCreateLayer(waypoints[index].fade_layer);
+                            }
+
                             bringLayerToFront(waypoints[index].url);
                             // Optionally hide other layers for cleaner display
-                            hideOtherLayers(waypoints[index].url);
+                            hideOtherLayers(waypoints[index].url, waypoints[index]);
                         }
                         // Step 3: Zoom in to target FOV
                         aladin.zoomToFoV(waypoint.fov, getAdjustedWaypointTime(waypoint, 'zoom_in_time', 2), function () {
@@ -1380,10 +1433,17 @@
                 if (wp.url) {
                     console.log("Ensuring layer exists for waypoint", i, ":", wp.url);
                     const cachedLayer = getOrCreateLayer(wp.url);
+
+                    // Pre-load fade_layer if specified
+                    if (wp.fade_layer) {
+                        console.log("Pre-loading fade layer for waypoint", i, ":", wp.fade_layer);
+                        getOrCreateLayer(wp.fade_layer);
+                    }
+
                     // For the current waypoint, bring to front
                     if (i === currentWaypoint) {
                         bringLayerToFront(wp.url);
-                        hideOtherLayers(wp.url);
+                        hideOtherLayers(wp.url, wp);
                     }
                 }
             }

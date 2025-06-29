@@ -531,6 +531,25 @@
             console.log("========================");
         }
 
+        // Helper functions for speed-adjusted timing
+        function getAdjustedTime(timeInSeconds) {
+            return timeInSeconds / speedMultiplier;
+        }
+
+        function getAdjustedTimeMs(timeInMs) {
+            return timeInMs / speedMultiplier;
+        }
+
+        function getAdjustedWaypointTime(waypoint, timeProperty, defaultValue = 2) {
+            const baseTime = waypoint[timeProperty] || defaultValue;
+            return getAdjustedTime(baseTime);
+        }
+
+        function getAdjustedWaypointTimeMs(waypoint, timeProperty, defaultValue = 2000) {
+            const baseTime = waypoint[timeProperty] || defaultValue;
+            return getAdjustedTimeMs(baseTime);
+        }
+
         // Initialize mobile info panel
         function initializeMobileInfoPanel() {
             const infoPanel = document.getElementById('waypoint-info');
@@ -1131,25 +1150,30 @@
 
                 if (distance < 0.2) {
                     // Close waypoints: 2s movement + optional fade + pause
-                    totalTime = 2000; // animateToRaDec time
+                    totalTime = getAdjustedTimeMs(2000); // animateToRaDec time
                 } else {
                     // Distant waypoints: zoom out + movement + zoom in + optional fade + pause
-                    totalTime = (waypoint.zoom_out_time * 1000) + (waypoint.transition_time * 1000) + (waypoint.zoom_in_time * 1000);
+                    totalTime = getAdjustedWaypointTimeMs(waypoint, 'zoom_out_time', 2) +
+                               getAdjustedWaypointTimeMs(waypoint, 'transition_time', 2) +
+                               getAdjustedWaypointTimeMs(waypoint, 'zoom_in_time', 2);
                 }
 
                 // Add fade time if enabled
                 if (waypoint.fade_enabled) {
-                    totalTime += (waypoint.fade_out_time * 1000) + (waypoint.fade_delay * 1000) + (waypoint.fade_in_time * 1000);
+                    totalTime += getAdjustedWaypointTimeMs(waypoint, 'fade_out_time', 1.5) +
+                                getAdjustedWaypointTimeMs(waypoint, 'fade_delay', 0.5) +
+                                getAdjustedWaypointTimeMs(waypoint, 'fade_in_time', 1.5);
                 }
 
                 // Add pause time
-                totalTime += waypoint.pause_time || 2000;
+                totalTime += getAdjustedWaypointTimeMs(waypoint, 'pause_time', 2000);
 
                 // Start countdown for total time
                 startCountdown(totalTime);
             } else if (isPlaying && currentWaypoint === waypoints.length - 1 && loopTour) {
                 // Handle end of tour countdown
-                const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 5000;
+                const endPause = getAdjustedWaypointTimeMs(waypoint, 'end_of_tour_pause',
+                                 getAdjustedWaypointTimeMs(waypoint, 'pause_time', 5000));
                 startCountdown(endPause);
             }
 
@@ -1168,7 +1192,7 @@
                 // Update waypoint info right before starting the movement animation
                 updateWaypointInfo();
                 // Go directly to the new coordinates
-                aladin.animateToRaDec(waypoint.ra, waypoint.dec, 2, function () {
+                aladin.animateToRaDec(waypoint.ra, waypoint.dec, getAdjustedTime(2), function () {
                     // Check if animation was interrupted
                     if (interruptAnimation) return;
 
@@ -1181,24 +1205,27 @@
                     }
 
                     // Then zoom in to target FOV
-                    aladin.zoomToFoV(waypoint.fov, waypoint.transition_time, function () {
+                    aladin.zoomToFoV(waypoint.fov, getAdjustedWaypointTime(waypoint, 'transition_time', 2), function () {
                         // Check if animation was interrupted
                         if (interruptAnimation) return;
 
                         // Check if fade animation is enabled for this waypoint
                         if (waypoint.fade_enabled) {
-                            animateFade(waypoint.fade_out_time, waypoint.fade_delay, waypoint.fade_in_time, function() {
+                            animateFade(getAdjustedWaypointTime(waypoint, 'fade_out_time', 1.5),
+                                       getAdjustedWaypointTime(waypoint, 'fade_delay', 0.5),
+                                       getAdjustedWaypointTime(waypoint, 'fade_in_time', 1.5), function() {
                                 // Set up auto-advance timeout using configurable pause time
                                 if (isPlaying) {
                                     if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                         console.log("End of tour reached, looping back to start");
                                         clearTimeout(waypointTimeout);
-                                        const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 3000;
+                                        const endPause = getAdjustedWaypointTimeMs(waypoint, 'end_of_tour_pause',
+                                                         getAdjustedWaypointTimeMs(waypoint, 'pause_time', 3000));
                                         waypointTimeout = setTimeout(autoAdvance, endPause);
                                     } else if (currentWaypoint < waypoints.length - 1) {
                                         // Schedule next waypoint using configurable pause time
                                         clearTimeout(waypointTimeout);
-                                        const pauseTime = waypoint.pause_time || 2000; // Default 2 seconds
+                                        const pauseTime = getAdjustedWaypointTimeMs(waypoint, 'pause_time', 2000);
                                         waypointTimeout = setTimeout(autoAdvance, pauseTime);
                                     }
                                 }
@@ -1209,12 +1236,14 @@
                                 if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                     console.log("End of tour reached, looping back to start");
                                     clearTimeout(waypointTimeout);
-                                    const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 5000;
+                                    const endPause = getAdjustedWaypointTimeMs(waypoint, 'end_of_tour_pause',
+                                                     getAdjustedWaypointTimeMs(waypoint, 'pause_time', 5000));
                                     waypointTimeout = setTimeout(autoAdvance, endPause);
                                 } else if (currentWaypoint < waypoints.length - 1) {
                                     // Schedule next waypoint using configurable pause time
                                     clearTimeout(waypointTimeout);
-                                    const pauseTime = waypoint.pause_time || (currentWaypoint === 0 ? 2000 : 8000); // Default values
+                                    const pauseTime = getAdjustedWaypointTimeMs(waypoint, 'pause_time',
+                                                     (currentWaypoint === 0 ? 2000 : 8000));
                                     waypointTimeout = setTimeout(autoAdvance, pauseTime);
                                 }
                             }
@@ -1224,7 +1253,7 @@
             } else {
                 // Multi-step animation with custom FOV animation
                 // Step 1: Zoom out to 5 degrees
-                aladin.zoomToFoV(waypoint.transition_fov, waypoint.zoom_out_time, function () {
+                aladin.zoomToFoV(waypoint.transition_fov, getAdjustedWaypointTime(waypoint, 'zoom_out_time', 2), function () {
                     // Check if animation was interrupted
                     if (interruptAnimation) return;
 

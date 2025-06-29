@@ -202,6 +202,12 @@
                 font-size: 14px !important;
             }
 
+            #speed-dropdown {
+                width: 38px !important;
+                padding: 12px 4px !important;
+                font-size: 14px !important;
+            }
+
                         #waypoint-info {
                 padding: 20px 15px;
                 margin: 10px auto !important;
@@ -269,6 +275,13 @@
                 padding: 10px 2px !important;
                 font-size: 12px !important;
                 flex: 0 0 28px;
+            }
+
+            #speed-dropdown {
+                width: 32px !important;
+                padding: 10px 2px !important;
+                font-size: 12px !important;
+                flex: 0 0 32px;
             }
 
             #progress-container {
@@ -379,7 +392,7 @@
             style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 36px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
             <option value="">≫</option>
         </select>
-        <select id="speed-dropdown" title="Tour speed"
+        <select id="speed-dropdown" title="Tour speed: 1× = normal, 2× = double speed, 4× = quadruple speed"
             style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 42px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
             <option value="1" selected>1×</option>
             <option value="2">2×</option>
@@ -542,12 +555,20 @@
 
         function getAdjustedWaypointTime(waypoint, timeProperty, defaultValue = 2) {
             const baseTime = waypoint[timeProperty] || defaultValue;
-            return getAdjustedTime(baseTime);
+            const adjustedTime = getAdjustedTime(baseTime);
+            if (speedMultiplier !== 1) {
+                console.log(`Speed adjustment: ${timeProperty} ${baseTime}s -> ${adjustedTime.toFixed(2)}s (${speedMultiplier}x speed)`);
+            }
+            return adjustedTime;
         }
 
         function getAdjustedWaypointTimeMs(waypoint, timeProperty, defaultValue = 2000) {
             const baseTime = waypoint[timeProperty] || defaultValue;
-            return getAdjustedTimeMs(baseTime);
+            const adjustedTime = getAdjustedTimeMs(baseTime);
+            if (speedMultiplier !== 1) {
+                console.log(`Speed adjustment: ${timeProperty} ${baseTime}ms -> ${adjustedTime.toFixed(0)}ms (${speedMultiplier}x speed)`);
+            }
+            return adjustedTime;
         }
 
         // Initialize mobile info panel
@@ -804,16 +825,20 @@
             // Initialize mobile info panel state
             initializeMobileInfoPanel();
 
-            // Prevent dropdown from being affected by draggable behavior
-            const dropdown = document.getElementById('waypoint-dropdown');
-            dropdown.addEventListener('mousedown', function (e) {
-                e.stopPropagation(); // Stop the event from bubbling up
-            });
-            dropdown.addEventListener('click', function (e) {
-                e.stopPropagation(); // Stop the event from bubbling up
-            });
-            dropdown.addEventListener('focus', function (e) {
-                e.stopPropagation(); // Stop the event from bubbling up
+            // Prevent dropdowns from being affected by draggable behavior
+            const waypointDropdown = document.getElementById('waypoint-dropdown');
+            const speedDropdown = document.getElementById('speed-dropdown');
+
+            [waypointDropdown, speedDropdown].forEach(dropdown => {
+                dropdown.addEventListener('mousedown', function (e) {
+                    e.stopPropagation(); // Stop the event from bubbling up
+                });
+                dropdown.addEventListener('click', function (e) {
+                    e.stopPropagation(); // Stop the event from bubbling up
+                });
+                dropdown.addEventListener('focus', function (e) {
+                    e.stopPropagation(); // Stop the event from bubbling up
+                });
             });
 
             // Wait for A.init promise to complete (required for v3 API)
@@ -914,6 +939,12 @@
                     clearTimeout(waypointTimeout);
                     stopCountdown();
                     updatePlayPauseButton();
+
+                    // Reset speed multiplier to normal speed
+                    speedMultiplier = 1;
+                    document.getElementById('speed-dropdown').value = "1";
+                    console.log("Speed reset to normal (1×)");
+
                     goToWaypoint(0);
                 });
 
@@ -1260,7 +1291,7 @@
                     // Update waypoint info right before starting the movement animation
                     updateWaypointInfo();
                     // Step 2: Go to the new coordinates
-                    aladin.animateToRaDec(waypoint.ra, waypoint.dec, waypoint.transition_time, function () {
+                    aladin.animateToRaDec(waypoint.ra, waypoint.dec, getAdjustedWaypointTime(waypoint, 'transition_time', 2), function () {
                         // Check if animation was interrupted
                         if (interruptAnimation) return;
 
@@ -1272,24 +1303,27 @@
                             hideOtherLayers(waypoints[index].url);
                         }
                         // Step 3: Zoom in to target FOV
-                        aladin.zoomToFoV(waypoint.fov, waypoint.zoom_in_time, function () {
+                        aladin.zoomToFoV(waypoint.fov, getAdjustedWaypointTime(waypoint, 'zoom_in_time', 2), function () {
                             // Check if animation was interrupted
                             if (interruptAnimation) return;
 
                             // Check if fade animation is enabled for this waypoint
                             if (waypoint.fade_enabled) {
-                                animateFade(waypoint.fade_out_time, waypoint.fade_delay, waypoint.fade_in_time, function() {
+                                animateFade(getAdjustedWaypointTime(waypoint, 'fade_out_time', 1.5),
+                                           getAdjustedWaypointTime(waypoint, 'fade_delay', 0.5),
+                                           getAdjustedWaypointTime(waypoint, 'fade_in_time', 1.5), function() {
                                     // Set up auto-advance timeout using configurable pause time
                                     if (isPlaying) {
                                         if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                             console.log("End of tour reached, looping back to start");
                                             clearTimeout(waypointTimeout);
-                                            const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 3000;
+                                            const endPause = getAdjustedWaypointTimeMs(waypoint, 'end_of_tour_pause',
+                                                             getAdjustedWaypointTimeMs(waypoint, 'pause_time', 3000));
                                             waypointTimeout = setTimeout(autoAdvance, endPause);
                                         } else if (currentWaypoint < waypoints.length - 1) {
                                             // Schedule next waypoint using configurable pause time
                                             clearTimeout(waypointTimeout);
-                                            const pauseTime = waypoint.pause_time || 2000; // Default 2 seconds
+                                            const pauseTime = getAdjustedWaypointTimeMs(waypoint, 'pause_time', 2000);
                                             waypointTimeout = setTimeout(autoAdvance, pauseTime);
                                         }
                                     }
@@ -1300,12 +1334,13 @@
                                     if (currentWaypoint === waypoints.length - 1 && loopTour) {
                                         console.log("End of tour reached, looping back to start");
                                         clearTimeout(waypointTimeout);
-                                        const endPause = waypoint.end_of_tour_pause || waypoint.pause_time || 5000;
+                                        const endPause = getAdjustedWaypointTimeMs(waypoint, 'end_of_tour_pause',
+                                                         getAdjustedWaypointTimeMs(waypoint, 'pause_time', 5000));
                                         waypointTimeout = setTimeout(autoAdvance, endPause);
                                     } else if (currentWaypoint < waypoints.length - 1) {
                                         // Schedule next waypoint using configurable pause time
                                         clearTimeout(waypointTimeout);
-                                        const pauseTime = waypoint.pause_time || 8000; // Default 8 seconds for multi-step
+                                        const pauseTime = getAdjustedWaypointTimeMs(waypoint, 'pause_time', 8000);
                                         waypointTimeout = setTimeout(autoAdvance, pauseTime);
                                     }
                                 }

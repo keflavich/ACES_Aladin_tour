@@ -427,6 +427,26 @@
         // Speed control system
         let speedMultiplier = 1; // 1 = normal, 2 = 2x speed, 4 = 4x speed
 
+        // Root URL configuration based on environment
+        let rootUrl;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            rootUrl = './';
+            console.log('Running on localhost, using relative paths');
+        } else {
+            rootUrl = 'https://keflavich.github.io/ACES_Aladin_tour/';
+            console.log('Running on internet, using GitHub Pages URL');
+        }
+
+        // Function to construct full URL for image layers
+        function getImageUrl(relativePath) {
+            if (!relativePath) return relativePath;
+            // If it's already a full URL, return as-is
+            if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+                return relativePath;
+            }
+            return rootUrl + relativePath;
+        }
+
         // URL anchor management for shareable waypoints
         function titleToAnchor(title) {
             if (!title) return '';
@@ -785,7 +805,7 @@
                 zoom_in_time: 2,
                 title: "The CMZ",
                 description: "The Central Molecular Zone seen with MEERKAT and Spitzer.  Color composite by Ashley Barnes.",
-                url: "rgb_final_uncropped_hips",
+                url: getImageUrl("rgb_final_uncropped_hips"),
                 pause_time: 5000  // Brief introduction
             },
             {
@@ -798,7 +818,7 @@
                 zoom_in_time: 3,
                 title: "ACES",
                 description: "The ALMA Central Molecular Zone survey (ACES) combined with the Green Bank Telescope's MUSTANG survey in the Galactic Center.  This is the highest-resolution millimeter image produced of the Galactic Center.",
-                url: "MUSTANG_12m_feather_noaxes_hips/",
+                url: getImageUrl("MUSTANG_12m_feather_noaxes_hips/"),
                 is_sticky: true,
                 //fade_enabled: true,
                 fade_out_time: 1.5,
@@ -816,7 +836,7 @@
                 zoom_in_time: 3,
                 title: "Sgr B2 with ALMA",
                 description: "The Sgr B2 cloud is our Galaxy's most massive and active star-forming region.  It contains several high-mass protoclusters, Sgr B2 N and M, and a third that's a bit smaller, S. \n  This image shows the medium-resolution view of Sgr B2 with ALMA from Ginsburg+ 2018. ",
-                url: "feathered_MGPS_ALMATCTE7m_hips/",
+                url: getImageUrl("feathered_MGPS_ALMATCTE7m_hips/"),
                 //fade_enabled: true,
                 fade_out_time: 1.5,
                 fade_delay: 0.5,
@@ -833,8 +853,8 @@
                 zoom_in_time: 5,
                 title: "Sgr B2N",
                 description: "Sagittarius B2 North is the most massive site of ongoing star formation in the Milky Way.  Within a region less than a tenth of a parsec across, thousands of solar masses of gas are flowing into a central massive-star-forming protocluster birthing several proto-O-stars within only a few thousand astronomical units.  \n Data by Nazar Budaiev.",
-                url: "GINSBURG_P_SgrB2N_RGB/",
-                fade_layer: "feathered_MGPS_ALMATCTE7m_hips/",
+                url: getImageUrl("GINSBURG_P_SgrB2N_RGB/"),
+                fade_layer: getImageUrl("feathered_MGPS_ALMATCTE7m_hips/"),
                 //fade_enabled: true,
                 fade_out_time: 2,
                 fade_delay: 0.5,
@@ -851,8 +871,8 @@
                 zoom_in_time: 5,
                 title: "Sgr B2M",
                 description: "Sgr B2M is the most massive embedded star cluster in the Galactic Center.  The image shows several HII regions, sites where massive stars have ionized their surroundings, within a tiny volume.   \n Data by Nazar Budaiev.",
-                url: "GINSBURG_P_SgrB2M_RGB/",
-                fade_layer: "feathered_MGPS_ALMATCTE7m_hips/",
+                url: getImageUrl("GINSBURG_P_SgrB2M_RGB/"),
+                fade_layer: getImageUrl("feathered_MGPS_ALMATCTE7m_hips/"),
                 //fade_enabled: true,
                 fade_out_time: 2,
                 fade_delay: 0.5,
@@ -867,8 +887,8 @@
             //     transition_time: 5,
             //     zoom_out_time: 3,
             //     zoom_in_time: 5,
-            //     url: "SgrB2_RGB_480-405-187_scaled_hips/",
-            //     fade_layer: "feathered_MGPS_ALMATCTE7m_hips/",
+            //     url: getImageUrl("SgrB2_RGB_480-405-187_scaled_hips/"),
+            //     fade_layer: getImageUrl("feathered_MGPS_ALMATCTE7m_hips/"),
             //     title: "Sgr B2M JWST",
             //     description: "The Sgr B2 cloud seen with JWST.  This is a composite of the 405, 356, and 200 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
             //     pause_time: 1000
@@ -881,8 +901,8 @@
                 transition_time: 5,
                 zoom_out_time: 3,
                 zoom_in_time: 5,
-                url: "SgrB2_RGB_480-405-187_scaled_hips/",
-                fade_layer: "feathered_MGPS_ALMATCTE7m_hips/",
+                url: getImageUrl("SgrB2_RGB_480-405-187_scaled_hips/"),
+                fade_layer: getImageUrl("feathered_MGPS_ALMATCTE7m_hips/"),
                 title: "Sgr B2 JWST",
                 description: "The Sgr B2 cloud seen with JWST.  This is a composite of the 4.80, 4.05, and 1.87 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
                 //fade_enabled: true,
@@ -898,8 +918,8 @@
                 transition_time: 5,
                 zoom_out_time: 1,
                 zoom_in_time: 1,
-                url: "SgrB2_RGB_2550-1280-770_hips/",
-                fade_layer: "SgrB2_RGB_480-405-187_scaled_hips/",
+                url: getImageUrl("SgrB2_RGB_2550-1280-770_hips/"),
+                fade_layer: getImageUrl("SgrB2_RGB_480-405-187_scaled_hips/"),
                 title: "Sgr B2 - MIRI",
                 description: "The Sgr B2 cloud seen with JWST MIRI.  This is a composite of the 25.5, 12.8, and 7.7 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
                 //fade_enabled: true,
@@ -916,8 +936,8 @@
                 transition_time: 5,
                 zoom_out_time: 3,
                 zoom_in_time: 5,
-                url: "BrickJWST_1182p2221_405_356_200_hips/",
-                fade_layer: "MUSTANG_12m_feather_noaxes_hips/",
+                url: getImageUrl("BrickJWST_1182p2221_405_356_200_hips/"),
+                fade_layer: getImageUrl("MUSTANG_12m_feather_noaxes_hips/"),
                 title: "Brick JWST - 200 356 405",
                 description: "The Brick JWST image of the Galactic Center.  This is a composite of the 4.05, 3.56, and 2.00 micron bands.  \n Ginsburg et al 2023 & project 1182.",
                 //fade_enabled: true,
@@ -934,8 +954,8 @@
                 transition_time: 1,
                 zoom_out_time: 1,
                 zoom_in_time: 1,
-                url: "BrickJWST_merged_longwave_narrowband_withstars_hips/",
-                fade_layer: "BrickJWST_1182p2221_405_356_200_hips/",
+                url: getImageUrl("BrickJWST_merged_longwave_narrowband_withstars_hips/"),
+                fade_layer: getImageUrl("BrickJWST_1182p2221_405_356_200_hips/"),
                 title: "Brick JWST - 410 466",
                 description: "The Brick JWST image of the Galactic Center.  This is a composite of the 4.10 and 4.66 micron bands including stars.  \n Ginsburg et al 2023.",
                 //fade_enabled: true,
@@ -952,8 +972,8 @@
                 transition_time: 1,
                 zoom_out_time: 1,
                 zoom_in_time: 1,
-                url: "BrickJWST_merged_longwave_narrowband_hips/",
-                fade_layer: "BrickJWST_merged_longwave_narrowband_withstars_hips/",
+                url: getImageUrl("BrickJWST_merged_longwave_narrowband_hips/"),
+                fade_layer: getImageUrl("BrickJWST_merged_longwave_narrowband_withstars_hips/"),
                 title: "Brick JWST - 410 466 starless",
                 description: "The Brick JWST image of the Galactic Center.  This is a composite of the 4.10 and 4.66 micron bands with stars removed.  \n Ginsburg et al 2023.",
                 //fade_enabled: true,
@@ -996,7 +1016,7 @@
                 console.log('A.init completed, creating Aladin instance');
 
                 aladin = A.aladin('#aladin-lite-div', {
-                    survey: 'rgb_final_uncropped_hips/',
+                    survey: getImageUrl('rgb_final_uncropped_hips/'),
                     // survey: "IPAC/P/GLIMPSE360",
                     //;'"P/2MASS/color",
                     fov: waypoints[0].fov,
@@ -1016,8 +1036,8 @@
 
 
                 // Initialize the first layer using our caching system
-                const initialCachedLayer = getOrCreateLayer('rgb_final_uncropped_hips/');
-                bringLayerToFront('rgb_final_uncropped_hips/');
+                const initialCachedLayer = getOrCreateLayer(getImageUrl('rgb_final_uncropped_hips/'));
+                bringLayerToFront(getImageUrl('rgb_final_uncropped_hips/'));
 
                 // Also cache the first waypoint's layer if it's different
                 if (waypoints[0].url && waypoints[0].url !== 'rgb_final_uncropped_hips/') {

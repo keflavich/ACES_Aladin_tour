@@ -388,6 +388,7 @@
         <button id="next-btn" title="Next">›</button>
         <button id="start-btn" title="Start/Play Tour">▶</button>
         <button id="reset-btn" title="Reset">⟲</button>
+        <button id="share-btn" title="Copy shareable link to current waypoint">🔗</button>
         <select id="waypoint-dropdown" title="Jump to waypoint"
             style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 36px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
             <option value="">≫</option>
@@ -425,6 +426,55 @@
 
         // Speed control system
         let speedMultiplier = 1; // 1 = normal, 2 = 2x speed, 4 = 4x speed
+
+        // URL anchor management for shareable waypoints
+        function titleToAnchor(title) {
+            if (!title) return '';
+            return title.toLowerCase()
+                       .replace(/[^a-z0-9\s-]/g, '') // Remove special chars except spaces and hyphens
+                       .replace(/\s+/g, '-') // Replace spaces with hyphens
+                       .replace(/-+/g, '-') // Replace multiple hyphens with single
+                       .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+        }
+
+        function updateUrlHash() {
+            if (currentWaypoint >= 0 && currentWaypoint < waypoints.length) {
+                const anchor = titleToAnchor(waypoints[currentWaypoint].title);
+                if (anchor) {
+                    const newHash = '#' + anchor;
+                    if (window.location.hash !== newHash) {
+                        window.history.pushState(null, null, newHash);
+                        console.log('Updated URL hash to:', newHash);
+                    }
+                }
+            }
+        }
+
+        function getWaypointFromHash() {
+            const hash = window.location.hash.slice(1); // Remove the '#'
+            if (!hash) return -1;
+
+            for (let i = 0; i < waypoints.length; i++) {
+                if (titleToAnchor(waypoints[i].title) === hash) {
+                    console.log('Found waypoint for hash:', hash, 'at index:', i);
+                    return i;
+                }
+            }
+            console.log('No waypoint found for hash:', hash);
+            return -1;
+        }
+
+        function handleHashChange() {
+            const targetWaypoint = getWaypointFromHash();
+            if (targetWaypoint >= 0 && targetWaypoint !== currentWaypoint) {
+                console.log('Hash changed, jumping to waypoint:', targetWaypoint);
+                isPlaying = false;
+                clearTimeout(waypointTimeout);
+                stopCountdown();
+                updatePlayPauseButton();
+                jumpToWaypointWithLayers(targetWaypoint);
+            }
+        }
 
         // Function to get or create a layer, reusing existing ones
         function getOrCreateLayer(url) {
@@ -834,7 +884,7 @@
                 url: "SgrB2_RGB_480-405-187_scaled_hips/",
                 fade_layer: "feathered_MGPS_ALMATCTE7m_hips/",
                 title: "Sgr B2 JWST",
-                description: "The Sgr B2 cloud seen with JWST.  This is a composite of the 405, 356, and 200 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
+                description: "The Sgr B2 cloud seen with JWST.  This is a composite of the 4.80, 4.05, and 1.87 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",
                 //fade_enabled: true,
                 fade_out_time: 1,
                 fade_delay: 0.5,
@@ -850,8 +900,8 @@
                 zoom_in_time: 5,
                 url: "BrickJWST_1182p2221_405_356_200_hips/",
                 fade_layer: "MUSTANG_12m_feather_noaxes_hips/",
-                title: "Brick JWST",
-                description: "The Brick JWST image of the Galactic Center.  This is a composite of the 405, 356, and 200 micron bands.  \n Ginsburg et al 2023.",
+                title: "Brick JWST - 200 356 405",
+                description: "The Brick JWST image of the Galactic Center.  This is a composite of the 4.05, 3.56, and 2.00 micron bands.  \n Ginsburg et al 2023 & project 1182.",
                 //fade_enabled: true,
                 fade_out_time: 1,
                 fade_delay: 0.5,
@@ -868,8 +918,8 @@
                 zoom_in_time: 1,
                 url: "BrickJWST_merged_longwave_narrowband_withstars_hips/",
                 fade_layer: "BrickJWST_1182p2221_405_356_200_hips/",
-                title: "Brick JWST",
-                description: "The Brick JWST image of the Galactic Center.  This is a composite of the 4.10 and 4.66 micron bands.  \n Ginsburg et al 2023.",
+                title: "Brick JWST - 410 466",
+                description: "The Brick JWST image of the Galactic Center.  This is a composite of the 4.10 and 4.66 micron bands including stars.  \n Ginsburg et al 2023.",
                 //fade_enabled: true,
                 fade_out_time: 1,
                 fade_delay: 0.5,
@@ -886,7 +936,7 @@
                 zoom_in_time: 1,
                 url: "BrickJWST_merged_longwave_narrowband_hips/",
                 fade_layer: "BrickJWST_merged_longwave_narrowband_withstars_hips/",
-                title: "Brick JWST",
+                title: "Brick JWST - 410 466 starless",
                 description: "The Brick JWST image of the Galactic Center.  This is a composite of the 4.10 and 4.66 micron bands with stars removed.  \n Ginsburg et al 2023.",
                 //fade_enabled: true,
                 fade_out_time: 1,
@@ -962,9 +1012,23 @@
                 // Populate waypoint dropdown
                 populateWaypointDropdown();
 
-                updateWaypointInfo();
-                updateProgressBar();
-                goToWaypointFast(0);
+                // Check for URL hash and jump to that waypoint if present
+                const hashWaypoint = getWaypointFromHash();
+                if (hashWaypoint >= 0) {
+                    console.log('Found URL hash, jumping to waypoint:', hashWaypoint);
+                    currentWaypoint = hashWaypoint;
+                    updateWaypointInfo();
+                    updateProgressBar();
+                    goToWaypointFast(hashWaypoint);
+                } else {
+                    updateWaypointInfo();
+                    updateProgressBar();
+                    goToWaypointFast(0);
+                }
+
+                // Set up browser back/forward navigation handling
+                window.addEventListener('popstate', handleHashChange);
+                window.addEventListener('hashchange', handleHashChange);
 
                 // Set up event listeners for the buttons
                 document.getElementById('prev-btn').addEventListener('click', function () {
@@ -1030,6 +1094,33 @@
                     goToWaypoint(0);
                 });
 
+                document.getElementById('share-btn').addEventListener('click', function () {
+                    // Copy current URL to clipboard
+                    const shareableUrl = window.location.href;
+                    navigator.clipboard.writeText(shareableUrl).then(function() {
+                        // Show brief feedback
+                        const btn = document.getElementById('share-btn');
+                        const originalTitle = btn.title;
+                        const originalContent = btn.innerHTML;
+
+                        btn.title = 'Link copied!';
+                        btn.innerHTML = '✓';
+                        btn.style.color = '#4CAF50';
+
+                        setTimeout(function() {
+                            btn.title = originalTitle;
+                            btn.innerHTML = originalContent;
+                            btn.style.color = '';
+                        }, 2000);
+
+                        console.log('Copied shareable URL to clipboard:', shareableUrl);
+                    }).catch(function(err) {
+                        console.error('Failed to copy URL to clipboard:', err);
+                        // Fallback: select the URL text
+                        prompt('Copy this shareable link:', shareableUrl);
+                    });
+                });
+
 
 
                 // Set up waypoint dropdown event listener
@@ -1075,6 +1166,9 @@
             document.getElementById('waypoint-title').innerText = waypoints[currentWaypoint].title;
             document.getElementById('waypoint-description').innerText = waypoints[currentWaypoint].description;
             document.getElementById('current-waypoint').innerText = (currentWaypoint + 1) + '/' + waypoints.length;
+
+            // Update URL hash for shareable links
+            updateUrlHash();
 
             // Update button states
             updateButtonStates();

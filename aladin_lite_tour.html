@@ -432,10 +432,16 @@
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             rootUrl = './';
             console.log('Running on localhost, using relative paths', rootUrl);
-        } else {
-            //rootUrl = 'https://keflavich.github.io/avm_images/';
+        } else if (window.location.hostname === 'data.rc.ufl.edu') {
             rootUrl = 'https://data.rc.ufl.edu/pub/adamginsburg/avm_images/';
-            console.log('Running on internet, using GitHub Pages URL', rootUrl);
+            console.log('Running on UF data server, using UF URL', rootUrl);
+        } else if (window.location.hostname.includes('github.io') || window.location.hostname.includes('githubusercontent.com')) {
+            rootUrl = 'https://keflavich.github.io/avm_images/';
+            console.log('Running on GitHub Pages, using GitHub URL', rootUrl);
+        } else {
+            // Default fallback
+            rootUrl = 'https://data.rc.ufl.edu/pub/adamginsburg/avm_images/';
+            console.log('Unknown hostname, defaulting to UF data server URL', rootUrl);
         }
 
         // Function to construct full URL for image layers

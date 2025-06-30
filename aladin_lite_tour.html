@@ -431,10 +431,11 @@
         let rootUrl;
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             rootUrl = './';
-            console.log('Running on localhost, using relative paths');
+            console.log('Running on localhost, using relative paths', rootUrl);
         } else {
-            rootUrl = 'https://keflavich.github.io/avm_images/';
-            console.log('Running on internet, using GitHub Pages URL');
+            //rootUrl = 'https://keflavich.github.io/avm_images/';
+            rootUrl = 'https://data.rc.ufl.edu/pub/adamginsburg/avm_images/';
+            console.log('Running on internet, using GitHub Pages URL', rootUrl);
         }
 
         // Function to construct full URL for image layers

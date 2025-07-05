@@ -1088,6 +1088,35 @@ function animateLayerOpacity(layer, startOpacity, endOpacity, duration, callback
 }
 
 // Initialize tour function - called by individual HTML files
+// Generic function to load waypoints from JSON file
+async function loadWaypoints(waypointFile, tourConfig = {}, errorMessage = null) {
+    try {
+        const response = await fetch(waypointFile);
+        const data = await response.json();
+        waypoints = data.waypoints;
+
+        // Process waypoints to add getImageUrl() calls where needed
+        waypoints.forEach(waypoint => {
+            if (waypoint.url && !waypoint.url.startsWith('http')) {
+                waypoint.url = getImageUrl(waypoint.url);
+            }
+            if (waypoint.fade_layer && !waypoint.fade_layer.startsWith('http')) {
+                waypoint.fade_layer = getImageUrl(waypoint.fade_layer);
+            }
+        });
+
+        console.log('Loaded waypoints:', waypoints);
+
+        // Initialize the tour after waypoints are loaded
+        initializeTour(waypoints, tourConfig);
+    } catch (error) {
+        console.error('Error loading waypoints:', error);
+        // Fallback: show error message
+        const defaultMessage = `Error loading tour waypoints. Please check that ${waypointFile} is available.`;
+        document.getElementById('loading-div').innerHTML = errorMessage || defaultMessage;
+    }
+}
+
 function initializeTour(tourWaypoints, tourConfig = {}) {
     // Set the global waypoints array
     window.waypoints = tourWaypoints;

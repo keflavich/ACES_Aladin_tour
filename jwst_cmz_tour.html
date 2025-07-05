@@ -63,42 +63,11 @@
     </div>
 
     <script>
-        // Load waypoints from JSON file
-        let waypoints = [];
-
-        // Function to load waypoints from JSON file
-        async function loadWaypoints() {
-            try {
-                const response = await fetch('waypoints_jwst.json');
-                const data = await response.json();
-                waypoints = data.waypoints;
-
-                // Process waypoints to add getImageUrl() calls where needed
-                waypoints.forEach(waypoint => {
-                    if (waypoint.url && !waypoint.url.startsWith('http')) {
-                        waypoint.url = getImageUrl(waypoint.url);
-                    }
-                    if (waypoint.fade_layer && !waypoint.fade_layer.startsWith('http')) {
-                        waypoint.fade_layer = getImageUrl(waypoint.fade_layer);
-                    }
-                });
-
-                console.log('Loaded waypoints:', waypoints);
-
-                // Initialize the tour after waypoints are loaded
-                initializeTour(waypoints, {
-                    initialSurvey: getImageUrl('rgb_final_uncropped_hips')
-                });
-            } catch (error) {
-                console.error('Error loading waypoints:', error);
-                // Fallback: show error message
-                document.getElementById('loading-div').innerHTML = 'Error loading tour waypoints. Please check that waypoints_jwst.json is available.';
-            }
-        }
-
         // Initialize the tour when the page is loaded
         document.addEventListener('DOMContentLoaded', function () {
-            loadWaypoints();
+            loadWaypoints('waypoints_jwst.json', {
+                initialSurvey: getImageUrl('rgb_final_uncropped_hips')
+            });
         });
     </script>
 </body>

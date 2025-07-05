@@ -3,49 +3,84 @@
  * @param {HTMLElement} element - The element to make draggable
  */
 function makeDraggable(element) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    const header = element.querySelector('.controls-header');
-    
-    if (header) {
-        // If present, the header is where you move the element from
-        header.onmousedown = dragMouseDown;
-    } else {
-        // Otherwise, move the element from anywhere inside it
-        element.onmousedown = dragMouseDown;
-    }
-    
-    function dragMouseDown(e) {
-        e = e || window.event;
+    if (!element) return;
+
+    element.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        currentDragElement = element;
+
+        const rect = element.getBoundingClientRect();
+        dragOffset.x = e.clientX - rect.left;
+        dragOffset.y = e.clientY - rect.top;
+
+        element.classList.add('dragging');
         e.preventDefault();
-        // Get the mouse cursor position at startup
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        // Call a function whenever the cursor moves
-        document.onmousemove = elementDrag;
-    }
-    
-    function elementDrag(e) {
-        e = e || window.event;
+    });
+
+    element.addEventListener('touchstart', function(e) {
+        isDragging = true;
+        currentDragElement = element;
+
+        const rect = element.getBoundingClientRect();
+        const touch = e.touches[0];
+        dragOffset.x = touch.clientX - rect.left;
+        dragOffset.y = touch.clientY - rect.top;
+
+        element.classList.add('dragging');
         e.preventDefault();
-        // Calculate the new cursor position
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // Set the element's new position
-        element.style.top = (element.offsetTop - pos2) + "px";
-        element.style.left = (element.offsetLeft - pos1) + "px";
-        if (element.style.bottom) {
-            element.style.bottom = (element.offsetBottom - pos2) + "px";
-        }
-        // Reset margin to avoid interference with positioning
-        element.style.margin = "0";
+    });
+}
+
+// Global mouse/touch move handlers
+document.addEventListener('mousemove', function(e) {
+    if (!isDragging || !currentDragElement) return;
+
+    const newX = e.clientX - dragOffset.x;
+    const newY = e.clientY - dragOffset.y;
+
+    currentDragElement.style.left = newX + 'px';
+    currentDragElement.style.top = newY + 'px';
+});
+
+document.addEventListener('touchmove', function(e) {
+    if (!isDragging || !currentDragElement) return;
+
+    const touch = e.touches[0];
+    const newX = touch.clientX - dragOffset.x;
+    const newY = touch.clientY - dragOffset.y;
+
+    currentDragElement.style.left = newX + 'px';
+    currentDragElement.style.top = newY + 'px';
+    e.preventDefault();
+});
+
+// Global mouse/touch up handlers
+document.addEventListener('mouseup', function() {
+    if (isDragging && currentDragElement) {
+        currentDragElement.classList.remove('dragging');
+        isDragging = false;
+        currentDragElement = null;
     }
-    
-    function closeDragElement() {
-        // Stop moving when mouse button is released
-        document.onmouseup = null;
-        document.onmousemove = null;
+});
+
+document.addEventListener('touchend', function() {
+    if (isDragging && currentDragElement) {
+        currentDragElement.classList.remove('dragging');
+        isDragging = false;
+        currentDragElement = null;
     }
-} 
+});
+
+// Basic draggable functionality for tour elements
+let isDragging = false;
+let currentDragElement = null;
+let dragOffset = { x: 0, y: 0 };
+
+// Initialize draggable functionality when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Make elements with draggable class draggable
+    const draggableElements = document.querySelectorAll('.draggable');
+    draggableElements.forEach(element => {
+        makeDraggable(element);
+    });
+});

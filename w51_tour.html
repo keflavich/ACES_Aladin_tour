@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>W51 Star-Forming Region Tour</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+    <script type="text/javascript" src="tour-common.js"></script>
+    <link rel="stylesheet" href="tour-common.css">
+</head>
+
+<body>
+    <div id="aladin-lite-div"></div>
+
+    <div id="loading-div">Loading W51 Star-Forming Region Tour... Please wait.</div>
+
+    <div id="waypoint-info">
+        <div id="waypoint-header">
+            <button id="expand-btn" title="Expand/Collapse Info">▶</button>
+            <h2 id="waypoint-title">Welcome to the W51 Star-Forming Region Tour</h2>
+        </div>
+        <div id="waypoint-content">
+            <p id="waypoint-description">
+            This tour explores the W51 star-forming region, one of the most active and massive star formation sites in our Galaxy. Located about 7,000 light-years away, W51 contains some of the most luminous young stellar objects and complex molecular structures. Click "Start Tour" to begin exploring these fascinating stellar nurseries.
+            </p>
+        </div>
+    </div>
+
+    <div id="progress-container">
+        <div id="progress-bar">
+            <div id="progress"></div>
+        </div>
+        <span id="current-waypoint">0</span>
+    </div>
+
+    <div id="tour-controls">
+        <button id="prev-btn" title="Previous">‹</button>
+        <button id="next-btn" title="Next">›</button>
+        <button id="start-btn" title="Start/Play Tour">▶</button>
+        <button id="reset-btn" title="Reset">⟲</button>
+        <button id="share-btn" title="Copy shareable link to current waypoint">🔗</button>
+        <select id="waypoint-dropdown" title="Jump to waypoint"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 36px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="">≫</option>
+        </select>
+        <select id="speed-dropdown" title="Tour speed: 1× = normal, 2× = double speed, 4× = quadruple speed"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 42px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+        </select>
+    </div>
+
+    <div id="countdown-timer" style="display: none;">
+        <span id="countdown-text">Next in: </span>
+        <span id="countdown-value">5</span>
+    </div>
+
+    <script>
+        // Initialize the tour when the page is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            loadWaypoints('waypoints_w51.json', {
+                initialSurvey: 'DSS'
+            });
+        });
+    </script>
+</body>
+
+</html>

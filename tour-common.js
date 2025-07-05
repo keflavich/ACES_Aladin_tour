@@ -17,7 +17,7 @@ let countdownEndTime = null; // When the countdown should end
 let layerCache = new Map(); // URL -> layer object mapping
 let layerOrder = []; // Track layer order for bringing to front
 let layerCounter = 0; // Counter for generating unique layer names
-let stickyUrl = null; // Track sticky layer that should persist across waypoints
+let stickyUrls = new Set(); // Track sticky layers that should persist across waypoints
 
 // Speed control system
 let speedMultiplier = 1; // 1 = normal, 2 = 2x speed, 4 = 4x speed
@@ -197,7 +197,8 @@ function hideOtherLayers(currentUrl, waypoint = null) {
         if (url === currentUrl) {
             // Current layer: full opacity
             cachedLayer.layer.setOpacity(1.0);
-        } else if (url === stickyUrl) {
+        } else if (stickyUrls.has(url)) {
+            // Sticky layer: full opacity
             cachedLayer.layer.setOpacity(1.0);
         } else if (url === backgroundUrl) {
             // Background layer (either previous or specified fade_layer): keep visible
@@ -220,7 +221,7 @@ function clearLayerCache() {
     layerOrder = [];
     layerCounter = 0;
     currentImageLayer = null;
-    stickyUrl = null;
+    stickyUrls.clear();
 }
 
 // Function to get current active layer for animations
@@ -241,10 +242,12 @@ function showLayerCacheStatus() {
     console.log("=== Layer Cache Status ===");
     console.log("Total cached layers:", layerCache.size);
     console.log("Layer order:", layerOrder);
+    console.log("Sticky URLs:", Array.from(stickyUrls));
     layerCache.forEach((cachedLayer, url) => {
         const type = cachedLayer.isJPG ? "JPG" : "HiPS";
         const opacity = cachedLayer.layer ? cachedLayer.layer.getAlpha() : "N/A";
-        console.log(`- ${url}: ${type}, opacity: ${opacity}`);
+        const isSticky = stickyUrls.has(url) ? " (STICKY)" : "";
+        console.log(`- ${url}: ${type}, opacity: ${opacity}${isSticky}`);
     });
     console.log("========================");
 }
@@ -676,8 +679,8 @@ function goToWaypoint(index) {
 
                     // Update sticky layer if this waypoint is marked as sticky
                     if (waypoints[index].is_sticky) {
-                        console.log("Setting sticky layer:", waypoints[index].url);
-                        stickyUrl = waypoints[index].url;
+                        console.log("Adding sticky layer:", waypoints[index].url);
+                        stickyUrls.add(waypoints[index].url);
                     }
 
                     const cachedLayer = getOrCreateLayer(waypoints[index].url);
@@ -745,6 +748,25 @@ function goToWaypoint(index) {
                         bringLayerToFront(waypoints[index].url);
                         hideOtherLayers(waypoints[index].url, waypoints[index]);
                     }
+                } else {
+                    // No URL - just pan and zoom, then set up auto-advance
+                    console.log("No URL for waypoint, setting up auto-advance only");
+
+                    // Set up auto-advance timeout using configurable pause time
+                    if (isPlaying) {
+                        if (currentWaypoint === waypoints.length - 1 && loopTour) {
+                            console.log("End of tour reached, looping back to start");
+                            clearTimeout(waypointTimeout);
+                            const endPause = getAdjustedWaypointTimeMs(waypoint, 'end_of_tour_pause',
+                                             getAdjustedWaypointTimeMs(waypoint, 'pause_time', 5000));
+                            waypointTimeout = setTimeout(autoAdvance, endPause);
+                        } else if (currentWaypoint < waypoints.length - 1) {
+                            // Schedule next waypoint using configurable pause time
+                            clearTimeout(waypointTimeout);
+                            const pauseTime = getAdjustedWaypointTimeMs(waypoint, 'pause_time', 2000);
+                            waypointTimeout = setTimeout(autoAdvance, pauseTime);
+                        }
+                    }
                 }
 
             });
@@ -756,7 +778,7 @@ function goToWaypoint(index) {
             console.log("Pre-loading layer: ", waypoints[index].url);
             const cachedLayer = getOrCreateLayer(waypoints[index].url);
             // Immediately hide the newly created layer so it doesn't show during pan/zoom
-            if (cachedLayer && cachedLayer.layer && !cachedLayer.isJPG) {
+            if (cachedLayer && cachedLayer.layer && !cachedLayer.isJPG && waypoints[index].hide_during_pan) {
                 cachedLayer.layer.setOpacity(0.0);
             }
 
@@ -795,8 +817,8 @@ function goToWaypoint(index) {
 
                         // Update sticky layer if this waypoint is marked as sticky
                         if (waypoints[index].is_sticky) {
-                            console.log("Setting sticky layer:", waypoints[index].url);
-                            stickyUrl = waypoints[index].url;
+                            console.log("Adding sticky layer:", waypoints[index].url);
+                            stickyUrls.add(waypoints[index].url);
                         }
 
                         const cachedLayer = getOrCreateLayer(waypoints[index].url);
@@ -863,6 +885,25 @@ function goToWaypoint(index) {
                             bringLayerToFront(waypoints[index].url);
                             hideOtherLayers(waypoints[index].url, waypoints[index]);
                         }
+                    } else {
+                        // No URL - just pan and zoom, then set up auto-advance
+                        console.log("No URL for waypoint (multi-step), setting up auto-advance only");
+
+                        // Set up auto-advance timeout using configurable pause time
+                        if (isPlaying) {
+                            if (currentWaypoint === waypoints.length - 1 && loopTour) {
+                                console.log("End of tour reached, looping back to start");
+                                clearTimeout(waypointTimeout);
+                                const endPause = getAdjustedWaypointTimeMs(waypoint, 'end_of_tour_pause',
+                                                 getAdjustedWaypointTimeMs(waypoint, 'pause_time', 5000));
+                                waypointTimeout = setTimeout(autoAdvance, endPause);
+                            } else if (currentWaypoint < waypoints.length - 1) {
+                                // Schedule next waypoint using configurable pause time
+                                clearTimeout(waypointTimeout);
+                                const pauseTime = getAdjustedWaypointTimeMs(waypoint, 'pause_time', 2000);
+                                waypointTimeout = setTimeout(autoAdvance, pauseTime);
+                            }
+                        }
                     }
 
                 });
@@ -903,8 +944,8 @@ function jumpToWaypointWithLayers(index) {
 
             // Update sticky layer if this waypoint is marked as sticky
             if (wp.is_sticky) {
-                console.log("Setting sticky layer from waypoint", i, ":", wp.url);
-                stickyUrl = wp.url;
+                console.log("Adding sticky layer from waypoint", i, ":", wp.url);
+                stickyUrls.add(wp.url);
             }
 
             // Pre-load fade_layer if specified

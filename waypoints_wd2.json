@@ -1,0 +1,96 @@
+{
+    "waypoints": [
+        {
+            "ra": 155.992083,
+            "dec": -57.7636111,
+            "fov": 0.25,
+            "transition_fov": 0.25,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Westerlund 2 (RGB 1000-770-410)",
+            "description": "Westerlund 2 is a young massive star cluster located about 20,000 light-years away in the constellation Carina. This view shows the cluster in RGB 1000-770-410 filter combination using asinh scaling with 99.5% maximum stretch, revealing the stellar population and surrounding ionized gas in infrared wavelengths.",
+            "url": "wd2_RGB_1000-770-410_asinh_max99.5_transparent_hips",
+            "pause_time": 4000
+        },
+        {
+            "ra": 155.992083,
+            "dec": -57.7636111,
+            "fov": 0.25,
+            "transition_fov": 0.25,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Westerlund 2 (RGB 1130-770-164162 sub)",
+            "description": "The same region of Westerlund 2 viewed in RGB 1130-770-164162 filter combination with continuum subtraction and asinh scaling. This processing technique enhances emission line features and reduces stellar continuum, highlighting the nebular gas structures and stellar winds from the massive stars.",
+            "url": "wd2_RGB_1130-770-164162_sub_asinh_max99.5_transparent_hips",
+            "pause_time": 4000
+        },
+        {
+            "ra": 155.992083,
+            "dec": -57.7636111,
+            "fov": 0.25,
+            "transition_fov": 0.25,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Westerlund 2 NIRCam (RGB 212-200-187)",
+            "description": "JWST NIRCam observations of Westerlund 2 in RGB 212-200-187 filter combination. The Near Infrared Camera provides exceptional resolution and sensitivity, revealing fine details of the stellar cluster and surrounding dust structures with asinh scaling showing 99% of the dynamic range.",
+            "url": "wd2_nircam_RGB_212-200-187_asinh_max99_transparent_hips",
+            "pause_time": 4000
+        },
+        {
+            "ra": 155.992083,
+            "dec": -57.7636111,
+            "fov": 0.25,
+            "transition_fov": 0.25,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Westerlund 2 NIRCam (RGB 410-405-335)",
+            "description": "Another JWST NIRCam view of Westerlund 2 using RGB 410-405-335 filter combination. This longer wavelength view penetrates deeper into dusty regions and reveals different aspects of the stellar population and circumstellar material, processed with asinh scaling at 99.5% maximum.",
+            "url": "wd2_nircam_RGB_410-405-335_asinh_max99.5_transparent_hips",
+            "pause_time": 4000
+        },
+        {
+            "ra": 155.992083,
+            "dec": -57.7636111,
+            "fov": 0.25,
+            "transition_fov": 0.25,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Westerlund 2 (HEIC1509a)",
+            "description": "This iconic image of Westerlund 2 was captured by the Hubble Space Telescope and released as part of Hubble's 25th anniversary celebration. The image showcases the spectacular stellar nursery with its brilliant young stars, pillars of dense gas and dust, and the dramatic effects of stellar winds on the surrounding nebula.",
+            "url": "heic1509a_transparent_hips",
+            "pause_time": 4000
+        },
+        {
+            "ra": 156.01195833,
+            "dec": -57.73299167,
+            "fov": 0.05,
+            "transition_fov": 0.05,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Westerlund 2 (proplyd)",
+            "description": "proplyd....",
+            "url": "heic1509a_proplyd_transparent_hips",
+            "pause_time": 4000
+        },
+        {
+            "ra": 156.01195833,
+            "dec": -57.73299167,
+            "fov": 0.05,
+            "transition_fov": 0.05,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "url": "wd2_nircam_RGB_410-405-335_asinh_max99.5_transparent_hips",
+            "title": "Westerlund 2 (proplyd)",
+            "description": "proplyd....",
+            "pause_time": 4000
+        }
+
+    ]
+}

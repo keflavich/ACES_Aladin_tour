@@ -154,6 +154,16 @@
             "pause_time": 1000
         },
         {
+            "ra": 266.411514,
+            "dec":  -29.0135211,
+            "fov": 0.1,
+            "transition_fov": 0.06,
+            "url": "SgrA_RGB_MIRI_1500-1000-560_transparent_hips",
+            "title": "Sgr A* MIRI",
+            "description": "Sgr A* MIRI",
+            "pause_time": 1000
+        },
+        {
             "ra": 266.175234,
             "dec":  -29.4492399,
             "fov": 0.15,

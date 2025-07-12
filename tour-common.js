@@ -46,6 +46,11 @@ function getImageUrl(relativePath) {
     if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
         return relativePath;
     }
+    // If it's a CDS HiPS path (starts with "CDS/P/"), use it directly as a HiPS identifier
+    if (relativePath.startsWith('CDS/P/')) {
+        console.log('Detected CDS HiPS path, using as identifier:', relativePath);
+        return relativePath;
+    }
     return rootUrl + relativePath;
 }
 
@@ -1150,13 +1155,13 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
     A.init.then(() => {
         console.log('A.init completed, creating Aladin instance');
 
-        const initialSurvey = getImageUrl(tourConfig.initialSurvey || 'rgb_final_uncropped_hips/');
+        const initialSurvey = getImageUrl(tourConfig.initialSurvey || '2MASS');
 
         aladin = A.aladin('#aladin-lite-div', {
             survey: initialSurvey,
             fov: waypoints[0].fov,
             target: waypoints[0].ra + ' ' + waypoints[0].dec,
-            cooFrame: 'GAL',
+            cooFrame: (tourConfig.cooFrame || 'GAL'),
             showReticle: false,
             showZoomControl: true,
             showFullscreenControl: true,

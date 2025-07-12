@@ -1,5 +1,6 @@
 {
     "waypoints": [
+
         {
             "ra": 155.992083,
             "dec": -57.7636111,
@@ -88,6 +89,19 @@
             "zoom_in_time": 3,
             "url": "wd2_nircam_RGB_410-405-335_asinh_max99.5_transparent_hips",
             "title": "Westerlund 2 (proplyd)",
+            "description": "proplyd....",
+            "pause_time": 4000
+        },
+        {
+            "ra": 156.01195833,
+            "dec": -57.73299167,
+            "fov": 0.05,
+            "transition_fov": 0.05,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "url": "wd2_miri_RGB_1130-1000-770_log_max99.9_transparent_hips",
+            "title": "Westerlund 2 (MIRI)",
             "description": "proplyd....",
             "pause_time": 4000
         }

@@ -82,6 +82,55 @@
                 "fade_delay": 0.5,
                 "fade_in_time": 1,
                 "pause_time": 5000
+            },
+            {
+                "ra": 266.831895,
+                "dec":  -28.3711494,
+                "fov": 0.02,
+                "transition_fov": 0.02,
+                "url": "SgrB2_2550_770_480_avm_hips",
+                "fade_layer": "SgrB2_RGB_480-405-187_scaled_transparent_hips",
+                "title": "Sgr B2N - MIRI",
+                "description": "The Sgr B2 N high-mass protocluster seen with JWST MIRI. The red color shows the 25 micron emission leaking out from behind the huge mass of dust blocking most of the light.  At shorter wavelengths, nothing is visible. \n Data by Nazar Budaiev & Adam Ginsburg."
+            },
+            {
+                "ra": 266.831895,
+                "dec":  -28.3711494,
+                "fov": 0.02,
+                "transition_fov": 0.02,
+                "url": "SgrB2_RGB_480-405-187_scaled_transparent_hips",
+                "fade_layer": "SgrB2_2550_770_480_avm_hips",
+                "title": "Sgr B2N - NIRCAM",
+                "description": "The Sgr B2 N high-mass protocluster seen with JWST NIRCam.  Almost no light escapes from this still-forming cluster.  \n Data by Nazar Budaiev & Adam Ginsburg."
+            },
+            {
+                "ra": 266.842944,
+                "dec":  -28.3714462,
+                "fov": 0.03,
+                "transition_fov": 0.03,
+                "url": "SgrB2_RGB_480-405-187_scaled_transparent_hips",
+                "title": "Sgr B2 East side - NIRCAM",
+                "description": "To the east, extended nebulosity is visible in both NIRCAM and MIRI through this relatively low-extinction region.  \n Data by Nazar Budaiev & Adam Ginsburg."
+            },
+            {
+                "ra": 266.835684,
+                "dec":  -28.3828985,
+                "fov": 0.03,
+                "transition_fov": 0.03,
+                "url": "SgrB2_RGB_2550_770_480_avm_hips",
+                "fade_layer": "SgrB2_RGB_480-405-187_scaled_transparent_hips",
+                "title": "Sgr B2M - MIRI",
+                "description": "The Sgr B2 M high-mass protocluster seen with JWST MIRI.  This cluster is more advanced in age, having produced HII regions that are visible at all infrared wavelengths.  \n Data by Nazar Budaiev & Adam Ginsburg."
+            },
+            {
+                "ra": 266.835684,
+                "dec":  -28.3828985,
+                "fov": 0.03,
+                "transition_fov": 0.03,
+                "url": "SgrB2_RGB_480-405-187_scaled_transparent_hips",
+                "fade_layer": "SgrB2_RGB_2550_770_480_avm_hips",
+                "title": "Sgr B2M - NIRCAM",
+                "description": "The Sgr B2 M high-mass protocluster seen with JWST NIRCam.  \n Data by Nazar Budaiev & Adam Ginsburg."
             }
         ]
     }

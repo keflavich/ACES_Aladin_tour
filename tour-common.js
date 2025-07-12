@@ -609,7 +609,7 @@ function goToWaypoint(index) {
         } else {
             // Distant waypoints: zoom out + movement + zoom in + optional fade + pause
             totalTime = getAdjustedWaypointTimeMs(waypoint, 'zoom_out_time', 2) +
-                       getAdjustedWaypointTimeMs(waypoint, 'transition_time', 2) +
+                       getAdjustedWaypointTimeMs(waypoint, 'transition_time', 1) +
                        getAdjustedWaypointTimeMs(waypoint, 'zoom_in_time', 2);
         }
 

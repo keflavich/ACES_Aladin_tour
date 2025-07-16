@@ -22,6 +22,13 @@ let stickyUrls = new Set(); // Track sticky layers that should persist across wa
 // Speed control system
 let speedMultiplier = 1; // 1 = normal, 2 = 2x speed, 4 = 4x speed
 
+// Region editing system
+let regionEditingEnabled = false;
+let regionOverlay = null;
+let currentRegionPoints = [];
+let isDrawingRegion = false;
+let regionEditingClickHandler = null;
+
 // Root URL configuration based on environment
 let rootUrl;
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -1092,6 +1099,271 @@ function animateLayerOpacity(layer, startOpacity, endOpacity, duration, callback
     doOpacityStep();
 }
 
+// Region editing functions
+function toggleRegionEditing() {
+    regionEditingEnabled = !regionEditingEnabled;
+
+    const button = document.getElementById('region-toggle-btn');
+    const instructions = document.getElementById('region-instructions');
+    const controls = document.getElementById('region-controls');
+
+    if (regionEditingEnabled) {
+        button.textContent = 'Disable Regions';
+        button.classList.add('active');
+        instructions.classList.add('visible');
+        controls.classList.add('editing');
+        enableRegionEditing();
+        console.log('Region editing enabled');
+    } else {
+        button.textContent = 'Enable Regions';
+        button.classList.remove('active');
+        instructions.classList.remove('visible');
+        controls.classList.remove('editing');
+        disableRegionEditing();
+        console.log('Region editing disabled');
+    }
+}
+
+function enableRegionEditing() {
+    if (!aladin) return;
+
+    // Create region overlay if it doesn't exist
+    if (!regionOverlay) {
+        regionOverlay = A.graphicOverlay({
+            color: '#ff0000',
+            lineWidth: 2,
+            fillColor: 'rgba(255, 0, 0, 0.1)'
+        });
+        aladin.addOverlay(regionOverlay);
+    }
+
+    // Set up click handler for region drawing
+    regionEditingClickHandler = function(params) {
+        if (regionEditingEnabled && params && params.ra !== undefined && params.dec !== undefined) {
+            addRegionPoint(params.ra, params.dec);
+        }
+    };
+
+    // Add event listener for clicks on the Aladin view
+    // Try different event listener approaches for Aladin Lite v3
+    try {
+        if (aladin.on) {
+            aladin.on('click', regionEditingClickHandler);
+        } else if (aladin.addEventListener) {
+            aladin.addEventListener('click', regionEditingClickHandler);
+        } else {
+            // Fallback: attach to the DOM element
+            const aladinDiv = document.getElementById('aladin-lite-div');
+            if (aladinDiv) {
+                aladinDiv.addEventListener('click', function(event) {
+                    // Convert pixel coordinates to celestial coordinates
+                    const rect = aladinDiv.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const y = event.clientY - rect.top;
+
+                    // Use Aladin's coordinate conversion if available
+                    if (aladin.pix2world) {
+                        const coords = aladin.pix2world(x, y);
+                        if (coords && coords.length >= 2) {
+                            regionEditingClickHandler({ra: coords[0], dec: coords[1]});
+                        }
+                    }
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Error setting up region editing click handler:', e);
+    }
+
+    // Change cursor to indicate drawing mode
+    const aladinDiv = document.getElementById('aladin-lite-div');
+    if (aladinDiv) {
+        aladinDiv.style.cursor = 'crosshair';
+    }
+}
+
+function disableRegionEditing() {
+    if (!aladin) return;
+
+    // Remove event listener
+    if (regionEditingClickHandler) {
+        try {
+            if (aladin.off) {
+                aladin.off('click', regionEditingClickHandler);
+            } else if (aladin.removeEventListener) {
+                aladin.removeEventListener('click', regionEditingClickHandler);
+            }
+        } catch (e) {
+            console.error('Error removing region editing click handler:', e);
+        }
+        regionEditingClickHandler = null;
+    }
+
+    // Reset cursor
+    const aladinDiv = document.getElementById('aladin-lite-div');
+    if (aladinDiv) {
+        aladinDiv.style.cursor = 'default';
+    }
+
+    // Reset drawing state
+    isDrawingRegion = false;
+    currentRegionPoints = [];
+}
+
+function addRegionPoint(ra, dec) {
+    currentRegionPoints.push([ra, dec]);
+
+    if (currentRegionPoints.length === 1) {
+        // First point - start drawing
+        isDrawingRegion = true;
+        console.log('Started drawing region at:', ra, dec);
+    } else if (currentRegionPoints.length >= 3) {
+        // Minimum 3 points for a polygon
+        console.log('Added point to region:', ra, dec, 'Total points:', currentRegionPoints.length);
+
+        // Check if we should close the polygon (clicked near the first point)
+        const firstPoint = currentRegionPoints[0];
+        const distance = Math.sqrt(Math.pow(ra - firstPoint[0], 2) + Math.pow(dec - firstPoint[1], 2));
+
+        if (distance < 0.1) { // Close threshold of 0.1 degrees
+            completeRegion();
+        } else {
+            updateRegionDisplay();
+        }
+    } else {
+        console.log('Added point to region:', ra, dec, 'Total points:', currentRegionPoints.length);
+        updateRegionDisplay();
+    }
+}
+
+function updateRegionDisplay() {
+    if (!regionOverlay || currentRegionPoints.length < 2) return;
+
+    // Clear previous shapes
+    regionOverlay.removeAll();
+
+    // Draw lines between points
+    for (let i = 0; i < currentRegionPoints.length - 1; i++) {
+        try {
+            const line = A.polyline([currentRegionPoints[i], currentRegionPoints[i + 1]], {
+                color: '#ff0000',
+                lineWidth: 2
+            });
+            regionOverlay.add(line);
+        } catch (e) {
+            console.error('Error creating polyline:', e);
+        }
+    }
+
+    // Draw points
+    currentRegionPoints.forEach((point, index) => {
+        try {
+            const marker = A.marker(point[0], point[1], {
+                color: '#ff0000',
+                markerSize: 8
+            });
+            regionOverlay.add(marker);
+        } catch (e) {
+            console.error('Error creating marker:', e);
+        }
+    });
+}
+
+function completeRegion() {
+    if (currentRegionPoints.length < 3) return;
+
+    console.log('Completing region with', currentRegionPoints.length, 'points');
+
+    // Clear previous display
+    regionOverlay.removeAll();
+
+    // Create final polygon
+    try {
+        const polygon = A.polygon(currentRegionPoints, {
+            color: '#ff0000',
+            lineWidth: 2,
+            fillColor: 'rgba(255, 0, 0, 0.1)'
+        });
+
+        regionOverlay.add(polygon);
+    } catch (e) {
+        console.error('Error creating polygon:', e);
+        // Fallback: create polyline instead
+        try {
+            const polyline = A.polyline([...currentRegionPoints, currentRegionPoints[0]], {
+                color: '#ff0000',
+                lineWidth: 2
+            });
+            regionOverlay.add(polyline);
+        } catch (e2) {
+            console.error('Error creating fallback polyline:', e2);
+        }
+    }
+
+    // Show region info
+    const regionInfo = {
+        points: currentRegionPoints,
+        area: calculatePolygonArea(currentRegionPoints),
+        center: calculatePolygonCenter(currentRegionPoints)
+    };
+
+    console.log('Region completed:', regionInfo);
+
+    // Optional: Show region details in UI
+    showRegionDetails(regionInfo);
+
+    // Reset for next region
+    currentRegionPoints = [];
+    isDrawingRegion = false;
+}
+
+function calculatePolygonArea(points) {
+    // Simple approximation for small regions
+    if (points.length < 3) return 0;
+
+    let area = 0;
+    for (let i = 0; i < points.length; i++) {
+        const j = (i + 1) % points.length;
+        area += points[i][0] * points[j][1];
+        area -= points[j][0] * points[i][1];
+    }
+    return Math.abs(area) / 2;
+}
+
+function calculatePolygonCenter(points) {
+    if (points.length === 0) return [0, 0];
+
+    const sumRa = points.reduce((sum, p) => sum + p[0], 0);
+    const sumDec = points.reduce((sum, p) => sum + p[1], 0);
+
+    return [sumRa / points.length, sumDec / points.length];
+}
+
+function showRegionDetails(regionInfo) {
+    const message = `Region created with ${regionInfo.points.length} points\n` +
+                   `Center: RA ${regionInfo.center[0].toFixed(4)}, Dec ${regionInfo.center[1].toFixed(4)}\n` +
+                   `Approximate area: ${regionInfo.area.toFixed(6)} sq degrees`;
+
+    console.log(message);
+
+    // Optional: Show in UI (could be enhanced with a modal or info panel)
+    if (confirm(message + '\n\nWould you like to create another region?')) {
+        // Continue editing
+    } else {
+        // Stop editing
+        toggleRegionEditing();
+    }
+}
+
+function clearAllRegions() {
+    if (regionOverlay) {
+        regionOverlay.removeAll();
+    }
+    currentRegionPoints = [];
+    isDrawingRegion = false;
+    console.log('All regions cleared');
+}
+
 // Initialize tour function - called by individual HTML files
 // Generic function to load waypoints from JSON file
 async function loadWaypoints(waypointFile, tourConfig = {}, errorMessage = null) {
@@ -1131,6 +1403,9 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
     // Make controls draggable (waypoint-info is static)
     makeDraggable(document.getElementById('progress-container'));
     makeDraggable(document.getElementById('tour-controls'));
+
+    // Make region controls draggable
+    //makeDraggable(document.getElementById('region-controls'));
 
     // Initialize mobile info panel state
     initializeMobileInfoPanel();
@@ -1316,6 +1591,11 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
                     }
                 }
             }
+        });
+
+        // Set up region editing toggle button event listener
+        document.getElementById('region-toggle-btn').addEventListener('click', function () {
+            toggleRegionEditing();
         });
     }).catch(err => {
         console.error('Failed to initialize Aladin:', err);

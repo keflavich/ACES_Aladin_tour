@@ -41,6 +41,7 @@
                 "title": "The M0.8-0.2 Ring: A Supernova's Legacy",
                 "description": "This remarkable ring-shaped molecular cloud was discovered by Nonhebel et al. (2024) in ACES data. With inner and outer radii of 3.1 and 6.1 parsecs, this structure contains ~10⁶ solar masses of gas expanding at ~20 km/s. The team proposes this is the remnant of a hypernova explosion that disrupted a massive molecular cloud, providing an extreme example of stellar feedback in the CMZ. Citation: Nonhebel et al. 2024, A&A, 691, A70",
                 "url": "MUSTANG_12m_feather_noaxes_hips/",
+                "fade_enabled": false,
                 "fade_layer": "rgb_final_uncropped_hips",
                 "pause_time": 8000
             },
@@ -55,7 +56,8 @@
                 "title": "Back to ACES Overview",
                 "description": "Returning to the full ACES field of view to contextualize our next discovery - a mysterious compact object with extraordinarily broad molecular line emission.",
                 "url": "MUSTANG_12m_feather_noaxes_hips/",
-                "pause_time": 4000
+                "pause_time": 4000,
+                "fade_enabled": false
             },
             {
                 "ra": 266.49059351,
@@ -69,6 +71,7 @@
                 "description": "The Millimeter Ultra-Broad-Line Object (MUBLO) discovered by Ginsburg et al. (2024) is unlike anything previously observed. This compact source (≲10⁴ AU) exhibits molecular line emission with extreme velocities (~160 km/s FWHM) in CS, SO, and SO₂ transitions, yet shows no signs of strong shocks. Despite extensive modeling, its nature remains a mystery - possibly representing an entirely new class of astrophysical object. Citation: Ginsburg et al. 2024, ApJL, 968, L11",
                 "url": "MUSTANG_12m_feather_noaxes_hips/",
                 "fade_layer": "rgb_final_uncropped_hips",
+                "fade_enabled": false,
                 "pause_time": 10000
             },
             {

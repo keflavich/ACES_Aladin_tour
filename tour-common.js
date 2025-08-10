@@ -22,6 +22,12 @@ let stickyUrls = new Set(); // Track sticky layers that should persist across wa
 // Speed control system
 let speedMultiplier = 1; // 1 = normal, 2 = 2x speed, 4 = 4x speed
 
+// Description panel visibility (URL-configurable)
+let descriptionEnabled = true; // defaults to true; if URL has description=false, start collapsed
+
+// Autoplay configuration (URL-configurable)
+let autoPlayEnabled = false; // defaults to false; if URL has autoplay=true, start playing
+
 // Region editing system
 let regionEditingEnabled = false;
 let regionOverlay = null;
@@ -81,6 +87,26 @@ function updateUrlHash() {
                 console.log('Updated URL hash to:', newHash);
             }
         }
+    }
+}
+
+// Helper to update URL query parameters without reloading the page
+function setUrlQueryParam(paramName, paramValue, useReplace = true) {
+    try {
+        const url = new URL(window.location.href);
+        if (paramValue === null || paramValue === undefined) {
+            url.searchParams.delete(paramName);
+        } else {
+            url.searchParams.set(paramName, String(paramValue));
+        }
+        const newUrl = url.pathname + url.search + url.hash;
+        if (useReplace) {
+            window.history.replaceState(null, '', newUrl);
+        } else {
+            window.history.pushState(null, '', newUrl);
+        }
+    } catch (e) {
+        console.warn('Failed to update URL parameter', paramName, e);
     }
 }
 
@@ -1426,6 +1452,38 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
         });
     });
 
+    // Create a minimize button for the waypoint info panel (top-right)
+    try {
+        const infoPanel = document.getElementById('waypoint-info');
+        if (infoPanel && !document.getElementById('minimize-btn')) {
+            const minimizeBtn = document.createElement('button');
+            minimizeBtn.id = 'minimize-btn';
+            minimizeBtn.title = 'Hide description';
+            minimizeBtn.innerHTML = '–';
+            minimizeBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const isCollapsed = infoPanel.classList.contains('collapsed');
+                if (isCollapsed) {
+                    infoPanel.classList.remove('collapsed');
+                    infoPanel.classList.remove('expanded');
+                    minimizeBtn.title = 'Hide description';
+                    minimizeBtn.innerHTML = '–';
+                    setUrlQueryParam('description', 'true');
+                } else {
+                    infoPanel.classList.remove('expanded');
+                    infoPanel.classList.add('collapsed');
+                    minimizeBtn.title = 'Show description';
+                    minimizeBtn.innerHTML = '+';
+                    setUrlQueryParam('description', 'false');
+                }
+                isInfoExpanded = false;
+            });
+            infoPanel.appendChild(minimizeBtn);
+        }
+    } catch (e) {
+        console.warn('Failed to create minimize button:', e);
+    }
+
     // Read optional speed from URL query string (e.g., ?speed=4)
     try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -1446,6 +1504,34 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
                 }
                 console.log('Speed multiplier set from URL:', speedMultiplier);
             }
+        }
+
+        // Optional description visibility from URL (?description=false)
+        const descriptionParam = urlParams.get('description');
+        if (descriptionParam !== null) {
+            const val = String(descriptionParam).toLowerCase();
+            descriptionEnabled = !(val === 'false' || val === '0' || val === 'no' || val === 'off');
+        }
+        if (!descriptionEnabled) {
+            const infoPanel = document.getElementById('waypoint-info');
+            const minimizeBtn = document.getElementById('minimize-btn');
+            if (infoPanel) {
+                infoPanel.classList.add('collapsed');
+                infoPanel.classList.remove('expanded');
+            }
+            if (minimizeBtn) {
+                minimizeBtn.title = 'Show description';
+                minimizeBtn.innerHTML = '+';
+            }
+            isInfoExpanded = false;
+            console.log('Description set to start minimized from URL');
+        }
+
+        // Optional autoplay from URL (?autoplay=true)
+        const autoplayParam = urlParams.get('autoplay');
+        if (autoplayParam !== null) {
+            const val = String(autoplayParam).toLowerCase();
+            autoPlayEnabled = (val === 'true' || val === '1' || val === 'yes' || val === 'on');
         }
     } catch (e) {
         console.warn('Failed to parse speed from URL:', e);
@@ -1500,6 +1586,14 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
             updateWaypointInfo();
             updateProgressBar();
             goToWaypointFast(0);
+        }
+
+        // Autoplay if requested via URL
+        if (autoPlayEnabled) {
+            // Slight defer to ensure initial navigation/render completes
+            setTimeout(() => {
+                startTour();
+            }, 0);
         }
 
         // Set up browser back/forward navigation handling

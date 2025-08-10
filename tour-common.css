@@ -89,6 +89,7 @@
 #waypoint-info {
     max-width: 90vw;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 /* Override any default positioning for mobile only */
@@ -131,6 +132,7 @@
     align-items: center;
     gap: 10px;
     width: fit-content;
+    z-index: 10;
 }
 
 #waypoint-title {
@@ -138,6 +140,7 @@
     margin: 0;
     flex: 0 1 auto;
     line-height: 1.2;
+    z-index: 10;
 }
 
 #expand-btn {
@@ -161,10 +164,59 @@
     margin-top: 10px;
 }
 
+/* Minimize button placed in the top-right of the info panel */
+#minimize-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.142);
+    background: inherit; /* match panel background (rgba) */
+    color: #ffffff4c; /* white on black */
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    z-index: 1; /* below text by default */
+    pointer-events: none; /* do not intercept clicks until hovered */
+    opacity: 0.75;
+}
+
+#minimize-btn:hover {
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* When hovering the panel, bring the button to front and make it clickable */
+#waypoint-info:hover #minimize-btn {
+    z-index: 999;
+    pointer-events: auto;
+    opacity: 1;
+}
+
+/* On touch devices (no hover), keep the button interactive */
+@media (hover: none) {
+    #minimize-btn {
+        z-index: 999;
+        pointer-events: auto;
+        opacity: 1;
+    }
+}
+
+/* Collapsed state hides content on all screen sizes when triggered via minimize */
+#waypoint-info.collapsed #waypoint-content {
+    display: none;
+}
+
 #waypoint-description {
     font-size: 16px;
     line-height: 1.4;
     margin: 0;
+    z-index: 10;
 }
 
 /* Mobile specific adjustments */
@@ -229,6 +281,7 @@
     #waypoint-title {
         font-size: 28px;
         font-weight: bold;
+        z-index: 10;
     }
 
     #waypoint-description {
@@ -299,6 +352,7 @@
     #waypoint-title {
         font-size: 24px;
         font-weight: bold;
+        z-index: 10;
     }
 
     #waypoint-description {

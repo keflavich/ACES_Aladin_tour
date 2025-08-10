@@ -1426,6 +1426,31 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
         });
     });
 
+    // Read optional speed from URL query string (e.g., ?speed=4)
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const speedParam = urlParams.get('speed');
+        if (speedParam !== null) {
+            const parsedSpeed = parseFloat(speedParam);
+            if (!isNaN(parsedSpeed) && parsedSpeed > 0) {
+                speedMultiplier = parsedSpeed;
+                if (speedDropdown) {
+                    const values = Array.from(speedDropdown.options).map(o => o.value);
+                    if (!values.includes(String(parsedSpeed))) {
+                        const opt = document.createElement('option');
+                        opt.value = String(parsedSpeed);
+                        opt.textContent = `${parsedSpeed}×`;
+                        speedDropdown.appendChild(opt);
+                    }
+                    speedDropdown.value = String(parsedSpeed);
+                }
+                console.log('Speed multiplier set from URL:', speedMultiplier);
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to parse speed from URL:', e);
+    }
+
     // Wait for A.init promise to complete (required for v3 API)
     A.init.then(() => {
         console.log('A.init completed, creating Aladin instance');

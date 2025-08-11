@@ -1,0 +1,14 @@
+/* Basic draggable styling */
+.draggable {
+    cursor: move;
+    position: absolute;
+    z-index: 1000;
+}
+
+.draggable:hover {
+    opacity: 0.9;
+}
+
+.draggable.dragging {
+    opacity: 0.7;
+}

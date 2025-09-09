@@ -46,9 +46,12 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
 } else if (window.location.hostname.includes('github.io') || window.location.hostname.includes('githubusercontent.com')) {
     rootUrl = 'https://keflavich.github.io/avm_images/';
     console.log('Running on GitHub Pages, using GitHub URL', rootUrl);
+} else if (window.location.hostname === 'az1-apacheint-prod02.server.ufl.edu') {
+    rootUrl = 'https://starformation.astro.ufl.edu/avm_images/';
+    console.log('Running on UF data server, using UF URL', rootUrl);
 } else {
     // Default fallback
-    rootUrl = 'https://data.rc.ufl.edu/pub/adamginsburg/avm_images/';
+    rootUrl = 'https://starformation.astro.ufl.edu/avm_images/';
     console.log('Unknown hostname, defaulting to UF data server URL', rootUrl);
 }
 

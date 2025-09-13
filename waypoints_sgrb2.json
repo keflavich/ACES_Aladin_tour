@@ -74,7 +74,7 @@
                 "transition_time": 5,
                 "zoom_out_time": 1,
                 "zoom_in_time": 1,
-                "url": "SgrB2_2550_770_480_avm_hips",
+                "url": "SgrB2_RGB_2550-1280-770_transparent_hips",
                 "fade_layer": "jwst_cmz_hips/",
                 "title": "Sgr B2 - MIRI",
                 "description": "The Sgr B2 cloud seen with JWST MIRI.  This is a composite of the 25.5, 7.7, and NIRCam 4.8 micron bands.  \n Data by Nazar Budaiev & Adam Ginsburg.",

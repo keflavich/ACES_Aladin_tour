@@ -3,6 +3,19 @@
         {
             "ra": 290.916769,
             "dec": 14.5184888,
+            "fov": 0.12,
+            "transition_fov": 0.1,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "W51 (RGB 162-210-187)",
+            "description": "Instructions: To zoom and pan through various points of interest, changing the color image as you go, use the controls below.  The 'Overlays' menu on the left can be used to control which image is shown.",
+            "url": "w51_RGB_162-210-187_transparent_hips",
+            "pause_time": 3000
+        },
+        {
+            "ra": 290.916769,
+            "dec": 14.5184888,
             "fov": 0.02,
             "transition_fov": 0.1,
             "transition_time": 3,

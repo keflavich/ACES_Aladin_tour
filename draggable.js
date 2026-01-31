@@ -5,7 +5,22 @@
 function makeDraggable(element) {
     if (!element) return;
 
+    // Helper function to check if target is an interactive element
+    function isInteractiveElement(target) {
+        const tagName = target.tagName.toLowerCase();
+        return tagName === 'button' || 
+               tagName === 'select' || 
+               tagName === 'input' || 
+               tagName === 'a' ||
+               target.closest('button, select, input, a');
+    }
+
     element.addEventListener('mousedown', function(e) {
+        // Don't start dragging if clicking on interactive elements
+        if (isInteractiveElement(e.target)) {
+            return;
+        }
+
         isDragging = true;
         currentDragElement = element;
 
@@ -18,6 +33,11 @@ function makeDraggable(element) {
     });
 
     element.addEventListener('touchstart', function(e) {
+        // Don't start dragging if touching interactive elements
+        if (isInteractiveElement(e.target)) {
+            return;
+        }
+
         isDragging = true;
         currentDragElement = element;
 

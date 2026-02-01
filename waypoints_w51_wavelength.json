@@ -1,0 +1,71 @@
+{
+    "waypoints": [
+        {
+            "ra": 290.916769,
+            "dec": 14.5184888,
+            "fov": 0.02,
+            "transition_fov": 0.1,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "W51-IRS2 Wavelength Explorer",
+            "description": "Use the wavelength slider below to smoothly transition between different infrared wavelengths and explore how W51-IRS2 appears across the spectrum. This massive young stellar object reveals different features at different wavelengths: shorter wavelengths (140-210 nm) show scattered starlight and cooler dust, while longer wavelengths (335-480 nm) trace warmer dust and reveal emission from polycyclic aromatic hydrocarbons (PAHs). Slide from short to long wavelengths to see the changing view!",
+            "pause_time": 300000,
+            "wavelength_slider": {
+                "enabled": true,
+                "wavelengths": [
+                    {
+                        "wavelength": 140,
+                        "url": "w51_RGB_182-162-140_log_transparent_hips",
+                        "label": "F140M (1.40 μm)"
+                    },
+                    {
+                        "wavelength": 162,
+                        "url": "w51_RGB_162-210-187_transparent_hips",
+                        "label": "F162M (1.62 μm)"
+                    },
+                    {
+                        "wavelength": 182,
+                        "url": "w51_RGB_182-162-140_log_transparent_hips",
+                        "label": "F182M (1.82 μm)"
+                    },
+                    {
+                        "wavelength": 187,
+                        "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+                        "label": "F187N (1.87 μm)"
+                    },
+                    {
+                        "wavelength": 210,
+                        "url": "w51_RGB_162-210-187_transparent_hips",
+                        "label": "F210M (2.10 μm)"
+                    },
+                    {
+                        "wavelength": 335,
+                        "url": "w51_RGB_360-335-210_transparent_hips",
+                        "label": "F335M (3.35 μm)"
+                    },
+                    {
+                        "wavelength": 360,
+                        "url": "w51_RGB_405-360-335_transparent_hips",
+                        "label": "F360M (3.60 μm)"
+                    },
+                    {
+                        "wavelength": 405,
+                        "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+                        "label": "F405N (4.05 μm)"
+                    },
+                    {
+                        "wavelength": 410,
+                        "url": "w51_RGB_480-410-405_transparent_hips",
+                        "label": "F410M (4.10 μm)"
+                    },
+                    {
+                        "wavelength": 480,
+                        "url": "w51_RGB_480-410-405_transparent_hips",
+                        "label": "F480M (4.80 μm)"
+                    }
+                ]
+            }
+        }
+    ]
+}

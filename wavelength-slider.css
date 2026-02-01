@@ -1,0 +1,138 @@
+/* Wavelength Slider Styles */
+
+.wavelength-slider-container {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(41, 98, 255, 0.95);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 110;
+    min-width: 500px;
+    max-width: 700px;
+    backdrop-filter: blur(10px);
+}
+
+.wavelength-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.wavelength-slider-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.wavelength-label {
+    font-size: 16px;
+    font-weight: 600;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 5px 12px;
+    border-radius: 6px;
+}
+
+.wavelength-slider-track {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.wavelength-min-label,
+.wavelength-max-label {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: 60px;
+}
+
+.wavelength-min-label {
+    text-align: right;
+}
+
+.wavelength-max-label {
+    text-align: left;
+}
+
+.wavelength-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, 
+        rgba(255, 255, 255, 0.3), 
+        rgba(255, 255, 255, 0.6));
+    outline: none;
+    cursor: pointer;
+}
+
+.wavelength-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s ease;
+}
+
+.wavelength-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.wavelength-slider::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+}
+
+.wavelength-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s ease;
+}
+
+.wavelength-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+.wavelength-slider::-moz-range-thumb:active {
+    transform: scale(1.1);
+}
+
+/* Make the container draggable */
+.wavelength-slider-container.dragging {
+    cursor: grabbing;
+    user-select: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .wavelength-slider-container {
+        min-width: 90%;
+        max-width: 90%;
+        padding: 15px 20px;
+    }
+    
+    .wavelength-slider-title {
+        font-size: 16px;
+    }
+    
+    .wavelength-label {
+        font-size: 14px;
+    }
+    
+    .wavelength-slider-track {
+        gap: 10px;
+    }
+}

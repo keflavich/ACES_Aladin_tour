@@ -1599,6 +1599,15 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
             }, 0);
         }
 
+        // Call the onWaypointsLoaded callback if provided
+        if (tourConfig.onWaypointsLoaded && typeof tourConfig.onWaypointsLoaded === 'function') {
+            try {
+                tourConfig.onWaypointsLoaded(waypoints);
+            } catch (err) {
+                console.error('Error in onWaypointsLoaded callback:', err);
+            }
+        }
+
         // Set up browser back/forward navigation handling
         window.addEventListener('popstate', handleHashChange);
         window.addEventListener('hashchange', handleHashChange);
@@ -1715,10 +1724,13 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
             }
         });
 
-        // Set up region editing toggle button event listener
-        document.getElementById('region-toggle-btn').addEventListener('click', function () {
-            toggleRegionEditing();
-        });
+        // Set up region editing toggle button event listener (if it exists)
+        const regionToggleBtn = document.getElementById('region-toggle-btn');
+        if (regionToggleBtn) {
+            regionToggleBtn.addEventListener('click', function () {
+                toggleRegionEditing();
+            });
+        }
     }).catch(err => {
         console.error('Failed to initialize Aladin:', err);
         document.getElementById('loading-div').textContent = 'Error loading Aladin. Please refresh the page.';

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>W51 Wavelength Explorer</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js' charset='utf-8'></script>
+    <!-- Add draggable functionality -->
+    <script type="text/javascript" src="draggable.js"></script>
+    <script type="text/javascript" src="tour-common.js"></script>
+    <script type="text/javascript" src="wavelength-slider.js"></script>
+    <link rel="stylesheet" href="default.css">
+    <link rel="stylesheet" href="draggable.css">
+    <link rel="stylesheet" href="tour-common.css">
+    <link rel="stylesheet" href="wavelength-slider.css">
+</head>
+
+<body>
+    <div id="aladin-lite-div"></div>
+
+    <div id="loading-div">Loading W51 Wavelength Explorer... Please wait.</div>
+
+    <div id="waypoint-info">
+        <div id="waypoint-header">
+            <button id="expand-btn" title="Expand/Collapse Info">▶</button>
+            <h2 id="waypoint-title">W51 Wavelength Explorer</h2>
+        </div>
+        <div id="waypoint-content">
+            <p id="waypoint-description">
+            Use the wavelength slider below to smoothly transition between different infrared wavelengths and explore how W51-IRS2 appears across the spectrum. This massive young stellar object reveals different features at different wavelengths: shorter wavelengths (1.4-2.1 μm) show scattered starlight and cooler dust, while longer wavelengths (3.35-4.8 μm) trace warmer dust and reveal emission from polycyclic aromatic hydrocarbons (PAHs). Slide from short to long wavelengths to see the changing view!
+            </p>
+        </div>
+    </div>
+
+    <div id="progress-container">
+        <div id="progress-bar">
+            <div id="progress"></div>
+        </div>
+        <span id="current-waypoint">1/1</span>
+    </div>
+
+    <div id="tour-controls">
+        <button id="prev-btn" title="Previous" disabled>‹</button>
+        <button id="next-btn" title="Next" disabled>›</button>
+        <button id="start-btn" title="Start/Play Tour" disabled>▶</button>
+        <button id="reset-btn" title="Reset">⟲</button>
+        <button id="share-btn" title="Copy shareable link to current waypoint">🔗</button>
+        <select id="waypoint-dropdown" title="Jump to waypoint"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 36px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="">≫</option>
+        </select>
+        <select id="speed-dropdown" title="Tour speed: 1× = normal, 2× = double speed, 4× = quadruple speed"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 42px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+        </select>
+    </div>
+
+    <div id="countdown-timer" style="display: none;">
+        <span id="countdown-text">Next in: </span>
+        <span id="countdown-value">5</span>
+    </div>
+
+    <!-- Wavelength slider will be inserted here by JavaScript -->
+    <div id="wavelength-slider-placeholder"></div>
+
+    <script>
+        // Initialize the tour when the page is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            loadWaypoints('waypoints_w51_wavelength.json', {
+                initialSurvey: 'CDS/P/DSS2/color',
+                onWaypointsLoaded: function(waypoints) {
+                    // Check if first waypoint has wavelength slider configuration
+                    if (waypoints && waypoints.length > 0 && waypoints[0].wavelength_slider) {
+                        const config = waypoints[0].wavelength_slider;
+                        
+                        if (config.enabled && config.wavelengths) {
+                            console.log('Wavelength slider config found, waiting for Aladin to be ready...');
+                            
+                            // Wait for Aladin to be fully ready before loading wavelength layers
+                            const initWavelengthSliderWhenReady = () => {
+                                if (aladin) {
+                                    console.log('Aladin is ready, initializing wavelength slider...');
+                                    
+                                    // Initialize wavelength slider with the configuration
+                                    initWavelengthSlider(config.wavelengths);
+                                    
+                                    // Insert the slider HTML
+                                    const placeholder = document.getElementById('wavelength-slider-placeholder');
+                                    if (placeholder) {
+                                        placeholder.innerHTML = createWavelengthSliderHTML();
+                                        
+                                        // Make it draggable
+                                        const sliderContainer = document.getElementById('wavelength-slider-container');
+                                        if (sliderContainer) {
+                                            makeDraggable(sliderContainer);
+                                        }
+                                        
+                                        // Initialize event listeners
+                                        initWavelengthSliderEventListeners();
+                                        
+                                        // Show the slider after layers have time to load
+                                        setTimeout(() => {
+                                            console.log('Showing wavelength slider');
+                                            showWavelengthSlider();
+                                        }, 2000);
+                                    }
+                                } else {
+                                    console.log('Aladin not ready yet, checking again...');
+                                    setTimeout(initWavelengthSliderWhenReady, 500);
+                                }
+                            };
+                            
+                            // Start checking for Aladin
+                            setTimeout(initWavelengthSliderWhenReady, 500);
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

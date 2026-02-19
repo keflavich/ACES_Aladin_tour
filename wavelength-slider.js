@@ -41,9 +41,11 @@ function initWavelengthSlider(wavelengthConfigs) {
  */
 function loadWavelengthLayers() {
     if (!aladin) {
-        console.error('Aladin not initialized');
+        console.error('Aladin not initialized - cannot load wavelength layers');
         return;
     }
+    
+    console.log('Loading', wavelengthLayers.length, 'wavelength layers into Aladin...');
 
     wavelengthLayers.forEach((wavelengthData, index) => {
         const fullUrl = getImageUrl(wavelengthData.url);
@@ -55,17 +57,14 @@ function loadWavelengthLayers() {
         } else {
             // Create new layer
             try {
-                const layer = aladin.createImageSurvey(
-                    wavelengthData.label,
-                    wavelengthData.label,
-                    fullUrl,
-                    'equatorial',
-                    3,
-                    {imgFormat: 'png'}
-                );
+                // Use Aladin Lite v3 API: newImageSurvey + setOverlayImageLayer
+                const layer = aladin.newImageSurvey(fullUrl);
+                const layerName = `wavelength_${index}_${wavelengthData.wavelength}`;
                 
-                // Add to Aladin but set invisible initially
-                aladin.addLayer(layer);
+                // Add to Aladin as overlay layer
+                aladin.setOverlayImageLayer(layer, layerName);
+                
+                // Set invisible initially
                 layer.setOpacity(0.0);
                 
                 // Store in cache and wavelength data
@@ -120,6 +119,11 @@ function hideWavelengthSlider() {
  * Handle wavelength slider change
  */
 function onWavelengthSliderChange(value) {
+    if (!wavelengthLayers || wavelengthLayers.length === 0) {
+        console.error('Wavelength layers not initialized');
+        return;
+    }
+    
     const sliderValue = parseFloat(value);
     
     // Find which wavelength indices we're between
@@ -133,6 +137,16 @@ function onWavelengthSliderChange(value) {
             upperIndex = i + 1;
             break;
         }
+    }
+    
+    // Check that layers exist before trying to set opacity
+    if (!wavelengthLayers[lowerIndex] || !wavelengthLayers[lowerIndex].layer) {
+        console.error(`Layer at index ${lowerIndex} is not initialized`);
+        return;
+    }
+    if (upperIndex < wavelengthLayers.length && (!wavelengthLayers[upperIndex] || !wavelengthLayers[upperIndex].layer)) {
+        console.error(`Layer at index ${upperIndex} is not initialized`);
+        return;
     }
     
     // If we're exactly on a wavelength, just show that one

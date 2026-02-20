@@ -17,32 +17,38 @@
                     {
                         "wavelength": 140,
                         "url": "w51_RGB_182-162-140_log_transparent_hips",
-                        "label": "RGB: 1.82μm / 1.62μm / 1.40μm"
+                        "label": "RGB: 1.82μm / 1.62μm / 1.40μm",
+                        "description": "Near-infrared view (1.4-1.8 μm) showing scattered starlight from the central young stellar object and cooler dust in the surrounding envelope. These shorter wavelengths penetrate through some of the dust, revealing the structure close to the star."
                     },
                     {
                         "wavelength": 162,
                         "url": "w51_RGB_162-210-187_transparent_hips",
-                        "label": "RGB: 1.62μm / 2.10μm / 1.87μm"
+                        "label": "RGB: 1.62μm / 2.10μm / 1.87μm",
+                        "description": "Short near-infrared view (1.6-2.1 μm) capturing H₂ emission at 2.1 μm (green) and stellar scattered light. The H₂ emission traces shocked gas in outflows and the photodissociation region around the massive young star."
                     },
                     {
                         "wavelength": 187,
                         "url": "w51_RGB_480-405-187_scaled_transparent_hips",
-                        "label": "RGB: 4.80μm / 4.05μm / 1.87μm"
+                        "label": "RGB: 4.80μm / 4.05μm / 1.87μm",
+                        "description": "Wide wavelength range (1.9-4.8 μm) showing the transition from stellar light (blue) to warm dust and PAH emission (red). The long-wavelength emission reveals the warmest dust heated by the embedded massive star."
                     },
                     {
                         "wavelength": 210,
                         "url": "w51_RGB_360-335-210_transparent_hips",
-                        "label": "RGB: 3.60μm / 3.35μm / 2.10μm"
+                        "label": "RGB: 3.60μm / 3.35μm / 2.10μm",
+                        "description": "Mid-infrared view (2.1-3.6 μm) where warm dust emission dominates. The 3.3 μm PAH feature (green) traces complex organic molecules in the photodissociation region, while continuum emission shows warm dust heated by the central source."
                     },
                     {
                         "wavelength": 335,
                         "url": "w51_RGB_405-360-335_transparent_hips",
-                        "label": "RGB: 4.05μm / 3.60μm / 3.35μm"
+                        "label": "RGB: 4.05μm / 3.60μm / 3.35μm",
+                        "description": "Mid-infrared (3.3-4.1 μm) dominated by PAH emission features at 3.3 μm and warm dust continuum. These wavelengths reveal the interaction between the intense radiation field and surrounding material, showing complex organic chemistry."
                     },
                     {
                         "wavelength": 410,
                         "url": "w51_RGB_480-410-405_transparent_hips",
-                        "label": "RGB: 4.80μm / 4.10μm / 4.05μm"
+                        "label": "RGB: 4.80μm / 4.10μm / 4.05μm",
+                        "description": "Long-wavelength mid-infrared (4.1-4.8 μm) showing the warmest dust emission and Brα hydrogen recombination line at 4.05 μm (blue). This view traces the ionized gas and hottest dust closest to the massive young stellar object."
                     }
                 ]
             }

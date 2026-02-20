@@ -27,6 +27,7 @@ function initWavelengthSlider(wavelengthConfigs) {
         wavelength: config.wavelength,
         url: config.url,
         label: config.label || `${config.wavelength} nm`,
+        description: config.description || '',
         layer: null // Will be populated when layers are loaded
     }));
 
@@ -126,52 +127,43 @@ function onWavelengthSliderChange(value) {
     
     const sliderValue = parseFloat(value);
     
-    // Find which wavelength indices we're between
-    let lowerIndex = 0;
-    let upperIndex = wavelengthLayers.length - 1;
+    // Find the closest wavelength (snap to it)
+    let closestIndex = 0;
+    let minDistance = Math.abs(sliderValue - wavelengthLayers[0].wavelength);
     
-    for (let i = 0; i < wavelengthLayers.length - 1; i++) {
-        if (sliderValue >= wavelengthLayers[i].wavelength && 
-            sliderValue <= wavelengthLayers[i + 1].wavelength) {
-            lowerIndex = i;
-            upperIndex = i + 1;
-            break;
+    for (let i = 1; i < wavelengthLayers.length; i++) {
+        const distance = Math.abs(sliderValue - wavelengthLayers[i].wavelength);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestIndex = i;
         }
     }
     
-    // Check that layers exist before trying to set opacity
-    if (!wavelengthLayers[lowerIndex] || !wavelengthLayers[lowerIndex].layer) {
-        console.error(`Layer at index ${lowerIndex} is not initialized`);
-        return;
-    }
-    if (upperIndex < wavelengthLayers.length && (!wavelengthLayers[upperIndex] || !wavelengthLayers[upperIndex].layer)) {
-        console.error(`Layer at index ${upperIndex} is not initialized`);
+    // Check that layer exists
+    if (!wavelengthLayers[closestIndex] || !wavelengthLayers[closestIndex].layer) {
+        console.error(`Layer at index ${closestIndex} is not initialized`);
         return;
     }
     
-    // If we're exactly on a wavelength, just show that one
-    if (sliderValue === wavelengthLayers[lowerIndex].wavelength) {
-        setAllWavelengthOpacities(0);
-        wavelengthLayers[lowerIndex].layer.setOpacity(1.0);
-        currentWavelengthIndex = lowerIndex;
-    } else if (sliderValue === wavelengthLayers[upperIndex].wavelength) {
-        setAllWavelengthOpacities(0);
-        wavelengthLayers[upperIndex].layer.setOpacity(1.0);
-        currentWavelengthIndex = upperIndex;
-    } else {
-        // Interpolate between two wavelengths
-        const lowerWavelength = wavelengthLayers[lowerIndex].wavelength;
-        const upperWavelength = wavelengthLayers[upperIndex].wavelength;
-        const range = upperWavelength - lowerWavelength;
-        const position = (sliderValue - lowerWavelength) / range;
-        
-        // Set opacities: fade from lower to upper
-        setAllWavelengthOpacities(0);
-        wavelengthLayers[lowerIndex].layer.setOpacity(1.0 - position);
-        wavelengthLayers[upperIndex].layer.setOpacity(position);
-    }
+    // Show only the closest wavelength (no blending)
+    setAllWavelengthOpacities(0);
+    wavelengthLayers[closestIndex].layer.setOpacity(1.0);
+    currentWavelengthIndex = closestIndex;
+    
+    // Update description panel
+    updateWavelengthDescription(closestIndex);
     
     updateWavelengthSliderUI();
+}
+
+/**
+ * Update the waypoint description with wavelength-specific text
+ */
+function updateWavelengthDescription(index) {
+    const descriptionElement = document.getElementById('waypoint-description');
+    if (descriptionElement && wavelengthLayers[index].description) {
+        descriptionElement.textContent = wavelengthLayers[index].description;
+    }
 }
 
 /**
@@ -194,29 +186,11 @@ function updateWavelengthSliderUI() {
     
     if (!slider || !label) return;
     
-    const currentValue = parseFloat(slider.value);
-    
-    // Find which wavelengths we're between for display
-    let displayLabel = '';
-    for (let i = 0; i < wavelengthLayers.length; i++) {
-        if (Math.abs(currentValue - wavelengthLayers[i].wavelength) < 1) {
-            displayLabel = formatRGBLabel(wavelengthLayers[i].label);
-            break;
-        }
+    // Always show the current wavelength layer
+    if (currentWavelengthIndex >= 0 && currentWavelengthIndex < wavelengthLayers.length) {
+        const displayLabel = formatRGBLabel(wavelengthLayers[currentWavelengthIndex].label);
+        label.innerHTML = displayLabel;
     }
-    
-    // If we're between wavelengths, show a range
-    if (!displayLabel) {
-        for (let i = 0; i < wavelengthLayers.length - 1; i++) {
-            if (currentValue > wavelengthLayers[i].wavelength && 
-                currentValue < wavelengthLayers[i + 1].wavelength) {
-                displayLabel = `${formatRGBLabel(wavelengthLayers[i].label)} → ${formatRGBLabel(wavelengthLayers[i + 1].label)}`;
-                break;
-            }
-        }
-    }
-    
-    label.innerHTML = displayLabel || `${currentValue.toFixed(0)} nm`;
 }
 
 /**

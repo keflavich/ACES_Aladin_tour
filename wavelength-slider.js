@@ -200,7 +200,7 @@ function updateWavelengthSliderUI() {
     let displayLabel = '';
     for (let i = 0; i < wavelengthLayers.length; i++) {
         if (Math.abs(currentValue - wavelengthLayers[i].wavelength) < 1) {
-            displayLabel = wavelengthLayers[i].label;
+            displayLabel = formatRGBLabel(wavelengthLayers[i].label);
             break;
         }
     }
@@ -210,13 +210,31 @@ function updateWavelengthSliderUI() {
         for (let i = 0; i < wavelengthLayers.length - 1; i++) {
             if (currentValue > wavelengthLayers[i].wavelength && 
                 currentValue < wavelengthLayers[i + 1].wavelength) {
-                displayLabel = `${wavelengthLayers[i].label} → ${wavelengthLayers[i + 1].label}`;
+                displayLabel = `${formatRGBLabel(wavelengthLayers[i].label)} → ${formatRGBLabel(wavelengthLayers[i + 1].label)}`;
                 break;
             }
         }
     }
     
-    label.textContent = displayLabel || `${currentValue.toFixed(0)} nm`;
+    label.innerHTML = displayLabel || `${currentValue.toFixed(0)} nm`;
+}
+
+/**
+ * Format RGB label with color-coded wavelengths
+ * Converts "RGB: 1.82μm / 1.62μm / 1.40μm" to color-coded HTML
+ */
+function formatRGBLabel(label) {
+    if (!label || !label.includes('RGB:')) {
+        return label;
+    }
+    
+    // Extract the three wavelengths
+    const parts = label.split(':')[1].trim().split('/');
+    if (parts.length === 3) {
+        return `<span style="color: #ff8888;">${parts[0].trim()}</span> / <span style="color: #88ff88;">${parts[1].trim()}</span> / <span style="color: #aaaaff;">${parts[2].trim()}</span>`;
+    }
+    
+    return label;
 }
 
 /**
@@ -230,12 +248,13 @@ function createWavelengthSliderHTML() {
     
     const minWavelength = wavelengthLayers[0].wavelength;
     const maxWavelength = wavelengthLayers[wavelengthLayers.length - 1].wavelength;
+    const initialLabel = formatRGBLabel(wavelengthLayers[0].label);
     
     return `
         <div id="wavelength-slider-container" class="wavelength-slider-container" style="display: none;">
             <div class="wavelength-slider-header">
                 <span class="wavelength-slider-title">Wavelength</span>
-                <span id="wavelength-label" class="wavelength-label">${wavelengthLayers[0].label}</span>
+                <span id="wavelength-label" class="wavelength-label">${initialLabel}</span>
             </div>
             <div class="wavelength-slider-track">
                 <span class="wavelength-min-label">${minWavelength} nm</span>

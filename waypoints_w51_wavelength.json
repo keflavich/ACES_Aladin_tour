@@ -17,52 +17,32 @@
                     {
                         "wavelength": 140,
                         "url": "w51_RGB_182-162-140_log_transparent_hips",
-                        "label": "F140M (1.40 μm)"
+                        "label": "RGB: 1.82μm / 1.62μm / 1.40μm"
                     },
                     {
                         "wavelength": 162,
                         "url": "w51_RGB_162-210-187_transparent_hips",
-                        "label": "F162M (1.62 μm)"
-                    },
-                    {
-                        "wavelength": 182,
-                        "url": "w51_RGB_182-162-140_log_transparent_hips",
-                        "label": "F182M (1.82 μm)"
+                        "label": "RGB: 1.62μm / 2.10μm / 1.87μm"
                     },
                     {
                         "wavelength": 187,
                         "url": "w51_RGB_480-405-187_scaled_transparent_hips",
-                        "label": "F187N (1.87 μm)"
+                        "label": "RGB: 4.80μm / 4.05μm / 1.87μm"
                     },
                     {
                         "wavelength": 210,
-                        "url": "w51_RGB_162-210-187_transparent_hips",
-                        "label": "F210M (2.10 μm)"
+                        "url": "w51_RGB_360-335-210_transparent_hips",
+                        "label": "RGB: 3.60μm / 3.35μm / 2.10μm"
                     },
                     {
                         "wavelength": 335,
-                        "url": "w51_RGB_360-335-210_transparent_hips",
-                        "label": "F335M (3.35 μm)"
-                    },
-                    {
-                        "wavelength": 360,
                         "url": "w51_RGB_405-360-335_transparent_hips",
-                        "label": "F360M (3.60 μm)"
-                    },
-                    {
-                        "wavelength": 405,
-                        "url": "w51_RGB_480-405-187_scaled_transparent_hips",
-                        "label": "F405N (4.05 μm)"
+                        "label": "RGB: 4.05μm / 3.60μm / 3.35μm"
                     },
                     {
                         "wavelength": 410,
                         "url": "w51_RGB_480-410-405_transparent_hips",
-                        "label": "F410M (4.10 μm)"
-                    },
-                    {
-                        "wavelength": 480,
-                        "url": "w51_RGB_480-410-405_transparent_hips",
-                        "label": "F480M (4.80 μm)"
+                        "label": "RGB: 4.80μm / 4.10μm / 4.05μm"
                     }
                 ]
             }

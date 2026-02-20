@@ -127,42 +127,81 @@ function onWavelengthSliderChange(value) {
     
     const sliderValue = parseFloat(value);
     
-    // Find the closest wavelength (snap to it)
-    let closestIndex = 0;
-    let minDistance = Math.abs(sliderValue - wavelengthLayers[0].wavelength);
+    // Find which wavelength indices we're between
+    let lowerIndex = 0;
+    let upperIndex = wavelengthLayers.length - 1;
+    let isExactMatch = false;
     
-    for (let i = 1; i < wavelengthLayers.length; i++) {
-        const distance = Math.abs(sliderValue - wavelengthLayers[i].wavelength);
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestIndex = i;
+    // Check for exact match first
+    for (let i = 0; i < wavelengthLayers.length; i++) {
+        if (Math.abs(sliderValue - wavelengthLayers[i].wavelength) < 0.5) {
+            // Exact match - show only this wavelength
+            setAllWavelengthOpacities(0);
+            if (wavelengthLayers[i].layer) {
+                wavelengthLayers[i].layer.setOpacity(1.0);
+            }
+            currentWavelengthIndex = i;
+            isExactMatch = true;
+            updateWavelengthDescription(i);
+            break;
         }
     }
     
-    // Check that layer exists
-    if (!wavelengthLayers[closestIndex] || !wavelengthLayers[closestIndex].layer) {
-        console.error(`Layer at index ${closestIndex} is not initialized`);
-        return;
+    if (!isExactMatch) {
+        // Find which two wavelengths we're between for blending
+        for (let i = 0; i < wavelengthLayers.length - 1; i++) {
+            if (sliderValue >= wavelengthLayers[i].wavelength && 
+                sliderValue <= wavelengthLayers[i + 1].wavelength) {
+                lowerIndex = i;
+                upperIndex = i + 1;
+                break;
+            }
+        }
+        
+        // Check that layers exist
+        if (!wavelengthLayers[lowerIndex] || !wavelengthLayers[lowerIndex].layer) {
+            console.error(`Layer at index ${lowerIndex} is not initialized`);
+            return;
+        }
+        if (!wavelengthLayers[upperIndex] || !wavelengthLayers[upperIndex].layer) {
+            console.error(`Layer at index ${upperIndex} is not initialized`);
+            return;
+        }
+        
+        // Interpolate between two wavelengths
+        const lowerWavelength = wavelengthLayers[lowerIndex].wavelength;
+        const upperWavelength = wavelengthLayers[upperIndex].wavelength;
+        const range = upperWavelength - lowerWavelength;
+        const position = (sliderValue - lowerWavelength) / range;
+        
+        // Set opacities: fade from lower to upper
+        setAllWavelengthOpacities(0);
+        wavelengthLayers[lowerIndex].layer.setOpacity(1.0 - position);
+        wavelengthLayers[upperIndex].layer.setOpacity(position);
+        
+        // Show blended description
+        updateWavelengthDescription(lowerIndex, upperIndex, position);
     }
     
-    // Show only the closest wavelength (no blending)
-    setAllWavelengthOpacities(0);
-    wavelengthLayers[closestIndex].layer.setOpacity(1.0);
-    currentWavelengthIndex = closestIndex;
-    
-    // Update description panel
-    updateWavelengthDescription(closestIndex);
-    
-    updateWavelengthSliderUI();
+    // Update visual indicator
+    updateWavelengthSliderUI(isExactMatch);
 }
 
 /**
  * Update the waypoint description with wavelength-specific text
  */
-function updateWavelengthDescription(index) {
+function updateWavelengthDescription(lowerIndex, upperIndex, blendPosition) {
     const descriptionElement = document.getElementById('waypoint-description');
-    if (descriptionElement && wavelengthLayers[index].description) {
-        descriptionElement.textContent = wavelengthLayers[index].description;
+    if (!descriptionElement) return;
+    
+    if (upperIndex === undefined) {
+        // Single wavelength
+        if (wavelengthLayers[lowerIndex].description) {
+            descriptionElement.textContent = wavelengthLayers[lowerIndex].description;
+        }
+    } else {
+        // Blended view
+        descriptionElement.textContent = `Blending between wavelength ranges: transitioning from ${wavelengthLayers[lowerIndex].label.replace('RGB: ', '')} to ${wavelengthLayers[upperIndex].label.replace('RGB: ', '')}.`;
     }
 }
 
@@ -180,16 +219,19 @@ function setAllWavelengthOpacities(opacity) {
 /**
  * Update the wavelength slider UI display
  */
-function updateWavelengthSliderUI() {
+function updateWavelengthSliderUI(isExactMatch) {
     const slider = document.getElementById('wavelength-slider');
-    const label = document.getElementById('wavelength-label');
+    const container = document.getElementById('wavelength-slider-container');
     
-    if (!slider || !label) return;
+    if (!slider || !container) return;
     
-    // Always show the current wavelength layer
-    if (currentWavelengthIndex >= 0 && currentWavelengthIndex < wavelengthLayers.length) {
-        const displayLabel = formatRGBLabel(wavelengthLayers[currentWavelengthIndex].label);
-        label.innerHTML = displayLabel;
+    // Add visual feedback for exact match
+    if (isExactMatch) {
+        container.classList.add('exact-wavelength');
+        container.classList.remove('blended-wavelength');
+    } else {
+        container.classList.remove('exact-wavelength');
+        container.classList.add('blended-wavelength');
     }
 }
 
@@ -222,24 +264,41 @@ function createWavelengthSliderHTML() {
     
     const minWavelength = wavelengthLayers[0].wavelength;
     const maxWavelength = wavelengthLayers[wavelengthLayers.length - 1].wavelength;
-    const initialLabel = formatRGBLabel(wavelengthLayers[0].label);
+    
+    // Create wavelength labels for each notch
+    let wavelengthLabelsHTML = '';
+    wavelengthLayers.forEach((layer, index) => {
+        const position = ((layer.wavelength - minWavelength) / (maxWavelength - minWavelength)) * 100;
+        const formattedLabel = formatRGBLabel(layer.label);
+        wavelengthLabelsHTML += `
+            <div class="wavelength-notch" style="bottom: ${position}%;" data-wavelength="${layer.wavelength}">
+                <div class="wavelength-notch-marker"></div>
+                <div class="wavelength-notch-label">${formattedLabel}</div>
+            </div>
+        `;
+    });
     
     return `
         <div id="wavelength-slider-container" class="wavelength-slider-container" style="display: none;">
             <div class="wavelength-slider-header">
-                <span class="wavelength-slider-title">Wavelength</span>
-                <span id="wavelength-label" class="wavelength-label">${initialLabel}</span>
+                <span class="wavelength-slider-title">Wavelength Explorer</span>
             </div>
-            <div class="wavelength-slider-track">
-                <span class="wavelength-min-label">${minWavelength} nm</span>
+            <div class="wavelength-slider-vertical-track">
+                <div class="wavelength-notches">
+                    ${wavelengthLabelsHTML}
+                </div>
                 <input type="range" 
                        id="wavelength-slider" 
-                       class="wavelength-slider" 
+                       class="wavelength-slider-vertical" 
                        min="${minWavelength}" 
                        max="${maxWavelength}" 
                        value="${minWavelength}" 
-                       step="1">
-                <span class="wavelength-max-label">${maxWavelength} nm</span>
+                       step="0.1"
+                       orient="vertical">
+            </div>
+            <div class="wavelength-status">
+                <span class="status-indicator"></span>
+                <span class="status-text">Drag to explore wavelengths</span>
             </div>
         </div>
     `;

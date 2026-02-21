@@ -126,38 +126,39 @@ function onWavelengthSliderChange(value) {
     }
     
     const sliderValue = parseFloat(value);
+    const maxIndex = wavelengthLayers.length - 1;
     
     // Find which wavelength indices we're between
-    let lowerIndex = 0;
-    let upperIndex = wavelengthLayers.length - 1;
+    let lowerIndex = Math.floor(sliderValue);
+    let upperIndex = Math.ceil(sliderValue);
     let isExactMatch = false;
     
-    // Check for exact match first
-    for (let i = 0; i < wavelengthLayers.length; i++) {
-        if (Math.abs(sliderValue - wavelengthLayers[i].wavelength) < 0.5) {
-            // Exact match - show only this wavelength
-            setAllWavelengthOpacities(0);
-            if (wavelengthLayers[i].layer) {
-                wavelengthLayers[i].layer.setOpacity(1.0);
-            }
-            currentWavelengthIndex = i;
-            isExactMatch = true;
-            updateWavelengthDescription(i);
-            break;
-        }
-    }
+    // Clamp indices
+    lowerIndex = Math.max(0, Math.min(maxIndex, lowerIndex));
+    upperIndex = Math.max(0, Math.min(maxIndex, upperIndex));
     
-    if (!isExactMatch) {
-        // Find which two wavelengths we're between for blending
-        for (let i = 0; i < wavelengthLayers.length - 1; i++) {
-            if (sliderValue >= wavelengthLayers[i].wavelength && 
-                sliderValue <= wavelengthLayers[i + 1].wavelength) {
-                lowerIndex = i;
-                upperIndex = i + 1;
-                break;
-            }
+    // Check for exact match (within 0.05 of an integer index)
+    if (Math.abs(sliderValue - Math.round(sliderValue)) < 0.05) {
+        const exactIndex = Math.round(sliderValue);
+        // Exact match - show only this wavelength
+        setAllWavelengthOpacities(0);
+        if (wavelengthLayers[exactIndex].layer) {
+            wavelengthLayers[exactIndex].layer.setOpacity(1.0);
         }
-        
+        currentWavelengthIndex = exactIndex;
+        isExactMatch = true;
+        updateWavelengthDescription(exactIndex);
+    } else if (lowerIndex === upperIndex) {
+        // At min or max
+        setAllWavelengthOpacities(0);
+        if (wavelengthLayers[lowerIndex].layer) {
+            wavelengthLayers[lowerIndex].layer.setOpacity(1.0);
+        }
+        currentWavelengthIndex = lowerIndex;
+        isExactMatch = true;
+        updateWavelengthDescription(lowerIndex);
+    } else {
+        // Blending between two wavelengths
         // Check that layers exist
         if (!wavelengthLayers[lowerIndex] || !wavelengthLayers[lowerIndex].layer) {
             console.error(`Layer at index ${lowerIndex} is not initialized`);
@@ -168,11 +169,8 @@ function onWavelengthSliderChange(value) {
             return;
         }
         
-        // Interpolate between two wavelengths
-        const lowerWavelength = wavelengthLayers[lowerIndex].wavelength;
-        const upperWavelength = wavelengthLayers[upperIndex].wavelength;
-        const range = upperWavelength - lowerWavelength;
-        const position = (sliderValue - lowerWavelength) / range;
+        // Calculate blend position (0 to 1 between lowerIndex and upperIndex)
+        const position = sliderValue - lowerIndex;
         
         // Set opacities: fade from lower to upper
         setAllWavelengthOpacities(0);
@@ -262,16 +260,16 @@ function createWavelengthSliderHTML() {
         return '';
     }
     
-    const minWavelength = wavelengthLayers[0].wavelength;
-    const maxWavelength = wavelengthLayers[wavelengthLayers.length - 1].wavelength;
+    // Use index-based positioning for even spacing
+    const maxIndex = wavelengthLayers.length - 1;
     
-    // Create wavelength labels for each notch
+    // Create wavelength labels for each notch (evenly spaced)
     let wavelengthLabelsHTML = '';
     wavelengthLayers.forEach((layer, index) => {
-        const position = ((layer.wavelength - minWavelength) / (maxWavelength - minWavelength)) * 100;
+        const position = (index / maxIndex) * 100;
         const formattedLabel = formatRGBLabel(layer.label);
         wavelengthLabelsHTML += `
-            <div class="wavelength-notch" style="bottom: ${position}%;" data-wavelength="${layer.wavelength}">
+            <div class="wavelength-notch" style="bottom: ${position}%;" data-index="${index}">
                 <div class="wavelength-notch-marker"></div>
                 <div class="wavelength-notch-label">${formattedLabel}</div>
             </div>
@@ -290,10 +288,10 @@ function createWavelengthSliderHTML() {
                 <input type="range" 
                        id="wavelength-slider" 
                        class="wavelength-slider-vertical" 
-                       min="${minWavelength}" 
-                       max="${maxWavelength}" 
-                       value="${minWavelength}" 
-                       step="0.1"
+                       min="0" 
+                       max="${maxIndex}" 
+                       value="0" 
+                       step="0.01"
                        orient="vertical">
             </div>
             <div class="wavelength-status">

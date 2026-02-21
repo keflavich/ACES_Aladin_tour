@@ -46,6 +46,21 @@
                 "pause_time": 8000
             },
             {
+                "ra": 267.07262318,
+                "dec": -28.3559128,
+                "fov": 0.2,
+                "transition_fov": 0.8,
+                "transition_time": 4,
+                "zoom_out_time": 2,
+                "zoom_in_time": 4,
+                "title": "The M0.8-0.2 Ring: A Supernova's Legacy - now in CS 2-1",
+                "description": "This remarkable ring-shaped molecular cloud was discovered by Nonhebel et al. (2024) in ACES data (CS 2-1 now shown). With inner and outer radii of 3.1 and 6.1 parsecs, this structure contains ~10⁶ solar masses of gas expanding at ~20 km/s. The team proposes this is the remnant of a hypernova explosion that disrupted a massive molecular cloud, providing an extreme example of stellar feedback in the CMZ. Citation: Nonhebel et al. 2024, A&A, 691, A70",
+                "url": "../avm_images/ACES_HIPS/CS21_CubeMosaic_hlsig_dilated_masked_mom0_hips",
+                "fade_enabled": false,
+                "fade_layer": "rgb_final_uncropped_hips",
+                "pause_time": 8000
+            },
+            {
                 "ra": 266.416667,
                 "dec": -29.008333,
                 "fov": 0.8,
@@ -59,6 +74,7 @@
                 "pause_time": 4000,
                 "fade_enabled": false
             },
+
             {
                 "ra": 266.49059351,
                 "dec": -28.95297275,

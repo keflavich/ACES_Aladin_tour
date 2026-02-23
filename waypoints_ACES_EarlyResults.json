@@ -140,7 +140,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "CS 2-1: Carbon Monosulfide",
-                "description": "Carbon monosulfide (CS) is an excellent tracer of dense molecular gas. The 2-1 transition reveals the distribution of high-density regions throughout the ACES field.",
+                "description": "Carbon monosulfide (CS) is an excellent tracer of dense molecular gas. The 2-1 transition reveals the distribution of moderately high-density regions throughout the ACES field.",
                 "url": "../avm_images/ACES_HIPS/CS21_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -166,7 +166,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "H¹³CO⁺: Formyl Ion Isotopologue",
-                "description": "H¹³CO⁺ traces ionized molecular gas and reveals regions where UV radiation or cosmic rays are ionizing the molecular material, probing the interaction between stars and gas.",
+                "description": "H¹³CO⁺ traces molecular gas.",
                 "url": "../avm_images/ACES_HIPS/H13COp_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -179,7 +179,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "H40α: Hydrogen Recombination Line",
-                "description": "The H40α recombination line traces ionized hydrogen around hot, massive stars, revealing sites of ongoing massive star formation in the Galactic Center.",
+                "description": "The H40α recombination line traces ionized hydrogen around hot, massive stars.",
                 "url": "../avm_images/ACES_HIPS/H40a_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -191,8 +191,8 @@
                 "transition_time": 1,
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
-                "title": "HC₁₅N: Cyanopolyyne",
-                "description": "HC₁₅N is a long-chain carbon molecule that traces cold, quiescent molecular gas, helping identify regions that have not yet been heated by star formation.",
+                "title": "HC¹⁵N: Cyanopolyyne",
+                "description": "HC¹⁵N contains the rare nitrogen-15 isotope. This isotopologue traces dense molecular gas without becoming optically thick.",
                 "url": "../avm_images/ACES_HIPS/HC15N_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -218,7 +218,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "HCO⁺: Formyl Ion",
-                "description": "HCO⁺ is one of the most important tracers of ionized molecular gas. Its emission reveals the structure and kinematics of dense gas throughout the CMZ.",
+                "description": "HCO⁺ is one of the most important tracers of molecular gas. Its emission reveals the structure and kinematics of dense gas throughout the CMZ.",
                 "url": "../avm_images/ACES_HIPS/HCOP_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -231,7 +231,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "HCO⁺: Mopra Single-Dish",
-                "description": "HCO⁺ observed with the Mopra telescope provides large-scale structure context for the ALMA observations, showing the full extent of ionized gas.",
+                "description": "HCO⁺ feathered with Mopra telescope data provides large-scale structure context for the ALMA observations, showing the full extent of molecular gas.",
                 "url": "../avm_images/ACES_HIPS/HCOP_mopra_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -257,7 +257,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "HN¹³C: Hydrogen Isocyanide Isotopologue",
-                "description": "HN¹³C, an isotopologue of hydrogen isocyanide, traces dense gas while avoiding optical depth effects, allowing accurate measurement of gas masses.",
+                "description": "HN¹³C, an isotopologue of hydrogen isocyanide, traces dense gas at lower optical depth than the more common isotopologue.",
                 "url": "../avm_images/ACES_HIPS/HN13C_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -270,7 +270,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "HNCO: Isocyanic Acid",
-                "description": "HNCO traces warm molecular gas and is often enhanced in shocked regions. This map combines 7m, 12m, and total power data for complete spatial coverage.",
+                "description": "HNCO traces molecular gas and is often enhanced in shocked regions. ",
                 "url": "../avm_images/ACES_HIPS/HNCO_7m12mTP_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -309,7 +309,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "SO 2₁-1₀: Sulfur Monoxide",
-                "description": "SO traces moderately dense gas and is often enhanced in shocked regions and outflows, complementing SiO as a probe of energetic processes.",
+                "description": "SO traces moderately dense gas and is often enhanced in shocked regions and outflows, complementing SiO.",
                 "url": "../avm_images/ACES_HIPS/SO21_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             },
@@ -322,7 +322,7 @@
                 "zoom_out_time": 0,
                 "zoom_in_time": 0,
                 "title": "SO 3₂-2₁: Sulfur Monoxide",
-                "description": "The SO 3₂-2₁ transition traces warmer and denser gas than SO 2₁-1₀, providing information about temperature and density variations in shocked regions.",
+                "description": "The SO 3₂-2₁ transition traces roughly the same gas as SO 2₁-1₀, providing information about temperature and density variations in shocked regions.",
                 "url": "../avm_images/ACES_HIPS/SO32_CubeMosaic_hlsig_dilated_masked_mom0_hips",
                 "pause_time": 1000
             }

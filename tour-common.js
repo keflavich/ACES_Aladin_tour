@@ -139,6 +139,22 @@ function handleHashChange() {
     }
 }
 
+// Derive a short, human-readable display name from a HiPS URL or path
+function getLayerDisplayName(url) {
+    if (!url) return `layer_${layerCounter}`;
+    // Strip trailing slash
+    let name = url.replace(/\/$/, '');
+    // Get just the last path component
+    name = name.split('/').pop();
+    // Remove _hips suffix
+    name = name.replace(/_hips$/, '');
+    // For ACES molecular line cubes: strip everything from _CubeMosaic onward
+    name = name.replace(/_CubeMosaic.*$/, '');
+    // Strip _noaxes, _feather, _transparent, _log, _scaled suffixes for cleanliness
+    name = name.replace(/(_noaxes|_feather|_log|_scaled|_transparent|_uncropped)$/, '');
+    return name || `layer_${layerCounter}`;
+}
+
 // Function to get or create a layer, reusing existing ones
 function getOrCreateLayer(url) {
     if (!url) return null;
@@ -149,9 +165,9 @@ function getOrCreateLayer(url) {
         return layerCache.get(url);
     }
 
-    // Create a new layer with a unique name
+    // Create a new layer with a human-readable name derived from the URL
     layerCounter++;
-    const layerName = `layer_${layerCounter}`;
+    const layerName = getLayerDisplayName(url);
 
     console.log("Creating new layer for URL:", url, "with name:", layerName);
 

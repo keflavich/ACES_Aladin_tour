@@ -60,7 +60,7 @@ function loadWavelengthLayers() {
             try {
                 // Use Aladin Lite v3 API: newImageSurvey + setOverlayImageLayer
                 const layer = aladin.newImageSurvey(fullUrl);
-                const layerName = `wavelength_${index}_${wavelengthData.wavelength}`;
+                const layerName = getLayerDisplayName(fullUrl) || `wavelength_${index}_${wavelengthData.wavelength}`;
                 
                 // Add to Aladin as overlay layer
                 aladin.setOverlayImageLayer(layer, layerName);

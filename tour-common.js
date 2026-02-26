@@ -180,7 +180,7 @@ function getOrCreateLayer(url) {
         return layerCache.get(url);
     } else {
         // Create an overlay image layer with a unique name
-        const survey = aladin.newImageSurvey(url);
+        const survey = aladin.createImageSurvey(url, layerName, url);
         layer = survey;
         aladin.setOverlayImageLayer(survey, layerName);
 

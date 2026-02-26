@@ -10,9 +10,13 @@
     <!-- Add draggable functionality -->
     <script type="text/javascript" src="draggable.js"></script>
     <script type="text/javascript" src="tour-common.js"></script>
+    <script type="text/javascript" src="wavelength-slider.js"></script>
+    <script type="text/javascript" src="layer-slider.js"></script>
     <link rel="stylesheet" href="default.css">
     <link rel="stylesheet" href="draggable.css">
     <link rel="stylesheet" href="tour-common.css">
+    <link rel="stylesheet" href="wavelength-slider.css">
+    <link rel="stylesheet" href="layer-slider.css">
 </head>
 
 <body>
@@ -62,13 +66,41 @@
         <span id="countdown-value">5</span>
     </div>
 
+    <!-- Layer slider will be inserted here by JavaScript -->
+    <div id="layer-slider-placeholder"></div>
+
     <script>
         // Define waypoints for the tour
 
         // Initialize the tour when the page is loaded
         document.addEventListener('DOMContentLoaded', function () {
             loadWaypoints('waypoints_cmz_aces.json', {
-                initialSurvey: getImageUrl('rgb_final_uncropped_hips')
+                initialSurvey: getImageUrl('rgb_final_uncropped_hips'),
+                onWaypointsLoaded: function(waypoints) {
+                    // Build layer slider from all unique waypoint images
+                    initLayerSlider(waypoints);
+
+                    // Inject slider HTML
+                    const placeholder = document.getElementById('layer-slider-placeholder');
+                    if (placeholder) {
+                        placeholder.innerHTML = createLayerSliderHTML();
+                        makeDraggable(document.getElementById('layer-slider-container'));
+                        initLayerSliderEventListeners();
+                    }
+
+                    // Wait for Aladin + layers to be ready, then preload and show
+                    const waitForAladin = () => {
+                        if (aladin) {
+                            setTimeout(() => {
+                                preloadLayerSliderLayers();
+                                showLayerSlider();
+                            }, 1500);
+                        } else {
+                            setTimeout(waitForAladin, 300);
+                        }
+                    };
+                    waitForAladin();
+                }
             });
         });
     </script>

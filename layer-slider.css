@@ -1,0 +1,36 @@
+/* Layer Slider - additional overrides on top of wavelength-slider.css */
+
+.layer-slider-container {
+    /* position in bottom-right, same as wavelength slider */
+    bottom: 20px;
+    right: 20px;
+}
+
+.layer-slider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.layer-slider-minimize-btn {
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    color: white;
+    font-size: 18px;
+    line-height: 1;
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.layer-slider-minimize-btn:hover {
+    background: rgba(255, 255, 255, 0.45);
+}

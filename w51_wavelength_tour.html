@@ -71,7 +71,7 @@
         // Initialize the tour when the page is loaded
         document.addEventListener('DOMContentLoaded', function () {
             loadWaypoints('waypoints_w51_wavelength.json', {
-                initialSurvey: 'CDS/P/DSS2/color',
+                initialSurvey: 'CDS/P/2MASS/color',
                 onWaypointsLoaded: function(waypoints) {
                     // Check if first waypoint has wavelength slider configuration
                     if (waypoints && waypoints.length > 0 && waypoints[0].wavelength_slider) {

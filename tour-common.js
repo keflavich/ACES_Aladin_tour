@@ -1414,6 +1414,9 @@ function clearAllRegions() {
 async function loadWaypoints(waypointFile, tourConfig = {}, errorMessage = null) {
     try {
         const response = await fetch(waypointFile);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText} for ${waypointFile}`);
+        }
         const data = await response.json();
         waypoints = data.waypoints;
 
@@ -1433,8 +1436,8 @@ async function loadWaypoints(waypointFile, tourConfig = {}, errorMessage = null)
         initializeTour(waypoints, tourConfig);
     } catch (error) {
         console.error('Error loading waypoints:', error);
-        // Fallback: show error message
-        const defaultMessage = `Error loading tour waypoints. Please check that ${waypointFile} is available.`;
+        // Fallback: show error message with actual error details for debugging
+        const defaultMessage = `Error loading tour waypoints. Please check that ${waypointFile} is available.<br><small style="opacity:0.7">${error}</small>`;
         document.getElementById('loading-div').innerHTML = errorMessage || defaultMessage;
     }
 }
@@ -1557,6 +1560,8 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
     }
 
     // Wait for A.init promise to complete (required for v3 API)
+    // Wrap in try/catch in case A itself failed to load (e.g. network error, CSP block)
+    try {
     A.init.then(() => {
         console.log('A.init completed, creating Aladin instance');
 
@@ -1749,6 +1754,13 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
         }
     }).catch(err => {
         console.error('Failed to initialize Aladin:', err);
-        document.getElementById('loading-div').textContent = 'Error loading Aladin. Please refresh the page.';
+        const loadingDiv = document.getElementById('loading-div');
+        if (loadingDiv) loadingDiv.textContent = 'Error initializing Aladin Sky Atlas: ' + err + '. Please refresh the page.';
     });
+    } catch (e) {
+        // A is not defined — aladin.js failed to execute (WebAssembly or WebGL2 not available)
+        console.error('Aladin Lite (A) not available:', e);
+        const loadingDiv = document.getElementById('loading-div');
+        if (loadingDiv) loadingDiv.textContent = 'Error: Aladin Sky Atlas could not initialize: ' + e + ' — please use a recent version of Chrome, Firefox, or Safari with hardware acceleration enabled.';
+    }
 }

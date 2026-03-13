@@ -835,7 +835,7 @@ function goToWaypoint(index) {
             console.log("Pre-loading layer: ", waypoints[index].url);
             const cachedLayer = getOrCreateLayer(waypoints[index].url);
             // Immediately hide the newly created layer so it doesn't show during pan/zoom
-            if (cachedLayer && cachedLayer.layer && !cachedLayer.isJPG && waypoints[index].hide_during_pan) {
+            if (cachedLayer && cachedLayer.layer && !cachedLayer.isJPG) {
                 cachedLayer.layer.setOpacity(0.0);
             }
 

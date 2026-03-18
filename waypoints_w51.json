@@ -8,9 +8,9 @@
             "transition_time": 3,
             "zoom_out_time": 2,
             "zoom_in_time": 3,
-            "title": "W51 (RGB 162-210-187)",
+            "title": "W51 (RGB 210-162-140)",
             "description": "Instructions: To zoom and pan through various points of interest, changing the color image as you go, use the controls below.  The 'Overlays' menu on the left can be used to control which image is shown.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_210-162-140_hips",
             "pause_time": 3000
         },
         {
@@ -21,9 +21,9 @@
             "transition_time": 3,
             "zoom_out_time": 2,
             "zoom_in_time": 3,
-            "title": "W51-IRS2 (RGB 162-210-187)",
+            "title": "W51-IRS2 (RGB 210-162-140)",
             "description": "W51-IRS2 is a massive young stellar object in the W51 star-forming region. This infrared source represents one of the most luminous protostars in our Galaxy, embedded within a complex of dense molecular gas and dust. Viewing in RGB 162-210-187 filter combination.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_210-162-140_hips",
             "pause_time": 3000
         },
         {
@@ -36,7 +36,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS2 (RGB 182-162-140)",
             "description": "W51-IRS2 is a massive young stellar object in the W51 star-forming region. This infrared source represents one of the most luminous protostars in our Galaxy, embedded within a complex of dense molecular gas and dust. Viewing in RGB 182-162-140 filter combination, the shortest wavelengths observed with JWST.",
-            "url": "w51_RGB_182-162-140_log_transparent_hips",
+            "url": "w51_RGB_182-162-140_log_hips",
             "pause_time": 3000
         },
         {
@@ -49,7 +49,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS2 (RGB 360-335-210)",
             "description": "W51-IRS2 is a massive young stellar object in the W51 star-forming region. This infrared source represents one of the most luminous protostars in our Galaxy, embedded within a complex of dense molecular gas and dust. Viewing in RGB 360-335-210, with green emphasizing PAHs.",
-            "url": "w51_RGB_360-335-210_transparent_hips",
+            "url": "w51_RGB_360-335-210_hips",
             "pause_time": 3000
         },
         {
@@ -62,7 +62,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS2 (RGB 405-360-335)",
             "description": "W51-IRS2 is a massive young stellar object in the W51 star-forming region. This infrared source represents one of the most luminous protostars in our Galaxy, embedded within a complex of dense molecular gas and dust. Viewing in RGB 405-360-335 filter combination.",
-            "url": "w51_RGB_405-360-335_transparent_hips",
+            "url": "w51_RGB_405-360-335_hips",
             "pause_time": 3000
         },
         {
@@ -75,7 +75,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS2 (RGB 480-405-187)",
             "description": "W51-IRS2 is a massive young stellar object in the W51 star-forming region. This infrared source represents one of the most luminous protostars in our Galaxy, embedded within a complex of dense molecular gas and dust. Viewing in RGB 480-405-187 scaled filter combination.",
-            "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+            "url": "w51_RGB_480-405-187_scaled_hips",
             "pause_time": 3000
         },
         {
@@ -88,7 +88,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS2 (RGB 480-410-405)",
             "description": "W51-IRS2 is a massive young stellar object in the W51 star-forming region. This infrared source represents one of the most luminous protostars in our Galaxy, embedded within a complex of dense molecular gas and dust. Viewing in RGB 480-410-405 filter combination.",
-            "url": "w51_RGB_480-410-405_transparent_hips",
+            "url": "w51_RGB_480-410-405_hips",
             "pause_time": 3000
         },
         {
@@ -101,7 +101,7 @@
             "zoom_in_time": 3,
             "title": "W51e11 (RGB 162-210-187)",
             "description": "W51e11 is another massive young stellar object in the W51 complex. This source shows evidence of active accretion and outflow activity, characteristic of high-mass star formation in this prolific star-forming region. Viewing in RGB 162-210-187 filter combination.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_162-210-187_hips",
             "pause_time": 3000
         },
         {
@@ -114,7 +114,7 @@
             "zoom_in_time": 3,
             "title": "W51e11 (RGB 405-360-335)",
             "description": "W51e11 is another massive young stellar object in the W51 complex. This source shows evidence of active accretion and outflow activity, characteristic of high-mass star formation in this prolific star-forming region. Viewing in RGB 405-360-335 filter combination.",
-            "url": "w51_RGB_405-360-335_transparent_hips",
+            "url": "w51_RGB_405-360-335_hips",
             "pause_time": 3000
         },
         {
@@ -127,7 +127,7 @@
             "zoom_in_time": 3,
             "title": "W51e11 (RGB 480-405-187)",
             "description": "W51e11 is another massive young stellar object in the W51 complex. This source shows evidence of active accretion and outflow activity, characteristic of high-mass star formation in this prolific star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-            "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+            "url": "w51_RGB_480-405-187_scaled_hips",
             "pause_time": 3000
         },
         {
@@ -140,7 +140,7 @@
             "zoom_in_time": 3,
             "title": "W51e11 (RGB 480-410-405)",
             "description": "W51e11 is another massive young stellar object in the W51 complex. This source shows evidence of active accretion and outflow activity, characteristic of high-mass star formation in this prolific star-forming region. Viewing in RGB 480-410-405 filter combination.",
-            "url": "w51_RGB_480-410-405_transparent_hips",
+            "url": "w51_RGB_480-410-405_hips",
             "pause_time": 3000
         },
         {
@@ -153,7 +153,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS3 (2MASS J19234318+1430500) (RGB 162-210-187)",
             "description": "W51-IRS3, also known as 2MASS J19234318+1430500, is a massive young stellar object showing complex infrared emission. This source demonstrates the diversity of massive star formation processes occurring within the W51 molecular cloud complex. Viewing in RGB 162-210-187 filter combination.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_162-210-187_hips",
             "pause_time": 3000
         },
         {
@@ -166,7 +166,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS3 (2MASS J19234318+1430500) (RGB 405-360-335)",
             "description": "W51-IRS3, also known as 2MASS J19234318+1430500, is a massive young stellar object showing complex infrared emission. This source demonstrates the diversity of massive star formation processes occurring within the W51 molecular cloud complex. Viewing in RGB 405-360-335 filter combination.",
-            "url": "w51_RGB_405-360-335_transparent_hips",
+            "url": "w51_RGB_405-360-335_hips",
             "pause_time": 3000
         },
         {
@@ -179,7 +179,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS3 (2MASS J19234318+1430500) (RGB 480-405-187)",
             "description": "W51-IRS3, also known as 2MASS J19234318+1430500, is a massive young stellar object showing complex infrared emission. This source demonstrates the diversity of massive star formation processes occurring within the W51 molecular cloud complex. Viewing in RGB 480-405-187 scaled filter combination.",
-            "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+            "url": "w51_RGB_480-405-187_scaled_hips",
             "pause_time": 3000
         },
         {
@@ -192,7 +192,7 @@
             "zoom_in_time": 3,
             "title": "W51-IRS3 (2MASS J19234318+1430500) (RGB 480-410-405)",
             "description": "W51-IRS3, also known as 2MASS J19234318+1430500, is a massive young stellar object showing complex infrared emission. This source demonstrates the diversity of massive star formation processes occurring within the W51 molecular cloud complex. Viewing in RGB 480-410-405 filter combination.",
-            "url": "w51_RGB_480-410-405_transparent_hips",
+            "url": "w51_RGB_480-410-405_hips",
             "pause_time": 3000
         },
         {
@@ -205,7 +205,7 @@
             "zoom_in_time": 3,
             "title": "FeII Outflow (RGB 162-210-187)",
             "description": "This region shows prominent FeII emission lines, indicating shocked gas from stellar outflows. The FeII outflow traces the interaction between high-velocity jets from young massive stars and the surrounding molecular material, revealing the dynamic processes of massive star formation. Viewing in RGB 162-210-187 filter combination.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_162-210-187_hips",
             "pause_time": 3000
         },
         {
@@ -218,7 +218,7 @@
             "zoom_in_time": 3,
             "title": "FeII Outflow (RGB 405-360-335)",
             "description": "This region shows prominent FeII emission lines, indicating shocked gas from stellar outflows. The FeII outflow traces the interaction between high-velocity jets from young massive stars and the surrounding molecular material, revealing the dynamic processes of massive star formation. Viewing in RGB 405-360-335 filter combination.",
-            "url": "w51_RGB_405-360-335_transparent_hips",
+            "url": "w51_RGB_405-360-335_hips",
             "pause_time": 3000
         },
         {
@@ -231,7 +231,7 @@
             "zoom_in_time": 3,
             "title": "FeII Outflow (RGB 480-405-187)",
             "description": "This region shows prominent FeII emission lines, indicating shocked gas from stellar outflows. The FeII outflow traces the interaction between high-velocity jets from young massive stars and the surrounding molecular material, revealing the dynamic processes of massive star formation. Viewing in RGB 480-405-187 scaled filter combination.",
-            "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+            "url": "w51_RGB_480-405-187_scaled_hips",
             "pause_time": 3000
         },
         {
@@ -244,7 +244,7 @@
             "zoom_in_time": 3,
             "title": "FeII Outflow (RGB 480-410-405)",
             "description": "This region shows prominent FeII emission lines, indicating shocked gas from stellar outflows. The FeII outflow traces the interaction between high-velocity jets from young massive stars and the surrounding molecular material, revealing the dynamic processes of massive star formation. Viewing in RGB 480-410-405 filter combination.",
-            "url": "w51_RGB_480-410-405_transparent_hips",
+            "url": "w51_RGB_480-410-405_hips",
             "pause_time": 3000
         },
         {
@@ -257,7 +257,7 @@
             "zoom_in_time": 3,
             "title": "[LD2019] IRS2/#7 (RGB 162-210-187)",
             "description": "A YSO candidate in the W51 star-forming region. Viewing in RGB 162-210-187 filter combination.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_162-210-187_hips",
             "pause_time": 3000
         },
         {
@@ -270,7 +270,7 @@
             "zoom_in_time": 3,
             "title": "[LD2019] IRS2/#7 (RGB 405-360-335)",
             "description": "A YSO candidate in the W51 star-forming region. Viewing in RGB 405-360-335 filter combination.",
-            "url": "w51_RGB_405-360-335_transparent_hips",
+            "url": "w51_RGB_405-360-335_hips",
             "pause_time": 3000
         },
         {
@@ -283,7 +283,7 @@
             "zoom_in_time": 3,
             "title": "[LD2019] IRS2/#7 (RGB 480-405-187)",
             "description": "A YSO candidate in the W51 star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-            "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+            "url": "w51_RGB_480-405-187_scaled_hips",
             "pause_time": 3000
         },
         {
@@ -296,7 +296,7 @@
             "zoom_in_time": 3,
             "title": "[LD2019] IRS2/#7 (RGB 480-410-405)",
             "description": "A YSO candidate in the W51 star-forming region. Viewing in RGB 480-410-405 filter combination.",
-            "url": "w51_RGB_480-410-405_transparent_hips",
+            "url": "w51_RGB_480-410-405_hips",
             "pause_time": 3000
         },
         {
@@ -309,7 +309,7 @@
             "zoom_in_time": 3,
             "title": "2MASS J19233735+1431171 (RGB 162-210-187)",
             "description": "A YSO candidate in the W51 star-forming region. Viewing in RGB 162-210-187 filter combination.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_162-210-187_hips",
             "pause_time": 3000
         },
         {
@@ -322,7 +322,7 @@
             "zoom_in_time": 3,
             "title": "2MASS J19233735+1431171 (RGB 405-360-335)",
             "description": "A YSO candidate in the W51 star-forming region. Viewing in RGB 405-360-335 filter combination.",
-            "url": "w51_RGB_405-360-335_transparent_hips",
+            "url": "w51_RGB_405-360-335_hips",
             "pause_time": 3000
         },
         {
@@ -335,7 +335,7 @@
             "zoom_in_time": 3,
             "title": "2MASS J19233735+1431171 (RGB 480-405-187)",
             "description": "A YSO candidate in the W51 star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-            "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+            "url": "w51_RGB_480-405-187_scaled_hips",
             "pause_time": 3000
         },
         {
@@ -348,7 +348,7 @@
             "zoom_in_time": 3,
             "title": "2MASS J19233735+1431171 (RGB 480-410-405)",
             "description": "A YSO candidate in the W51 star-forming region. Viewing in RGB 480-410-405 filter combination.",
-            "url": "w51_RGB_480-410-405_transparent_hips",
+            "url": "w51_RGB_480-410-405_hips",
             "pause_time": 3000
         },
         {
@@ -361,7 +361,7 @@
             "zoom_in_time": 3,
             "title": "2MASS J19233587+1431286 (RGB 162-210-187)",
             "description": "A massive star in the W51 star-forming region. Viewing in RGB 162-210-187 filter combination.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_162-210-187_hips",
             "pause_time": 3000
         },
         {
@@ -374,7 +374,7 @@
             "zoom_in_time": 3,
             "title": "2MASS J19233587+1431286 (RGB 405-360-335)",
             "description": "A massive star in the W51 star-forming region. Viewing in RGB 405-360-335 filter combination.",
-            "url": "w51_RGB_405-360-335_transparent_hips",
+            "url": "w51_RGB_405-360-335_hips",
             "pause_time": 3000
         },
         {
@@ -387,7 +387,7 @@
             "zoom_in_time": 3,
             "title": "2MASS J19233587+1431286 (RGB 480-405-187)",
             "description": "A massive star in the W51 star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-            "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+            "url": "w51_RGB_480-405-187_scaled_hips",
             "pause_time": 3000
         },
         {
@@ -400,7 +400,7 @@
             "zoom_in_time": 3,
             "title": "2MASS J19233587+1431286 (RGB 480-410-405)",
             "description": "A massive star in the W51 star-forming region. Viewing in RGB 480-410-405 filter combination.",
-            "url": "w51_RGB_480-410-405_transparent_hips",
+            "url": "w51_RGB_480-410-405_hips",
             "pause_time": 3000
         },
         {
@@ -413,7 +413,7 @@
             "zoom_in_time": 3,
             "title": "Unknown (RGB 162-210-187)",
             "description": "A random star in the W51 star-forming region. Viewing in RGB 162-210-187 filter combination.",
-            "url": "w51_RGB_162-210-187_transparent_hips",
+            "url": "w51_RGB_162-210-187_hips",
             "pause_time": 3000
         },
         {
@@ -426,7 +426,7 @@
             "zoom_in_time": 3,
             "title": "Unknown (RGB 405-360-335)",
             "description": "A random star in the W51 star-forming region. Viewing in RGB 405-360-335 filter combination.",
-            "url": "w51_RGB_405-360-335_transparent_hips",
+            "url": "w51_RGB_405-360-335_hips",
             "pause_time": 3000
         },
         {
@@ -439,7 +439,7 @@
             "zoom_in_time": 3,
             "title": "Unknown (RGB 480-405-187)",
             "description": "A random star in the W51 star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-            "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+            "url": "w51_RGB_480-405-187_scaled_hips",
             "pause_time": 3000
         },
         {
@@ -452,7 +452,7 @@
             "zoom_in_time": 3,
             "title": "Unknown (RGB 480-410-405)",
             "description": "A random star in the W51 star-forming region. Viewing in RGB 480-410-405 filter combination.",
-            "url": "w51_RGB_480-410-405_transparent_hips",
+            "url": "w51_RGB_480-410-405_hips",
             "pause_time": 3000
                  },
          {
@@ -465,7 +465,7 @@
              "zoom_in_time": 3,
              "title": "SSTOERC G049.4945-00.3429 (RGB 162-210-187)",
              "description": "A massive star with a bow shock. Viewing in RGB 162-210-187 filter combination.",
-             "url": "w51_RGB_162-210-187_transparent_hips",
+             "url": "w51_RGB_162-210-187_hips",
              "pause_time": 3000
          },
          {
@@ -478,7 +478,7 @@
              "zoom_in_time": 3,
              "title": "SSTOERC G049.4945-00.3429 (RGB 405-360-335)",
              "description": "A massive star with a bow shock. Viewing in RGB 405-360-335 filter combination.",
-             "url": "w51_RGB_405-360-335_transparent_hips",
+             "url": "w51_RGB_405-360-335_hips",
              "pause_time": 3000
          },
          {
@@ -491,7 +491,7 @@
              "zoom_in_time": 3,
              "title": "SSTOERC G049.4945-00.3429 (RGB 480-405-187)",
              "description": "A massive star with a bow shock. Viewing in RGB 480-405-187 scaled filter combination.",
-             "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+             "url": "w51_RGB_480-405-187_scaled_hips",
              "pause_time": 3000
          },
          {
@@ -504,7 +504,7 @@
              "zoom_in_time": 3,
              "title": "SSTOERC G049.4945-00.3429 (RGB 480-410-405)",
              "description": "A massive star with a bow shock. Viewing in RGB 480-410-405 filter combination.",
-             "url": "w51_RGB_480-410-405_transparent_hips",
+             "url": "w51_RGB_480-410-405_hips",
              "pause_time": 3000
          },
          {
@@ -517,7 +517,7 @@
              "zoom_in_time": 3,
              "title": "IRS2 cluster (RGB 162-210-187)",
              "description": "A cluster of massive stars in the W51 star-forming region. Viewing in RGB 162-210-187 filter combination.",
-             "url": "w51_RGB_162-210-187_transparent_hips",
+             "url": "w51_RGB_162-210-187_hips",
              "pause_time": 3000
          },
          {
@@ -530,7 +530,7 @@
              "zoom_in_time": 3,
              "title": "IRS2 cluster (RGB 405-360-335)",
              "description": "A cluster of massive stars in the W51 star-forming region. Viewing in RGB 405-360-335 filter combination.",
-             "url": "w51_RGB_405-360-335_transparent_hips",
+             "url": "w51_RGB_405-360-335_hips",
              "pause_time": 3000
          },
          {
@@ -543,7 +543,7 @@
              "zoom_in_time": 3,
              "title": "IRS2 cluster (RGB 480-405-187)",
              "description": "A cluster of massive stars in the W51 star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-             "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+             "url": "w51_RGB_480-405-187_scaled_hips",
              "pause_time": 3000
          },
          {
@@ -556,7 +556,7 @@
              "zoom_in_time": 3,
              "title": "IRS2 cluster (RGB 480-410-405)",
              "description": "A cluster of massive stars in the W51 star-forming region. Viewing in RGB 480-410-405 filter combination.",
-             "url": "w51_RGB_480-410-405_transparent_hips",
+             "url": "w51_RGB_480-410-405_hips",
              "pause_time": 3000
          },
          {
@@ -569,7 +569,7 @@
              "zoom_in_time": 3,
              "title": "H2 shell (RGB 162-210-187)",
              "description": "A shell of hydrogen gas in the W51 star-forming region. Viewing in RGB 162-210-187 filter combination.",
-             "url": "w51_RGB_162-210-187_transparent_hips",
+             "url": "w51_RGB_162-210-187_hips",
              "pause_time": 3000
          },
          {
@@ -582,7 +582,7 @@
              "zoom_in_time": 3,
              "title": "H2 shell (RGB 405-360-335)",
              "description": "A shell of hydrogen gas in the W51 star-forming region. Viewing in RGB 405-360-335 filter combination.",
-             "url": "w51_RGB_405-360-335_transparent_hips",
+             "url": "w51_RGB_405-360-335_hips",
              "pause_time": 3000
          },
          {
@@ -595,7 +595,7 @@
              "zoom_in_time": 3,
              "title": "H2 shell (RGB 480-405-187)",
              "description": "A shell of hydrogen gas in the W51 star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-             "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+             "url": "w51_RGB_480-405-187_scaled_hips",
              "pause_time": 3000
          },
          {
@@ -608,7 +608,7 @@
              "zoom_in_time": 3,
              "title": "H2 shell (RGB 480-410-405)",
              "description": "A shell of hydrogen gas in the W51 star-forming region. Viewing in RGB 480-410-405 filter combination.",
-             "url": "w51_RGB_480-410-405_transparent_hips",
+             "url": "w51_RGB_480-410-405_hips",
              "pause_time": 3000
          },
          {
@@ -621,7 +621,7 @@
              "zoom_in_time": 3,
              "title": "W51Main O-stars (RGB 162-210-187)",
              "description": "A cluster of massive stars in the W51 star-forming region. Viewing in RGB 162-210-187 filter combination.",
-             "url": "w51_RGB_162-210-187_transparent_hips",
+             "url": "w51_RGB_162-210-187_hips",
              "pause_time": 3000
          },
          {
@@ -634,7 +634,7 @@
              "zoom_in_time": 3,
              "title": "W51Main O-stars (RGB 405-360-335)",
              "description": "A cluster of massive stars in the W51 star-forming region. Viewing in RGB 405-360-335 filter combination.",
-             "url": "w51_RGB_405-360-335_transparent_hips",
+             "url": "w51_RGB_405-360-335_hips",
              "pause_time": 3000
          },
          {
@@ -647,7 +647,7 @@
              "zoom_in_time": 3,
              "title": "W51Main O-stars (RGB 480-405-187)",
              "description": "A cluster of massive stars in the W51 star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-             "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+             "url": "w51_RGB_480-405-187_scaled_hips",
              "pause_time": 3000
          },
          {
@@ -660,7 +660,7 @@
              "zoom_in_time": 3,
              "title": "W51Main O-stars (RGB 480-410-405)",
              "description": "A cluster of massive stars in the W51 star-forming region. Viewing in RGB 480-410-405 filter combination.",
-             "url": "w51_RGB_480-410-405_transparent_hips",
+             "url": "w51_RGB_480-410-405_hips",
              "pause_time": 3000
          },
          {
@@ -673,7 +673,7 @@
              "zoom_in_time": 3,
              "title": "SPICY 102038 (RGB 162-210-187)",
              "description": "The most visible star in the W51e2 cluster. Viewing in RGB 162-210-187 filter combination.",
-             "url": "w51_RGB_162-210-187_transparent_hips",
+             "url": "w51_RGB_162-210-187_hips",
              "pause_time": 3000
          },
          {
@@ -686,7 +686,7 @@
              "zoom_in_time": 3,
              "title": "SPICY 102038 (RGB 405-360-335)",
              "description": "The most visible star in the W51e2 cluster. Viewing in RGB 405-360-335 filter combination.",
-             "url": "w51_RGB_405-360-335_transparent_hips",
+             "url": "w51_RGB_405-360-335_hips",
              "pause_time": 3000
          },
          {
@@ -699,7 +699,7 @@
              "zoom_in_time": 3,
              "title": "SPICY 102038 (RGB 480-405-187)",
              "description": "The most visible star in the W51e2 cluster. Viewing in RGB 480-405-187 scaled filter combination.",
-             "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+             "url": "w51_RGB_480-405-187_scaled_hips",
              "pause_time": 3000
          },
          {
@@ -712,7 +712,7 @@
              "zoom_in_time": 3,
              "title": "SPICY 102038 (RGB 480-410-405)",
              "description": "The most visible star in the W51e2 cluster. Viewing in RGB 480-410-405 filter combination.",
-             "url": "w51_RGB_480-410-405_transparent_hips",
+             "url": "w51_RGB_480-410-405_hips",
              "pause_time": 3000
          },
          {
@@ -725,7 +725,7 @@
              "zoom_in_time": 3,
              "title": "Southeast IRDC (RGB 162-210-187)",
              "description": "A region of dense molecular gas in the W51 star-forming region. Viewing in RGB 162-210-187 filter combination.",
-             "url": "w51_RGB_162-210-187_transparent_hips",
+             "url": "w51_RGB_162-210-187_hips",
              "pause_time": 3000
          },
          {
@@ -738,7 +738,7 @@
              "zoom_in_time": 3,
              "title": "Southeast IRDC (RGB 405-360-335)",
              "description": "A region of dense molecular gas in the W51 star-forming region. Viewing in RGB 405-360-335 filter combination.",
-             "url": "w51_RGB_405-360-335_transparent_hips",
+             "url": "w51_RGB_405-360-335_hips",
              "pause_time": 3000
          },
          {
@@ -751,7 +751,7 @@
              "zoom_in_time": 3,
              "title": "Southeast IRDC (RGB 480-405-187)",
              "description": "A region of dense molecular gas in the W51 star-forming region. Viewing in RGB 480-405-187 scaled filter combination.",
-             "url": "w51_RGB_480-405-187_scaled_transparent_hips",
+             "url": "w51_RGB_480-405-187_scaled_hips",
              "pause_time": 3000
          },
          {
@@ -764,7 +764,7 @@
              "zoom_in_time": 3,
              "title": "Southeast IRDC (RGB 480-410-405)",
              "description": "A region of dense molecular gas in the W51 star-forming region. Viewing in RGB 480-410-405 filter combination.",
-             "url": "w51_RGB_480-410-405_transparent_hips",
+             "url": "w51_RGB_480-410-405_hips",
              "pause_time": 3000
          },
          {
@@ -777,7 +777,7 @@
              "zoom_in_time": 3,
              "title": "ALMA 3mm: W51-E",
              "description": "The ALMA long-baseline view of the region.",
-             "url": "w51e2.spw0thru19.14500.robust0.thr0.075mJy.mfs.I.startmod.selfcal7.image.tt0.pbcor_transparent_hips",
+             "url": "w51e2.spw0thru19.14500.robust0.thr0.075mJy.mfs.I.startmod.selfcal7.image.tt0.pbcor_hips",
              "pause_time": 3000
          },
          {
@@ -790,7 +790,7 @@
              "zoom_in_time": 3,
              "title": "ALMA 3mm: W51-IRS2",
              "description": "The ALMA long-baseline view of the region.",
-             "url": "w51n.spw0thru19.14500.robust0.thr0.075mJy.mfs.I.startmod.selfcal7.image.tt0.pbcor_transparent_hips",
+             "url": "w51n.spw0thru19.14500.robust0.thr0.075mJy.mfs.I.startmod.selfcal7.image.tt0.pbcor_hips",
              "pause_time": 3000
          },
          {
@@ -803,7 +803,7 @@
              "zoom_in_time": 3,
              "title": "ALMA 3mm: A very luminous star",
              "description": "ALMA sees a compact, but resolved, HII region here.",
-             "url": "w51n.spw0thru19.14500.robust0.thr0.075mJy.mfs.I.startmod.selfcal7.image.tt0.pbcor_transparent_hips",
+             "url": "w51n.spw0thru19.14500.robust0.thr0.075mJy.mfs.I.startmod.selfcal7.image.tt0.pbcor_hips",
              "pause_time": 3000
          },
          {
@@ -816,7 +816,7 @@
              "zoom_in_time": 3,
              "title": "JWST short-wavelength: A very luminous star",
              "description": "JWST sees this as a highly embedded star.",
-             "url": "w51_RGB_162-210-187_transparent_hips",
+             "url": "w51_RGB_210-162-140_hips",
              "pause_time": 3000
          }
     ]

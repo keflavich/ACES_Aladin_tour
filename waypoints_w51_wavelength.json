@@ -16,19 +16,19 @@
                 "wavelengths": [
                     {
                         "wavelength": 140,
-                        "url": "w51_RGB_182-162-140_log_hips",
+                        "url": "w51_RGB_182-162-140_hips",
                         "label": "RGB: 1.82μm / 1.62μm / 1.40μm",
                         "description": "Near-infrared view (1.4-1.8 μm) showing scattered starlight from the central young stellar object and cooler dust in the surrounding envelope. These shorter wavelengths penetrate through some of the dust, revealing the structure close to the star."
                     },
                     {
                         "wavelength": 162,
-                        "url": "w51_RGB_210-162-140__hips",
+                        "url": "w51_RGB_210-162-140_hips",
                         "label": "RGB: 2.10μm / 1.62μm / 1.40μm",
                         "description": "Short near-infrared view (2.1 μm / 1.62 μm / 1.40 μm) capturing H₂ emission at 2.1 μm (green) and stellar scattered light. The H₂ emission traces shocked gas in outflows and the photodissociation region around the massive young star."
                     },
                     {
                         "wavelength": 187,
-                        "url": "w51_RGB_480-405-187_scaled_hips",
+                        "url": "w51_RGB_480-405-187_hips",
                         "label": "RGB: 4.80μm / 4.05μm / 1.87μm",
                         "description": "Wide wavelength range (1.9-4.8 μm) showing the transition from stellar light (blue) to warm dust and PAH emission (red). The long-wavelength emission reveals the warmest dust heated by the embedded massive star."
                     },

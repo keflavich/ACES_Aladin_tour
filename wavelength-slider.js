@@ -172,9 +172,10 @@ function onWavelengthSliderChange(value) {
         // Calculate blend position (0 to 1 between lowerIndex and upperIndex)
         const position = sliderValue - lowerIndex;
         
-        // Set opacities: fade from lower to upper
+        // Keep lower layer fully opaque and fade in upper layer,
+        // so the base layer never shows through during transitions.
         setAllWavelengthOpacities(0);
-        wavelengthLayers[lowerIndex].layer.setOpacity(1.0 - position);
+        wavelengthLayers[lowerIndex].layer.setOpacity(1.0);
         wavelengthLayers[upperIndex].layer.setOpacity(position);
         
         // Show blended description

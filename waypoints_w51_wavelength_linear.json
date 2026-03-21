@@ -1,0 +1,99 @@
+{
+    "waypoints": [
+        {
+            "ra": 290.927082,
+            "dec": 14.5063530,
+            "fov": 0.03,
+            "transition_fov": 0.1,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "W51 Wavelength Explorer (Linear)",
+            "description": "1.82μm / 1.62μm / 1.40μm → 1.87μm / 1.82μm / 1.62μm → 2.10μm / 1.87μm / 1.82μm → 3.35μm / 2.10μm / 1.87μm → 3.60μm / 3.35μm / 2.10μm → 4.05μm / 3.60μm / 3.35μm → 4.10μm / 4.05μm / 3.60μm → 4.80μm / 4.10μm / 4.05μm → 5.60μm / 4.80μm / 4.10μm → 7.70μm / 5.60μm / 4.80μm → 10.0μm / 7.70μm / 5.60μm → 12.8μm / 10.0μm / 7.70μm → 21.0μm / 12.8μm / 10.0μm",
+            "pause_time": 300000,
+            "wavelength_slider": {
+                "enabled": true,
+                "wavelengths": [
+                    {
+                        "wavelength": 182,
+                        "url": "w51_RGB_182-162-140_hips",
+                        "label": "RGB: 1.82μm / 1.62μm / 1.40μm",
+                        "description": "1.82μm / 1.62μm / 1.40μm"
+                    },
+                    {
+                        "wavelength": 187,
+                        "url": "w51_RGB_187-182-162_hips",
+                        "label": "RGB: 1.87μm / 1.82μm / 1.62μm",
+                        "description": "1.87μm / 1.82μm / 1.62μm"
+                    },
+                    {
+                        "wavelength": 210,
+                        "url": "w51_RGB_210-187-182_hips",
+                        "label": "RGB: 2.10μm / 1.87μm / 1.82μm",
+                        "description": "2.10μm / 1.87μm / 1.82μm"
+                    },
+                    {
+                        "wavelength": 335,
+                        "url": "w51_RGB_335-210-187_hips",
+                        "label": "RGB: 3.35μm / 2.10μm / 1.87μm",
+                        "description": "3.35μm / 2.10μm / 1.87μm"
+                    },
+                    {
+                        "wavelength": 360,
+                        "url": "w51_RGB_360-335-210_hips",
+                        "label": "RGB: 3.60μm / 3.35μm / 2.10μm",
+                        "description": "3.60μm / 3.35μm / 2.10μm"
+                    },
+                    {
+                        "wavelength": 405,
+                        "url": "w51_RGB_405-360-335_hips",
+                        "label": "RGB: 4.05μm / 3.60μm / 3.35μm",
+                        "description": "4.05μm / 3.60μm / 3.35μm"
+                    },
+                    {
+                        "wavelength": 410,
+                        "url": "w51_RGB_410-405-360_hips",
+                        "label": "RGB: 4.10μm / 4.05μm / 3.60μm",
+                        "description": "4.10μm / 4.05μm / 3.60μm"
+                    },
+                    {
+                        "wavelength": 480,
+                        "url": "w51_RGB_480-410-405_hips",
+                        "label": "RGB: 4.80μm / 4.10μm / 4.05μm",
+                        "description": "4.80μm / 4.10μm / 4.05μm"
+                    },
+                    {
+                        "wavelength": 560,
+                        "url": "w51_RGB_560-480-410_hips",
+                        "label": "RGB: 5.60μm / 4.80μm / 4.10μm",
+                        "description": "5.60μm / 4.80μm / 4.10μm"
+                    },
+                    {
+                        "wavelength": 770,
+                        "url": "w51_RGB_770-560-480_hips",
+                        "label": "RGB: 7.70μm / 5.60μm / 4.80μm",
+                        "description": "7.70μm / 5.60μm / 4.80μm"
+                    },
+                    {
+                        "wavelength": 1000,
+                        "url": "w51_RGB_1000-770-560_hips",
+                        "label": "RGB: 10.0μm / 7.70μm / 5.60μm",
+                        "description": "10.0μm / 7.70μm / 5.60μm"
+                    },
+                    {
+                        "wavelength": 1280,
+                        "url": "w51_RGB_1280-1000-770_hips",
+                        "label": "RGB: 12.8μm / 10.0μm / 7.70μm",
+                        "description": "12.8μm / 10.0μm / 7.70μm"
+                    },
+                    {
+                        "wavelength": 2100,
+                        "url": "w51_RGB_2100-1280-1000_hips",
+                        "label": "RGB: 21.0μm / 12.8μm / 10.0μm",
+                        "description": "21.0μm / 12.8μm / 10.0μm"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>W51 Wavelength Explorer (Other)</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='aladin.js' charset='utf-8' defer></script>
+    <script type="text/javascript" src="draggable.js"></script>
+    <script type="text/javascript" src="tour-common.js"></script>
+    <script type="text/javascript" src="wavelength-slider.js"></script>
+    <link rel="stylesheet" href="default.css">
+    <link rel="stylesheet" href="draggable.css">
+    <link rel="stylesheet" href="tour-common.css">
+    <link rel="stylesheet" href="wavelength-slider.css">
+</head>
+
+<body>
+    <div id="aladin-lite-div"></div>
+
+    <div id="loading-div">Loading W51 Wavelength Explorer (Other)... Please wait.</div>
+
+    <div id="waypoint-info">
+        <div id="waypoint-header">
+            <button id="expand-btn" title="Expand/Collapse Info">▶</button>
+            <h2 id="waypoint-title">W51 Wavelength Explorer (Other)</h2>
+        </div>
+        <div id="waypoint-content">
+            <p id="waypoint-description">Other W51 wavelength composites.</p>
+        </div>
+    </div>
+
+    <div id="progress-container">
+        <div id="progress-bar">
+            <div id="progress"></div>
+        </div>
+        <span id="current-waypoint">1/1</span>
+    </div>
+
+    <div id="tour-controls" style="display: none;">
+        <button id="prev-btn" title="Previous" disabled>‹</button>
+        <button id="next-btn" title="Next" disabled>›</button>
+        <button id="start-btn" title="Start/Play Tour" disabled>▶</button>
+        <button id="reset-btn" title="Reset">⟲</button>
+        <button id="share-btn" title="Copy shareable link to current waypoint">🔗</button>
+        <select id="waypoint-dropdown" title="Jump to waypoint"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 36px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="">≫</option>
+        </select>
+        <select id="speed-dropdown" title="Tour speed: 1× = normal, 2× = double speed, 4× = quadruple speed"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 42px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+        </select>
+    </div>
+
+    <div id="countdown-timer" style="display: none;">
+        <span id="countdown-text">Next in: </span>
+        <span id="countdown-value">5</span>
+    </div>
+
+    <div id="wavelength-slider-placeholder"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadWaypoints('waypoints_w51_wavelength_other.json', {
+                initialSurvey: 'CDS/P/2MASS/color',
+                onWaypointsLoaded: function(waypoints) {
+                    if (waypoints && waypoints.length > 0 && waypoints[0].wavelength_slider) {
+                        const config = waypoints[0].wavelength_slider;
+                        if (config.enabled && config.wavelengths) {
+                            const initWavelengthSliderWhenReady = () => {
+                                if (aladin) {
+                                    initWavelengthSlider(config.wavelengths);
+                                    const placeholder = document.getElementById('wavelength-slider-placeholder');
+                                    if (placeholder) {
+                                        placeholder.innerHTML = createWavelengthSliderHTML();
+                                        const sliderContainer = document.getElementById('wavelength-slider-container');
+                                        if (sliderContainer) makeDraggable(sliderContainer);
+                                        initWavelengthSliderEventListeners();
+                                        setTimeout(() => showWavelengthSlider(), 2000);
+                                    }
+                                } else {
+                                    setTimeout(initWavelengthSliderWhenReady, 500);
+                                }
+                            };
+                            setTimeout(initWavelengthSliderWhenReady, 500);
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

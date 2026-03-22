@@ -555,6 +555,6 @@ function decreaseWavelengthPlaybackSpeed() {
  * Reset wavelength playback speed to 1x
  */
 function resetWavelengthPlaybackSpeed() {
-    wavelengthPlaybackState.speed = 1.0;
+    wavelengthPlaybackState.speed = 0.25;
     updateWavelengthSpeedDisplay();
 }

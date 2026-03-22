@@ -52,10 +52,20 @@
 .wavelength-notch {
     position: absolute;
     left: 0;
-    right: 0;
+    width: fit-content;
     display: flex;
     align-items: center;
     transform: translateY(50%);
+    pointer-events: auto;
+    cursor: pointer;
+    padding: 5px;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    border-radius: 4px;
+}
+
+.wavelength-notch:hover {
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 .wavelength-notch-marker {
@@ -65,6 +75,14 @@
     border-radius: 2px;
     margin-right: 8px;
     flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.wavelength-notch:hover .wavelength-notch-marker {
+    width: 16px;
+    height: 4px;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 }
 
 .wavelength-notch-label {
@@ -136,6 +154,7 @@
     justify-content: center;
     gap: 8px;
     font-size: 12px;
+    height: 18px;
 }
 
 .status-indicator {
@@ -170,6 +189,166 @@
 .wavelength-slider-container.dragging {
     cursor: grabbing;
     user-select: none;
+}
+
+/* Wavelength Toolbox Styles */
+.wavelength-toolbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 12px;
+}
+
+.toolbox-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.toolbox-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.toolbox-toggle:active {
+    transform: scale(0.95);
+}
+
+.toolbox-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: max-width 0.3s ease, opacity 0.3s ease;
+    max-width: 200px;
+    opacity: 1;
+}
+
+.toolbox-controls.hidden {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.play-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.play-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.play-button:active {
+    transform: scale(0.95);
+}
+
+.play-button.playing {
+    background: rgba(100, 255, 100, 0.3);
+    box-shadow: 0 0 12px rgba(100, 255, 100, 0.6);
+}
+
+.speed-control {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.speed-control:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.speed-control:focus {
+    outline: none;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+/* Style dropdown options */
+.speed-control option {
+    background: #2962ff;
+    color: white;
+}
+
+.speed-buttons-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.speed-button {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.speed-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.speed-button:active {
+    transform: scale(0.9);
+}
+
+.speed-button.reset {
+    background: rgba(100, 255, 100, 0.15);
+    border-color: rgba(100, 255, 100, 0.3);
+}
+
+.speed-button.reset:hover {
+    background: rgba(100, 255, 100, 0.25);
+    border-color: rgba(100, 255, 100, 0.5);
+}
+
+.speed-display {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 28px;
+    text-align: center;
 }
 
 /* Responsive design */

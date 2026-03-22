@@ -8,6 +8,13 @@ let wavelengthSlider = null;
 let wavelengthLayers = []; // Array of {wavelength: number, url: string, layer: object}
 let currentWavelengthIndex = 0;
 let isWavelengthSliderVisible = false;
+let wavelengthPlaybackState = {
+    isPlaying: false,
+    direction: 1, // 1 for up, -1 for down, 0 for stopped
+    speed: 0.25, // Multiplier for animation speed
+    animationInterval: null,
+    stepSize: 0.05 // How much to increment/decrement per frame
+};
 
 /**
  * Initialize the wavelength slider with a set of wavelength-based images
@@ -102,6 +109,11 @@ function showWavelengthSlider() {
  * Hide the wavelength slider UI
  */
 function hideWavelengthSlider() {
+    // Stop playback when hiding
+    if (wavelengthPlaybackState.isPlaying) {
+        stopWavelengthPlayback();
+    }
+    
     const sliderContainer = document.getElementById('wavelength-slider-container');
     if (sliderContainer) {
         sliderContainer.style.display = 'none';
@@ -299,6 +311,28 @@ function createWavelengthSliderHTML() {
                 <span class="status-indicator"></span>
                 <span class="status-text">Drag to explore wavelengths</span>
             </div>
+            <div class="wavelength-toolbox">
+                <button class="toolbox-toggle" id="wavelength-toolbox-toggle" title="Toggle playback controls">
+                    <span class="toggle-icon">⚙</span>
+                </button>
+                <div class="toolbox-controls" id="wavelength-toolbox-controls">
+                    <button class="play-button" id="wavelength-play-button" title="Play/Pause automated sliding">
+                        <span class="play-icon">▶</span>
+                    </button>
+                    <div class="speed-buttons-group">
+                        <button class="speed-button" id="wavelength-speed-slower" title="Decrease speed (÷2)">
+                            &lt;&lt;
+                        </button>
+                        <span class="speed-display" id="wavelength-speed-display">0.25x</span>
+                        <button class="speed-button" id="wavelength-speed-faster" title="Increase speed (×2)">
+                            &gt;&gt;
+                        </button>
+                        <button class="speed-button reset" id="wavelength-speed-reset" title="Reset to 1x">
+                            &gt;
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
 }
@@ -310,8 +344,217 @@ function createWavelengthSliderHTML() {
 function initWavelengthSliderEventListeners() {
     const slider = document.getElementById('wavelength-slider');
     if (slider) {
+        slider.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+        slider.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        });
         slider.addEventListener('input', function(e) {
+            // Stop playback when user manually adjusts slider
+            if (wavelengthPlaybackState.isPlaying) {
+                stopWavelengthPlayback();
+            }
             onWavelengthSliderChange(e.target.value);
         });
     }
+
+    // Add event listeners to wavelength notches for direct selection
+    const notches = document.querySelectorAll('.wavelength-notch');
+    notches.forEach((notch) => {
+        notch.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+        notch.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        });
+        notch.addEventListener('click', function(e) {
+            // Stop playback when user clicks a wavelength
+            if (wavelengthPlaybackState.isPlaying) {
+                stopWavelengthPlayback();
+            }
+            const index = parseInt(this.getAttribute('data-index'));
+            slider.value = index;
+            onWavelengthSliderChange(index);
+        });
+        // Pointer events and cursor styles are now handled in CSS
+    });
+
+    // Toolbox controls
+    const playButton = document.getElementById('wavelength-play-button');
+    if (playButton) {
+        playButton.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+        playButton.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        });
+        playButton.addEventListener('click', function() {
+            toggleWavelengthPlayback();
+        });
+    }
+
+    const speedSlowerBtn = document.getElementById('wavelength-speed-slower');
+    const speedFasterBtn = document.getElementById('wavelength-speed-faster');
+    const speedResetBtn = document.getElementById('wavelength-speed-reset');
+    
+    if (speedSlowerBtn) {
+        speedSlowerBtn.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+        speedSlowerBtn.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        });
+        speedSlowerBtn.addEventListener('click', function() {
+            decreaseWavelengthPlaybackSpeed();
+        });
+    }
+    
+    if (speedFasterBtn) {
+        speedFasterBtn.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+        speedFasterBtn.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        });
+        speedFasterBtn.addEventListener('click', function() {
+            increaseWavelengthPlaybackSpeed();
+        });
+    }
+    
+    if (speedResetBtn) {
+        speedResetBtn.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+        speedResetBtn.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        });
+        speedResetBtn.addEventListener('click', function() {
+            resetWavelengthPlaybackSpeed();
+        });
+    }
+
+    const toolboxToggle = document.getElementById('wavelength-toolbox-toggle');
+    if (toolboxToggle) {
+        toolboxToggle.addEventListener('mousedown', function(e) {
+            e.stopPropagation();
+        });
+        toolboxToggle.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        });
+        toolboxToggle.addEventListener('click', function() {
+            const controls = document.getElementById('wavelength-toolbox-controls');
+            if (controls) {
+                controls.classList.toggle('hidden');
+            }
+        });
+    }
+}
+
+/**
+ * Toggle wavelength playback (play/pause)
+ */
+function toggleWavelengthPlayback() {
+    if (wavelengthPlaybackState.isPlaying) {
+        stopWavelengthPlayback();
+    } else {
+        startWavelengthPlayback();
+    }
+}
+
+/**
+ * Start automatic wavelength sliding
+ */
+function startWavelengthPlayback() {
+    const slider = document.getElementById('wavelength-slider');
+    const playButton = document.getElementById('wavelength-play-button');
+    
+    if (!slider) return;
+    
+    wavelengthPlaybackState.isPlaying = true;
+    wavelengthPlaybackState.direction = 1; // Start going up
+    
+    if (playButton) {
+        playButton.classList.add('playing');
+        playButton.querySelector('.play-icon').textContent = '⏸';
+    }
+    
+    const maxIndex = parseFloat(slider.max);
+    const animationLoop = () => {
+        let currentValue = parseFloat(slider.value);
+        const step = wavelengthPlaybackState.stepSize * wavelengthPlaybackState.speed * wavelengthPlaybackState.direction;
+        
+        currentValue += step;
+        
+        // Reverse direction at boundaries
+        if (currentValue >= maxIndex) {
+            currentValue = maxIndex;
+            wavelengthPlaybackState.direction = -1;
+        } else if (currentValue <= 0) {
+            currentValue = 0;
+            wavelengthPlaybackState.direction = 1;
+        }
+        
+        slider.value = currentValue;
+        onWavelengthSliderChange(currentValue);
+        
+        if (wavelengthPlaybackState.isPlaying) {
+            wavelengthPlaybackState.animationInterval = requestAnimationFrame(animationLoop);
+        }
+    };
+    
+    wavelengthPlaybackState.animationInterval = requestAnimationFrame(animationLoop);
+}
+
+/**
+ * Stop automatic wavelength sliding
+ */
+function stopWavelengthPlayback() {
+    wavelengthPlaybackState.isPlaying = false;
+    wavelengthPlaybackState.direction = 0;
+    
+    if (wavelengthPlaybackState.animationInterval) {
+        cancelAnimationFrame(wavelengthPlaybackState.animationInterval);
+        wavelengthPlaybackState.animationInterval = null;
+    }
+    
+    const playButton = document.getElementById('wavelength-play-button');
+    if (playButton) {
+        playButton.classList.remove('playing');
+        playButton.querySelector('.play-icon').textContent = '▶';
+    }
+}
+
+/**
+ * Update the speed display
+ */
+function updateWavelengthSpeedDisplay() {
+    const display = document.getElementById('wavelength-speed-display');
+    if (display) {
+        display.textContent = wavelengthPlaybackState.speed + 'x';
+    }
+}
+
+/**
+ * Increase wavelength playback speed by factor of 2
+ */
+function increaseWavelengthPlaybackSpeed() {
+    wavelengthPlaybackState.speed = Math.min(wavelengthPlaybackState.speed * 2, 16);
+    updateWavelengthSpeedDisplay();
+}
+
+/**
+ * Decrease wavelength playback speed by factor of 2
+ */
+function decreaseWavelengthPlaybackSpeed() {
+    wavelengthPlaybackState.speed = Math.max(wavelengthPlaybackState.speed / 2, 0.25);
+    updateWavelengthSpeedDisplay();
+}
+
+/**
+ * Reset wavelength playback speed to 1x
+ */
+function resetWavelengthPlaybackSpeed() {
+    wavelengthPlaybackState.speed = 1.0;
+    updateWavelengthSpeedDisplay();
 }

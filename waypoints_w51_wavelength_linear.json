@@ -3,7 +3,7 @@
         {
             "ra": 290.927082,
             "dec": 14.5063530,
-            "fov": 0.2,
+            "fov": 0.1,
             "transition_fov": 0.1,
             "transition_time": 3,
             "zoom_out_time": 2,

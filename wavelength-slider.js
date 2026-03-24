@@ -60,7 +60,8 @@ function loadWavelengthLayers() {
         
         // Check if this layer is already in the cache
         if (layerCache.has(fullUrl)) {
-            wavelengthData.layer = layerCache.get(fullUrl);
+            const cached = layerCache.get(fullUrl);
+            wavelengthData.layer = cached && cached.layer ? cached.layer : cached;
             console.log(`Using cached layer for ${wavelengthData.label}`);
         } else {
             // Create new layer
@@ -76,7 +77,7 @@ function loadWavelengthLayers() {
                 layer.setOpacity(0.0);
                 
                 // Store in cache and wavelength data
-                layerCache.set(fullUrl, layer);
+                layerCache.set(fullUrl, { layer: layer, name: layerName, url: fullUrl });
                 wavelengthData.layer = layer;
                 
                 console.log(`Loaded wavelength layer: ${wavelengthData.label} (${fullUrl})`);
@@ -86,11 +87,13 @@ function loadWavelengthLayers() {
         }
     });
 
-    // Make the first wavelength visible
-    if (wavelengthLayers.length > 0 && wavelengthLayers[0].layer) {
-        wavelengthLayers[0].layer.setOpacity(1.0);
-        currentWavelengthIndex = 0;
-        updateWavelengthSliderUI();
+    // Force first wavelength selection once layers are created
+    if (wavelengthLayers.length > 0) {
+        const slider = document.getElementById('wavelength-slider');
+        if (slider) {
+            slider.value = 0;
+        }
+        onWavelengthSliderChange(0);
     }
 }
 
@@ -102,6 +105,16 @@ function showWavelengthSlider() {
     if (sliderContainer) {
         sliderContainer.style.display = 'block';
         isWavelengthSliderVisible = true;
+
+        // Re-assert current slider selection on show (important on cold/private loads)
+        const slider = document.getElementById('wavelength-slider');
+        if (slider && wavelengthLayers.length > 0) {
+            const sliderValue = parseFloat(slider.value);
+            const targetValue = Number.isFinite(sliderValue) ? sliderValue : 0;
+            requestAnimationFrame(() => {
+                onWavelengthSliderChange(targetValue);
+            });
+        }
     }
 }
 

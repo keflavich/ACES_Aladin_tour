@@ -62,6 +62,12 @@
         <span id="countdown-value">5</span>
     </div>
 
+    <button id="scale-toggle-floating-btn"
+        title="Switch between linear and log-stretched versions"
+        style="display: none; position: fixed; right: 20px; bottom: 20px; z-index: 2200; background: #2962FF; color: white; border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: bold;">
+        Mode: Linear
+    </button>
+
     <div id="wavelength-slider-placeholder"></div>
 
     <script>
@@ -70,12 +76,24 @@
         let sickleScaleMode = 'linear';
 
         function updateScaleToggleButton() {
-            const button = document.getElementById('scale-toggle-btn');
-            if (!button) {
+            const modeLabel = sickleScaleMode === 'linear' ? 'Linear' : 'Log';
+            const controlsButton = document.getElementById('scale-toggle-btn');
+            const floatingButton = document.getElementById('scale-toggle-floating-btn');
+            if (controlsButton) {
+                controlsButton.textContent = `Mode: ${modeLabel}`;
+            }
+            if (floatingButton) {
+                floatingButton.textContent = `Mode: ${modeLabel}`;
+            }
+        }
+
+        function handleScaleToggle() {
+            if (sickleLogWavelengths.length === 0) {
                 return;
             }
-            const modeLabel = sickleScaleMode === 'linear' ? 'Linear' : 'Log';
-            button.textContent = `Mode: ${modeLabel}`;
+            sickleScaleMode = sickleScaleMode === 'linear' ? 'log' : 'linear';
+            updateScaleToggleButton();
+            renderSickleWavelengthSlider(true);
         }
 
         function getActiveSickleWavelengths() {
@@ -149,14 +167,13 @@
 
                     const scaleToggleButton = document.getElementById('scale-toggle-btn');
                     if (scaleToggleButton) {
-                        scaleToggleButton.addEventListener('click', function () {
-                            if (sickleLogWavelengths.length === 0) {
-                                return;
-                            }
-                            sickleScaleMode = sickleScaleMode === 'linear' ? 'log' : 'linear';
-                            updateScaleToggleButton();
-                            renderSickleWavelengthSlider(true);
-                        });
+                        scaleToggleButton.addEventListener('click', handleScaleToggle);
+                    }
+
+                    const floatingScaleToggleButton = document.getElementById('scale-toggle-floating-btn');
+                    if (floatingScaleToggleButton) {
+                        floatingScaleToggleButton.style.display = 'block';
+                        floatingScaleToggleButton.addEventListener('click', handleScaleToggle);
                     }
 
                     updateScaleToggleButton();

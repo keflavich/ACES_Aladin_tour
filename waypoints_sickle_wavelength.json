@@ -1,0 +1,95 @@
+{
+    "waypoints": [
+        {
+            "ra": 266.566301,
+            "dec": -28.8016023,
+            "fov": 0.05,
+            "transition_fov": 0.08,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Sickle Wavelength Explorer",
+            "description": "Linear and log wavelength sequence from 3.35μm / 2.10μm / 1.87μm to 15.0μm / 11.3μm / 7.70μm.",
+            "pause_time": 300000,
+            "wavelength_slider": {
+                "enabled": true,
+                "wavelengths": [
+                    {
+                        "wavelength": 335,
+                        "url": "Sickle_RGB_335-210-187_hips",
+                        "label": "RGB: 3.35μm / 2.10μm / 1.87μm",
+                        "description": "Linear: 3.35μm / 2.10μm / 1.87μm"
+                    },
+                    {
+                        "wavelength": 470,
+                        "url": "Sickle_RGB_470-335-210_hips",
+                        "label": "RGB: 4.70μm / 3.35μm / 2.10μm",
+                        "description": "Linear: 4.70μm / 3.35μm / 2.10μm"
+                    },
+                    {
+                        "wavelength": 480,
+                        "url": "Sickle_RGB_480-470-335_hips",
+                        "label": "RGB: 4.80μm / 4.70μm / 3.35μm",
+                        "description": "Linear: 4.80μm / 4.70μm / 3.35μm"
+                    },
+                    {
+                        "wavelength": 770,
+                        "url": "Sickle_RGB_770-480-470_hips",
+                        "label": "RGB: 7.70μm / 4.80μm / 4.70μm",
+                        "description": "Linear: 7.70μm / 4.80μm / 4.70μm"
+                    },
+                    {
+                        "wavelength": 1130,
+                        "url": "Sickle_RGB_1130-770-480_hips",
+                        "label": "RGB: 11.3μm / 7.70μm / 4.80μm",
+                        "description": "Linear: 11.3μm / 7.70μm / 4.80μm"
+                    },
+                    {
+                        "wavelength": 1500,
+                        "url": "Sickle_RGB_1500-1130-770_hips",
+                        "label": "RGB: 15.0μm / 11.3μm / 7.70μm",
+                        "description": "Linear: 15.0μm / 11.3μm / 7.70μm"
+                    }
+                ],
+                "log_wavelengths": [
+                    {
+                        "wavelength": 335,
+                        "url": "Sickle_RGB_335-210-187_log_hips",
+                        "label": "RGB: 3.35μm / 2.10μm / 1.87μm",
+                        "description": "Log: 3.35μm / 2.10μm / 1.87μm"
+                    },
+                    {
+                        "wavelength": 470,
+                        "url": "Sickle_RGB_470-335-210_log_hips",
+                        "label": "RGB: 4.70μm / 3.35μm / 2.10μm",
+                        "description": "Log: 4.70μm / 3.35μm / 2.10μm"
+                    },
+                    {
+                        "wavelength": 480,
+                        "url": "Sickle_RGB_480-470-335_log_hips",
+                        "label": "RGB: 4.80μm / 4.70μm / 3.35μm",
+                        "description": "Log: 4.80μm / 4.70μm / 3.35μm"
+                    },
+                    {
+                        "wavelength": 770,
+                        "url": "Sickle_RGB_770-480-470_log_hips",
+                        "label": "RGB: 7.70μm / 4.80μm / 4.70μm",
+                        "description": "Log: 7.70μm / 4.80μm / 4.70μm"
+                    },
+                    {
+                        "wavelength": 1130,
+                        "url": "Sickle_RGB_1130-770-480_log_hips",
+                        "label": "RGB: 11.3μm / 7.70μm / 4.80μm",
+                        "description": "Log: 11.3μm / 7.70μm / 4.80μm"
+                    },
+                    {
+                        "wavelength": 1500,
+                        "url": "Sickle_RGB_1500-1130-770_log_hips",
+                        "label": "RGB: 15.0μm / 11.3μm / 7.70μm",
+                        "description": "Log: 15.0μm / 11.3μm / 7.70μm"
+                    }
+                ]
+            }
+        }
+    ]
+}

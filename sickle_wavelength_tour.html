@@ -130,6 +130,10 @@
                 return;
             }
 
+            // Remove any existing slider DOM before reinitializing wavelength layers.
+            // This prevents loadWavelengthLayers() from targeting a stale slider element.
+            placeholder.innerHTML = '';
+
             initWavelengthSlider(activeWavelengths);
             placeholder.innerHTML = createWavelengthSliderHTML();
 
@@ -143,7 +147,9 @@
             if (slider) {
                 const clampedValue = Math.min(Math.max(sliderValue, 0), activeWavelengths.length - 1);
                 slider.value = clampedValue;
-                onWavelengthSliderChange(clampedValue);
+                requestAnimationFrame(() => {
+                    onWavelengthSliderChange(clampedValue);
+                });
             }
 
             showWavelengthSlider();

@@ -183,6 +183,11 @@ function getOrCreateLayer(url) {
         const survey = aladin.createImageSurvey(url, layerName, url);
         layer = survey;
         aladin.setOverlayImageLayer(survey, layerName);
+        // Aladin's setOverlayImageLayer leaves new layers at opacity 1.0,
+        // which causes a one-frame flash before the caller can hide them.
+        // Force opacity 0 here so newly-created layers are invisible until
+        // the caller explicitly fades or brings them to the front.
+        survey.setOpacity(0);
 
         // Cache the layer
         layerCache.set(url, { layer: layer, name: layerName, url: url });
@@ -252,8 +257,12 @@ function hideOtherLayers(currentUrl, waypoint = null) {
         if (cachedLayer.isJPG || !cachedLayer.layer) return;
 
         if (url === currentUrl) {
-            // Current layer: full opacity
-            cachedLayer.layer.setOpacity(1.0);
+            // Skip the current layer — its caller is responsible for its
+            // opacity (typically an animateLayerOpacity fade-in). Snapping
+            // to 1.0 here causes a one-frame flash before the fade ramp
+            // starts, which reads as a sudden jump at the moment the
+            // camera arrives.
+            return;
         } else if (stickyUrls.has(url)) {
             // Sticky layer: full opacity
             cachedLayer.layer.setOpacity(1.0);
@@ -696,8 +705,9 @@ function goToWaypoint(index) {
     // If waypoints are close (within 0.1 degrees), skip zoom out step
     if (distance < 0.2) {
         console.log("Close waypoints detected, skipping zoom out step");
-        // Update waypoint info right before starting the movement animation
-        updateWaypointInfo();
+        // Title/description are deferred until the layer fade-in starts
+        // (or until the camera arrives, for waypoints with no layer change),
+        // so the text doesn't change long before the visual does.
 
         // Pre-load new layer but don't display yet
         if (waypoints[index].url) {
@@ -756,6 +766,11 @@ function goToWaypoint(index) {
                         // Hide other layers
                         hideOtherLayers(waypoints[index].url, waypoints[index]);
 
+                        // Sync title/description with the layer fade-in: update
+                        // the visible text right when the new layer starts
+                        // becoming visible, not at the start of pan/zoom.
+                        updateWaypointInfo();
+
                         // Animate fade-in using waypoint's fade_in_time (default 0.5s), then continue with waypoint logic
                         const fadeInDuration = getAdjustedWaypointTime(waypoint, 'fade_in_time', 0.5);
                         animateLayerOpacity(cachedLayer.layer, 0, 1, fadeInDuration, function() {
@@ -804,10 +819,14 @@ function goToWaypoint(index) {
                         // Fallback for JPG or other layer types
                         bringLayerToFront(waypoints[index].url);
                         hideOtherLayers(waypoints[index].url, waypoints[index]);
+                        updateWaypointInfo();
                     }
                 } else {
                     // No URL - just pan and zoom, then set up auto-advance
                     console.log("No URL for waypoint, setting up auto-advance only");
+
+                    // No layer change, so update title/description on arrival
+                    updateWaypointInfo();
 
                     // Set up auto-advance timeout using configurable pause time
                     if (isPlaying) {
@@ -856,8 +875,9 @@ function goToWaypoint(index) {
             // Check if animation was interrupted
             if (interruptAnimation) return;
 
-            // Update waypoint info right before starting the movement animation
-            updateWaypointInfo();
+            // Title/description are deferred until the layer fade-in starts
+            // (or until the camera arrives, for waypoints with no layer change),
+            // so the text doesn't change long before the visual does.
             // Step 2: Go to the new coordinates
             aladin.animateToRaDec(waypoint.ra, waypoint.dec, getAdjustedWaypointTime(waypoint, 'transition_time', 2), function () {
                 // Check if animation was interrupted
@@ -893,6 +913,11 @@ function goToWaypoint(index) {
 
                             // Hide other layers
                             hideOtherLayers(waypoints[index].url, waypoints[index]);
+
+                            // Sync title/description with the layer fade-in: update
+                            // the visible text right when the new layer starts
+                            // becoming visible, not at the start of pan/zoom.
+                            updateWaypointInfo();
 
                             // Animate fade-in using waypoint's fade_in_time (default 0.5s), then continue with waypoint logic
                             const fadeInDuration = getAdjustedWaypointTime(waypoint, 'fade_in_time', 0.5);
@@ -941,10 +966,14 @@ function goToWaypoint(index) {
                             // Fallback for JPG or other layer types
                             bringLayerToFront(waypoints[index].url);
                             hideOtherLayers(waypoints[index].url, waypoints[index]);
+                            updateWaypointInfo();
                         }
                     } else {
                         // No URL - just pan and zoom, then set up auto-advance
                         console.log("No URL for waypoint (multi-step), setting up auto-advance only");
+
+                        // No layer change, so update title/description on arrival
+                        updateWaypointInfo();
 
                         // Set up auto-advance timeout using configurable pause time
                         if (isPlaying) {

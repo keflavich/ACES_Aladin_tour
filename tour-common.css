@@ -396,3 +396,48 @@
         font-size: 14px;
     }
 }
+/* Optional per-waypoint image (people, figures) — see updateWaypointImage() */
+#waypoint-figure {
+    margin: 0 0 10px 0;
+    float: right;
+    width: 40%;
+    max-width: 190px;
+    margin-left: 12px;
+}
+
+#waypoint-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+#waypoint-image-caption {
+    margin-top: 4px;
+    font-size: 0.78em;
+    line-height: 1.3;
+    opacity: 0.75;
+}
+
+@media (max-width: 700px) {
+    #waypoint-figure {
+        float: none;
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+    }
+}
+
+/* Kiosk / screensaver mode (?kiosk=true): text only, no controls */
+body.kiosk-mode #tour-controls,
+body.kiosk-mode #progress-container,
+body.kiosk-mode #countdown-timer,
+body.kiosk-mode #minimize-btn,
+body.kiosk-mode #expand-btn {
+    display: none !important;
+}
+
+body.kiosk-mode #waypoint-info {
+    pointer-events: none;
+}

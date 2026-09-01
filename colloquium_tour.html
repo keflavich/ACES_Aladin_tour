@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>Star Formation in the Galaxy — Colloquium Tour</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src='aladin.js' charset='utf-8' defer></script>
+    <script type="text/javascript" src="draggable.js"></script>
+    <script type="text/javascript" src="tour-common.js"></script>
+    <link rel="stylesheet" href="default.css">
+    <link rel="stylesheet" href="draggable.css">
+    <link rel="stylesheet" href="tour-common.css">
+    <style>
+        /* Splash screen shown before the tour begins */
+        #intro-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(2, 6, 20, 0.88);
+            backdrop-filter: blur(3px);
+            transition: opacity 0.6s ease;
+        }
+
+        #intro-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #intro-card {
+            max-width: 620px;
+            margin: 20px;
+            padding: 28px 32px;
+            border-radius: 14px;
+            background: rgba(10, 16, 38, 0.92);
+            border: 1px solid rgba(120, 160, 255, 0.35);
+            color: #eef2ff;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.55;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        #intro-card h1 {
+            margin: 0 0 6px 0;
+            font-size: 1.7rem;
+            line-height: 1.2;
+        }
+
+        #intro-card h2 {
+            margin: 0 0 18px 0;
+            font-size: 1.0rem;
+            font-weight: 400;
+            color: #9fb4e8;
+        }
+
+        #intro-card p {
+            margin: 0 0 14px 0;
+            font-size: 0.98rem;
+        }
+
+        #intro-card ul {
+            margin: 0 0 18px 18px;
+            padding: 0;
+            font-size: 0.94rem;
+            color: #cfd9f5;
+        }
+
+        #intro-card li {
+            margin-bottom: 5px;
+        }
+
+        #intro-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #intro-card button {
+            background: #2962FF;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        #intro-card button.secondary {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        #intro-card button:hover {
+            filter: brightness(1.15);
+        }
+
+        #intro-card .credit {
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: #8b9ac2;
+        }
+
+        #intro-card a {
+            color: #8fb2ff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="aladin-lite-div"></div>
+
+    <div id="loading-div">Loading the tour... Please wait.</div>
+
+    <div id="intro-overlay">
+        <div id="intro-card">
+            <h1>Star Formation in the Galaxy</h1>
+            <h2>Environment, the CMF, and the IMF — colloquium tour, Adam Ginsburg (University of Florida)</h2>
+            <p>A guided pass through the datasets behind the argument: local clouds are a biased benchmark,
+                dense protoclusters and the CMZ produce a top-heavy core mass function, and internal heating
+                from hot cores plausibly links the two. Technical level; numbers and references in the panel.</p>
+            <ul>
+                <li>‹ › or the ← → arrow keys step; ▶ auto-advances; 1×/2×/4× sets the pace</li>
+                <li>≫ jumps to any stop; 🔗 deep-links the current one — usable mid-talk</li>
+                <li>Pan/zoom and the Aladin layer control stay live at every waypoint</li>
+                <li>Append <code>?description=false</code> for a clean screen, <code>?autoplay=true</code> to skip this card</li>
+            </ul>
+            <div id="intro-buttons">
+                <button id="intro-start">Start</button>
+                <button id="intro-explore" class="secondary">Skip to the viewer</button>
+            </div>
+            <div class="credit">ACES (ALMA+GBT), ALMA-IMF, JWST, MeerKAT, Spitzer, Hubble, Gemini.
+                General-audience version and single-region explorers: <a href="index.html">index</a>.</div>
+        </div>
+    </div>
+
+    <div id="waypoint-info">
+        <div id="waypoint-header">
+            <button id="expand-btn" title="Expand/Collapse Info">▶</button>
+            <h2 id="waypoint-title">Star Formation in the Galaxy</h2>
+        </div>
+        <div id="waypoint-content">
+            <p id="waypoint-description">
+                Colloquium tour: environmental dependence of the CMF and IMF, from ALMA-IMF protoclusters
+                to the Central Molecular Zone. Press ▶ or use the arrow keys.
+            </p>
+        </div>
+    </div>
+
+    <div id="progress-container">
+        <div id="progress-bar">
+            <div id="progress"></div>
+        </div>
+        <span id="current-waypoint">0</span>
+    </div>
+
+    <div id="tour-controls">
+        <button id="prev-btn" title="Previous">‹</button>
+        <button id="next-btn" title="Next">›</button>
+        <button id="start-btn" title="Start/Play Tour">▶</button>
+        <button id="reset-btn" title="Reset">⟲</button>
+        <button id="share-btn" title="Copy shareable link to current waypoint">🔗</button>
+        <select id="waypoint-dropdown" title="Jump to waypoint"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 36px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="">≫</option>
+        </select>
+        <select id="speed-dropdown" title="Tour speed: 1× = normal, 2× = double speed, 4× = quadruple speed"
+            style="background-color: #2962FF; color: white; border: none; padding: 12px 6px; border-radius: 8px; margin: 0 3px; cursor: pointer; font-size: 16px; position: relative; z-index: 120; width: 42px; text-align: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+        </select>
+    </div>
+
+    <div id="countdown-timer" style="display: none;">
+        <span id="countdown-text">Next in: </span>
+        <span id="countdown-value">5</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadWaypoints('waypoints_colloquium.json', {
+                initialSurvey: 'CDS/P/2MASS/color'
+            });
+
+            const overlay = document.getElementById('intro-overlay');
+
+            function dismissIntro() {
+                overlay.classList.add('hidden');
+                setTimeout(function () { overlay.style.display = 'none'; }, 700);
+            }
+
+            // If the URL already points at a waypoint or asks for autoplay, skip the splash
+            const params = new URLSearchParams(window.location.search);
+            if (window.location.hash || params.get('autoplay') === 'true' || params.get('kiosk') === 'true') {
+                overlay.style.display = 'none';
+            }
+
+            document.getElementById('intro-start').addEventListener('click', function () {
+                dismissIntro();
+                // tour-common.js attaches the button listeners only after A.init resolves,
+                // so wait for the Aladin instance to exist before clicking play.
+                const play = function () {
+                    if (typeof startTour === 'function') {
+                        startTour();
+                    } else {
+                        document.getElementById('start-btn').click();
+                    }
+                };
+                if (typeof aladin !== 'undefined' && aladin) {
+                    play();
+                } else {
+                    const waitForReady = setInterval(function () {
+                        if (typeof aladin !== 'undefined' && aladin) {
+                            clearInterval(waitForReady);
+                            play();
+                        }
+                    }, 200);
+                    setTimeout(function () { clearInterval(waitForReady); }, 30000);
+                }
+            });
+
+            document.getElementById('intro-explore').addEventListener('click', dismissIntro);
+
+            // Keyboard / presenter-remote navigation: arrows and PageUp/PageDown step waypoints
+            document.addEventListener('keydown', function (e) {
+                if (overlay.style.display !== 'none' && !overlay.classList.contains('hidden')) return;
+                const tag = (e.target.tagName || '').toLowerCase();
+                if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+                if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+                    e.preventDefault();
+                    document.getElementById('next-btn').click();
+                } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                    e.preventDefault();
+                    document.getElementById('prev-btn').click();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

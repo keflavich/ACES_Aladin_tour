@@ -27,6 +27,7 @@ let descriptionEnabled = true; // defaults to true; if URL has description=false
 
 // Autoplay configuration (URL-configurable)
 let autoPlayEnabled = false; // defaults to false; if URL has autoplay=true, start playing
+let startAtRandomWaypoint = false; // if URL has random=true, open on a random waypoint (screensaver use)
 
 // Region editing system
 let regionEditingEnabled = false;
@@ -469,11 +470,58 @@ function updateWaypointInfo() {
     document.getElementById('waypoint-description').innerText = waypoints[currentWaypoint].description;
     document.getElementById('current-waypoint').innerText = (currentWaypoint + 1) + '/' + waypoints.length;
 
+    // Optional per-waypoint image (e.g. a person, a figure). Silently hidden if
+    // the file is missing, so waypoints can name images that are not there yet.
+    updateWaypointImage(waypoints[currentWaypoint]);
+
     // Update URL hash for shareable links
     updateUrlHash();
 
     // Update button states
     updateButtonStates();
+}
+
+// Show/hide the optional image attached to a waypoint.
+// Waypoint fields: `image` (URL or path relative to the tour page) and
+// optional `image_caption`. A missing file hides the figure rather than
+// showing a broken image, so headshots can be dropped in later.
+function updateWaypointImage(waypoint) {
+    const content = document.getElementById('waypoint-content');
+    if (!content) return;
+
+    let figure = document.getElementById('waypoint-figure');
+    if (!figure) {
+        figure = document.createElement('figure');
+        figure.id = 'waypoint-figure';
+        const img = document.createElement('img');
+        img.id = 'waypoint-image';
+        img.alt = '';
+        img.addEventListener('error', function () {
+            document.getElementById('waypoint-figure').style.display = 'none';
+        });
+        const caption = document.createElement('figcaption');
+        caption.id = 'waypoint-image-caption';
+        figure.appendChild(img);
+        figure.appendChild(caption);
+        content.insertBefore(figure, content.firstChild);
+    }
+
+    const img = document.getElementById('waypoint-image');
+    const caption = document.getElementById('waypoint-image-caption');
+
+    if (!waypoint.image) {
+        figure.style.display = 'none';
+        img.removeAttribute('src');
+        caption.innerText = '';
+        return;
+    }
+
+    figure.style.display = '';
+    if (img.getAttribute('src') !== waypoint.image) {
+        img.setAttribute('src', waypoint.image);
+    }
+    caption.innerText = waypoint.image_caption || '';
+    caption.style.display = waypoint.image_caption ? '' : 'none';
 }
 
 // Function to update button states
@@ -1584,6 +1632,28 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
             const val = String(autoplayParam).toLowerCase();
             autoPlayEnabled = (val === 'true' || val === '1' || val === 'yes' || val === 'on');
         }
+
+        // Kiosk / screensaver mode (?kiosk=true): hide the tour chrome and
+        // autoplay. Body class 'kiosk-mode' is styled in tour-common.css.
+        const kioskParam = urlParams.get('kiosk');
+        if (kioskParam !== null) {
+            const val = String(kioskParam).toLowerCase();
+            if (val === 'true' || val === '1' || val === 'yes' || val === 'on') {
+                document.body.classList.add('kiosk-mode');
+                autoPlayEnabled = true;
+                console.log('Kiosk mode enabled: controls hidden, autoplay on');
+            }
+        }
+
+        // Start at a random waypoint (?random=true) so a looping screensaver
+        // does not always replay the same opening.
+        const randomParam = urlParams.get('random');
+        if (randomParam !== null) {
+            const val = String(randomParam).toLowerCase();
+            if (val === 'true' || val === '1' || val === 'yes' || val === 'on') {
+                startAtRandomWaypoint = true;
+            }
+        }
     } catch (e) {
         console.warn('Failed to parse speed from URL:', e);
     }
@@ -1636,9 +1706,13 @@ function initializeTour(tourWaypoints, tourConfig = {}) {
             updateProgressBar();
             jumpToWaypointWithLayers(hashWaypoint);
         } else {
+            const startIndex = startAtRandomWaypoint
+                ? Math.floor(Math.random() * waypoints.length)
+                : 0;
+            currentWaypoint = startIndex;
             updateWaypointInfo();
             updateProgressBar();
-            goToWaypointFast(0);
+            goToWaypointFast(startIndex);
         }
 
         // Autoplay if requested via URL

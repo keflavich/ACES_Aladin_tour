@@ -83,6 +83,23 @@ If you encounter issues:
 - To customize the colormap, modify the `create_custom_cmap()` function in `fits_to_hips.py`
 - To adjust the HiPS generation parameters, modify the `create_basic_hips_structure()` function
 
+### Rebuilding a HiPS at the right resolution
+
+`reproject_to_hips` chooses the tile order automatically, and for small,
+finely-sampled images it can pick an order far coarser than the data — the
+image then renders smeared over a degree of sky instead of a few arcminutes,
+which looks like it has been pasted down in the wrong place.  `rebuild_hips.py`
+derives the order from the image's own AVM pixel scale:
+
+```bash
+python rebuild_hips.py image_with_avm.jpg --check-only     # report scale + order
+python rebuild_hips.py image_with_avm.jpg out_hips         # build at that order
+```
+
+The Gemini/GeMS Trapezium mosaic (0.02"/px, 2.9' x 3.7') had been built at order
+7, i.e. 3.2"/px, roughly 128x too coarse; it is now
+`Trapezium_GEMS_avm_o14_hips`.
+
 ## Running a tour as a screensaver
 
 The tours support an unattended kiosk mode driven entirely by URL parameters:

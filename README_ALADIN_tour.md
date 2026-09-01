@@ -96,9 +96,12 @@ python rebuild_hips.py image_with_avm.jpg --check-only     # report scale + orde
 python rebuild_hips.py image_with_avm.jpg out_hips         # build at that order
 ```
 
-The Gemini/GeMS Trapezium mosaic (0.02"/px, 2.9' x 3.7') had been built at order
-7, i.e. 3.2"/px, roughly 128x too coarse; it is now
-`Trapezium_GEMS_avm_o14_hips`.
+The Gemini/GeMS Trapezium mosaic (0.02"/px, 2.9' x 3.7') shows the failure:
+`Trapezium_..._avm_hips` was built at order 7, i.e. 3.2"/px, roughly 128x too
+coarse.  Check before trusting an auto-built HiPS, and prefer an existing
+HipsGen build when there is one -- the tours use
+`GINSBURG_P_Trapezium_GEMS_mosaic_...`, built by Aladin/HipsGen at order 15 with
+transparency, rather than any `reproject`-built Trapezium layer.
 
 ## Running a tour as a screensaver
 

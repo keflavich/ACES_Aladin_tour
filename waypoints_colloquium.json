@@ -34,7 +34,7 @@
             "zoom_in_time": 3,
             "title": "Orion: The Resolved Limit",
             "description": "The ONC is the nearest high-mass star-forming region and our only chance to resolve individual protostellar disks around massive YSOs. Orion Source I, embedded behind this nebula, is the closest high-mass protostar and the object where the salt-bearing disk phenomenon was first characterized. We return to it later.",
-            "url": "Trapezium_GEMS_avm_o14_hips",
+            "url": "GINSBURG_P_Trapezium_GEMS_mosaic_redblueorange_normed_large_contrast_bright_photoshop",
             "fade_in_time": 1.2,
             "pause_time": 11000
         },
@@ -313,7 +313,7 @@
             "zoom_in_time": 4,
             "title": "Salts in Disks",
             "description": "Gas-phase NaCl and KCl, previously seen only in AGB envelopes, are now detected in ~9 high-mass YSO disks including Orion Source I. Salt correlates with H2O, SiS, and PN, and anti-correlates with COMs and ionized gas — it selects a distinct disk component. Its practical value: the salt lines are optically thin, spatially compact, and Keplerian, giving a direct dynamical mass. For Orion Source I that yields ~15 Msun.",
-            "url": "Trapezium_GEMS_avm_o14_hips",
+            "url": "GINSBURG_P_Trapezium_GEMS_mosaic_redblueorange_normed_large_contrast_bright_photoshop",
             "fade_in_time": 1.5,
             "pause_time": 15000
         },
@@ -327,7 +327,7 @@
             "zoom_in_time": 2,
             "title": "The Salt Excitation Problem",
             "description": "Vibrational temperatures of ~1000 K coexist with rotational temperatures of ~50-150 K in the same salt-bearing gas. That is far from LTE and requires radiative pumping by an intense, non-blackbody field, plausibly in the 25-40 micron range. Two open questions: what produces that radiation field, and why is salt present in only a subset of otherwise similar disks?",
-            "url": "Trapezium_GEMS_avm_o14_hips",
+            "url": "GINSBURG_P_Trapezium_GEMS_mosaic_redblueorange_normed_large_contrast_bright_photoshop",
             "pause_time": 13000
         },
         {

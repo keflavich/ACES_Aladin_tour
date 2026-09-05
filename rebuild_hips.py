@@ -39,10 +39,16 @@ def pixel_scale_arcsec(image_path: Path) -> tuple[float, tuple[int, int]]:
         size = im.size
 
     avm = AVM.from_image(str(image_path))
-    scale = avm.Spatial.Scale
-    if scale is None:
-        raise SystemExit(f"{image_path} has no Spatial.Scale in its AVM metadata")
-    return abs(float(scale[0])) * 3600, size
+    # Spatial.Scale is absent when the AVM carries a full CD matrix instead
+    # (which is what faithful_avm writes), so go through the WCS, which
+    # handles either representation.
+    try:
+        wcs = avm.to_wcs().celestial
+    except Exception as exc:
+        raise SystemExit(f"{image_path} has no usable AVM WCS: {exc}")
+    from astropy.wcs.utils import proj_plane_pixel_scales
+    scale = proj_plane_pixel_scales(wcs)
+    return float(abs(scale[0])) * 3600, size
 
 
 def level_for_scale(scale_arcsec: float) -> int:

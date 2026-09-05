@@ -474,6 +474,9 @@ function updateWaypointInfo() {
     // the file is missing, so waypoints can name images that are not there yet.
     updateWaypointImage(waypoints[currentWaypoint]);
 
+    // Optional per-waypoint MOC outline (e.g. a survey footprint)
+    updateWaypointMoc(waypoints[currentWaypoint]);
+
     // Update URL hash for shareable links
     updateUrlHash();
 
@@ -522,6 +525,84 @@ function updateWaypointImage(waypoint) {
     }
     caption.innerText = waypoint.image_caption || '';
     caption.style.display = waypoint.image_caption ? '' : 'none';
+}
+
+// Show/hide a MOC outline (a survey footprint, say) attached to a waypoint.
+// Waypoint fields:
+//   moc            path or URL of a MOC JSON file ({"order": [npix, ...]}, ICRS)
+//   moc_color      stroke color (default '#ff3b30')
+//   moc_line_width stroke width in pixels (default 3)
+//   moc_fill       fill color; omit for an outline only
+//   moc_opacity    fill opacity (default 0.15, only used with moc_fill)
+// MOCs are cached by URL so stepping back and forth does not refetch them.
+let mocCache = new Map();   // url -> MOC object
+let mocAdded = new Set();   // urls already attached to the view
+let visibleMocUrl = null;
+
+function updateWaypointMoc(waypoint) {
+    if (typeof aladin === 'undefined' || !aladin) return;
+
+    const url = waypoint.moc || null;
+    if (url === visibleMocUrl) return;
+
+    // Hide whatever outline is currently shown. MOCs stay attached to the view
+    // once added; hide()/show() toggles them (removeMoc() is the fallback).
+    if (visibleMocUrl && mocCache.has(visibleMocUrl)) {
+        const current = mocCache.get(visibleMocUrl);
+        try {
+            if (typeof current.hide === 'function') {
+                current.hide();
+            } else if (typeof aladin.removeMoc === 'function') {
+                aladin.removeMoc(current);
+                mocAdded.delete(visibleMocUrl);
+            }
+        } catch (e) {
+            console.warn('Could not hide MOC', visibleMocUrl, e);
+        }
+    }
+    visibleMocUrl = null;
+
+    if (!url) return;
+
+    const show = (moc) => {
+        if (mocAdded.has(url) && typeof moc.show === 'function') {
+            moc.show();
+        } else {
+            aladin.addMOC(moc);
+            mocAdded.add(url);
+        }
+        visibleMocUrl = url;
+    };
+
+    if (mocCache.has(url)) {
+        show(mocCache.get(url));
+        return;
+    }
+
+    fetch(url)
+        .then((response) => {
+            if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
+            return response.json();
+        })
+        .then((json) => {
+            const options = {
+                color: waypoint.moc_color || '#ff3b30',
+                lineWidth: waypoint.moc_line_width || 3,
+                perimeter: true,
+            };
+            if (waypoint.moc_fill) {
+                options.fill = true;
+                options.fillColor = waypoint.moc_fill;
+                options.opacity = waypoint.moc_opacity !== undefined ? waypoint.moc_opacity : 0.15;
+            }
+            const moc = A.MOCFromJSON(json, options);
+            mocCache.set(url, moc);
+            // Only display it if we are still on a waypoint that asked for it
+            if (waypoints[currentWaypoint] && waypoints[currentWaypoint].moc === url) {
+                show(moc);
+            }
+        })
+        .catch((err) => console.warn('Could not load MOC', url, err));
 }
 
 // Function to update button states
@@ -873,6 +954,10 @@ function goToWaypoint(index) {
                     // No URL - just pan and zoom, then set up auto-advance
                     console.log("No URL for waypoint, setting up auto-advance only");
 
+                    // A waypoint with no url means "show the base survey": fade
+                    // every non-sticky overlay out, honouring fade_out_time.
+                    hideOtherLayers(null, waypoints[index]);
+
                     // No layer change, so update title/description on arrival
                     updateWaypointInfo();
 
@@ -1019,6 +1104,10 @@ function goToWaypoint(index) {
                     } else {
                         // No URL - just pan and zoom, then set up auto-advance
                         console.log("No URL for waypoint (multi-step), setting up auto-advance only");
+
+                        // A waypoint with no url means "show the base survey": fade
+                        // every non-sticky overlay out, honouring fade_out_time.
+                        hideOtherLayers(null, waypoints[index]);
 
                         // No layer change, so update title/description on arrival
                         updateWaypointInfo();

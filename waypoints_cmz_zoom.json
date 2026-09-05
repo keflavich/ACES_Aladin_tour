@@ -1,7 +1,7 @@
 {
     "waypoints": [
         {
-            "ra": 266.52130,
+            "ra": 266.5213,
             "dec": -28.84601,
             "fov": 1.9,
             "transition_fov": 1.9,
@@ -9,14 +9,14 @@
             "zoom_out_time": 0,
             "zoom_in_time": 2,
             "title": "The Central Molecular Zone",
-            "description": "Spitzer/IRAC 8 micron. The red outline is the ACES footprint: uniform ALMA coverage of all the gas in the inner 100 pc of the Galaxy.",
-            "moc": "aces_footprint_moc.json",
-            "moc_color": "#ff3b30",
-            "moc_line_width": 3,
-            "pause_time": 4000
+            "description": "Spitzer/IRAC 8 micron. The red outline is the ACES footprint - the actual ALMA mosaic coverage, not a bounding box: uniform coverage of all the gas in the inner 100 pc of the Galaxy.",
+            "pause_time": 4000,
+            "footprint": "aces_footprint.json",
+            "footprint_color": "#ff3b30",
+            "footprint_line_width": 3
         },
         {
-            "ra": 266.52130,
+            "ra": 266.5213,
             "dec": -28.84601,
             "fov": 1.9,
             "transition_fov": 1.9,
@@ -26,11 +26,11 @@
             "title": "ACES",
             "description": "ALMA 100 GHz continuum feathered with the GBT MUSTANG-2 90 GHz map, fading in over the Spitzer view: >50x the sensitivity and >10x the angular resolution of what came before.",
             "url": "MUSTANG_12m_feather_noaxes_transparent_hips",
-            "moc": "aces_footprint_moc.json",
-            "moc_color": "#ff3b30",
-            "moc_line_width": 3,
             "fade_in_time": 2.5,
-            "pause_time": 4000
+            "pause_time": 4000,
+            "footprint": "aces_footprint.json",
+            "footprint_color": "#ff3b30",
+            "footprint_line_width": 3
         },
         {
             "ra": 266.57553,
@@ -48,7 +48,7 @@
         },
         {
             "ra": 266.67018,
-            "dec": -28.51580,
+            "dec": -28.5158,
             "fov": 0.1,
             "transition_fov": 0.45,
             "transition_time": 1.5,
@@ -62,7 +62,7 @@
         },
         {
             "ra": 266.67018,
-            "dec": -28.51580,
+            "dec": -28.5158,
             "fov": 0.1,
             "transition_fov": 0.1,
             "transition_time": 0.5,
@@ -75,7 +75,7 @@
         },
         {
             "ra": 266.67018,
-            "dec": -28.51580,
+            "dec": -28.5158,
             "fov": 0.1,
             "transition_fov": 0.1,
             "transition_time": 0.5,
@@ -89,7 +89,7 @@
         },
         {
             "ra": 266.67018,
-            "dec": -28.51580,
+            "dec": -28.5158,
             "fov": 0.035,
             "transition_fov": 0.1,
             "transition_time": 1.0,

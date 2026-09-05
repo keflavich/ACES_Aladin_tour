@@ -477,6 +477,9 @@ function updateWaypointInfo() {
     // Optional per-waypoint MOC outline (e.g. a survey footprint)
     updateWaypointMoc(waypoints[currentWaypoint]);
 
+    // Optional per-waypoint polygon outline (e.g. a survey footprint region file)
+    updateWaypointFootprint(waypoints[currentWaypoint]);
+
     // Update URL hash for shareable links
     updateUrlHash();
 
@@ -603,6 +606,65 @@ function updateWaypointMoc(waypoint) {
             }
         })
         .catch((err) => console.warn('Could not load MOC', url, err));
+}
+
+// Show/hide a polygon outline attached to a waypoint. Unlike a MOC, this draws
+// the exact region boundary, so it is the right choice for a survey footprint
+// converted from a DS9 region file.
+// Waypoint fields:
+//   footprint            path or URL of {"polygons": [[[ra, dec], ...], ...]} in ICRS degrees
+//   footprint_color      stroke color (default '#ff3b30')
+//   footprint_line_width stroke width in pixels (default 3)
+let footprintCache = new Map();   // url -> Aladin overlay
+let visibleFootprintUrl = null;
+
+function updateWaypointFootprint(waypoint) {
+    if (typeof aladin === 'undefined' || !aladin) return;
+
+    const url = waypoint.footprint || null;
+    if (url === visibleFootprintUrl) return;
+
+    if (visibleFootprintUrl && footprintCache.has(visibleFootprintUrl)) {
+        try {
+            footprintCache.get(visibleFootprintUrl).hide();
+        } catch (e) {
+            console.warn('Could not hide footprint', visibleFootprintUrl, e);
+        }
+    }
+    visibleFootprintUrl = null;
+
+    if (!url) return;
+
+    if (footprintCache.has(url)) {
+        footprintCache.get(url).show();
+        visibleFootprintUrl = url;
+        return;
+    }
+
+    fetch(url)
+        .then((response) => {
+            if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
+            return response.json();
+        })
+        .then((json) => {
+            const color = waypoint.footprint_color || '#ff3b30';
+            const lineWidth = waypoint.footprint_line_width || 3;
+            const overlay = A.graphicOverlay({ color: color, lineWidth: lineWidth });
+            aladin.addOverlay(overlay);
+            (json.polygons || []).forEach((vertices) => {
+                overlay.add(A.polygon(vertices, { color: color, lineWidth: lineWidth }));
+            });
+            footprintCache.set(url, overlay);
+
+            // Only display it if we are still on a waypoint that asked for it
+            if (waypoints[currentWaypoint] && waypoints[currentWaypoint].footprint === url) {
+                overlay.show();
+                visibleFootprintUrl = url;
+            } else {
+                overlay.hide();
+            }
+        })
+        .catch((err) => console.warn('Could not load footprint', url, err));
 }
 
 // Function to update button states

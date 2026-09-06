@@ -617,27 +617,112 @@ function updateWaypointMoc(waypoint) {
 //   footprint_line_width stroke width in pixels (default 3)
 let footprintCache = new Map();   // url -> Aladin overlay
 let visibleFootprintUrl = null;
+let footprintTimers = [];         // pending hold/fade timeouts
+let footprintLastColor = new Map();  // url -> the color it was drawn with
+let waypointFootprintShown = -1;     // waypoint index whose contours are current
+
+function clearFootprintTimers() {
+    footprintTimers.forEach(clearTimeout);
+    footprintTimers = [];
+}
+
+// Overlays have no opacity control, but setColor() triggers a redraw, so a
+// fade is an animation of the stroke's alpha channel.
+function footprintRgba(color, alpha) {
+    let r = 255, g = 255, b = 255;
+    const hex = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color || '');
+    const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(color || '');
+    if (hex) {
+        [r, g, b] = [parseInt(hex[1], 16), parseInt(hex[2], 16), parseInt(hex[3], 16)];
+    } else if (rgb) {
+        [r, g, b] = [parseInt(rgb[1], 10), parseInt(rgb[2], 10), parseInt(rgb[3], 10)];
+    }
+    return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, alpha)).toFixed(3)})`;
+}
+
+function animateFootprintAlpha(overlay, color, from, to, seconds, callback) {
+    const steps = 24;
+    const durationMs = Math.max(seconds, 0.01) * 1000 / speedMultiplier;
+    let step = 0;
+    const tick = setInterval(() => {
+        step++;
+        const t = step / steps;
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        try {
+            overlay.setColor(footprintRgba(color, from + (to - from) * eased));
+        } catch (e) {
+            clearInterval(tick);
+            return;
+        }
+        if (step >= steps) {
+            clearInterval(tick);
+            if (callback) callback();
+        }
+    }, durationMs / steps);
+    footprintTimers.push(tick);
+}
 
 function updateWaypointFootprint(waypoint) {
     if (typeof aladin === 'undefined' || !aladin) return;
 
     const url = waypoint.footprint || null;
-    if (url === visibleFootprintUrl) return;
+    if (url === visibleFootprintUrl && waypointFootprintShown === currentWaypoint) return;
+    waypointFootprintShown = currentWaypoint;
 
-    if (visibleFootprintUrl && footprintCache.has(visibleFootprintUrl)) {
+    clearFootprintTimers();
+
+    if (visibleFootprintUrl && footprintCache.has(visibleFootprintUrl)
+            && visibleFootprintUrl !== url) {
+        // Fade the outgoing contours out rather than dropping them
+        const leaving = footprintCache.get(visibleFootprintUrl);
+        const leavingColor = footprintLastColor.get(visibleFootprintUrl) || '#ffffff';
         try {
-            footprintCache.get(visibleFootprintUrl).hide();
+            animateFootprintAlpha(leaving, leavingColor, 1, 0, 1.0, () => leaving.hide());
         } catch (e) {
-            console.warn('Could not hide footprint', visibleFootprintUrl, e);
+            try { leaving.hide(); } catch (e2) { /* already gone */ }
         }
+        visibleFootprintUrl = null;
     }
-    visibleFootprintUrl = null;
 
-    if (!url) return;
+    if (!url) {
+        visibleFootprintUrl = null;
+        return;
+    }
+
+    const color = waypoint.footprint_color || '#ff3b30';
+    const fadeIn = waypoint.footprint_fade_in_time;
+    const hold = waypoint.footprint_hold;
+    const fadeOut = waypoint.footprint_fade_out_time !== undefined
+        ? waypoint.footprint_fade_out_time : 1.5;
+
+    footprintLastColor.set(url, color);
+
+    const show = (overlay) => {
+        const alreadyUp = visibleFootprintUrl === url;
+        if (!alreadyUp) {
+            overlay.show();
+            visibleFootprintUrl = url;
+            if (fadeIn) {
+                overlay.setColor(footprintRgba(color, 0));
+                animateFootprintAlpha(overlay, color, 0, 1, fadeIn);
+            } else {
+                overlay.setColor(footprintRgba(color, 1));
+            }
+        }
+        // Hold the contours as a spatial reference, then fade them away
+        if (hold) {
+            const holdMs = hold * 1000 / speedMultiplier;
+            footprintTimers.push(setTimeout(() => {
+                animateFootprintAlpha(overlay, color, 1, 0, fadeOut, () => {
+                    overlay.hide();
+                    if (visibleFootprintUrl === url) visibleFootprintUrl = null;
+                });
+            }, holdMs));
+        }
+    };
 
     if (footprintCache.has(url)) {
-        footprintCache.get(url).show();
-        visibleFootprintUrl = url;
+        show(footprintCache.get(url));
         return;
     }
 
@@ -647,7 +732,6 @@ function updateWaypointFootprint(waypoint) {
             return response.json();
         })
         .then((json) => {
-            const color = waypoint.footprint_color || '#ff3b30';
             const lineWidth = waypoint.footprint_line_width || 3;
             const overlay = A.graphicOverlay({ color: color, lineWidth: lineWidth });
             aladin.addOverlay(overlay);
@@ -655,11 +739,9 @@ function updateWaypointFootprint(waypoint) {
                 overlay.add(A.polygon(vertices, { color: color, lineWidth: lineWidth }));
             });
             footprintCache.set(url, overlay);
-
-            // Only display it if we are still on a waypoint that asked for it
+            footprintLastColor.set(url, color);
             if (waypoints[currentWaypoint] && waypoints[currentWaypoint].footprint === url) {
-                overlay.show();
-                visibleFootprintUrl = url;
+                show(overlay);
             } else {
                 overlay.hide();
             }
@@ -1245,6 +1327,12 @@ function jumpToWaypointWithLayers(index) {
                 hideOtherLayers(wp.url, wp);
             }
         }
+    }
+
+    // A waypoint with no url means "show the base survey": hide every
+    // non-sticky overlay, or a layer from an earlier waypoint stays on screen.
+    if (!waypoint.url) {
+        hideOtherLayers(null, waypoint);
     }
 
     // Jump directly to the target location and FOV

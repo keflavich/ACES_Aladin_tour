@@ -9,9 +9,7 @@
             "zoom_out_time": 0,
             "zoom_in_time": 2,
             "title": "Sgr B2 Deep South",
-            "description": "JWST NIRCam, background-subtracted: f480m-f410m in red, f405n-f410m in green, f187n-f182m in blue. The three fields below are the regions Nazar Budaiev picked out in Sgr B2 Deep South.",
-            "url": "SgrB2_DS_jwst_rgb_hips",
-            "fade_in_time": 1.5,
+            "description": "JWST NIRCam: red = F480M-F410M, green = F405N-F410M, blue = F187N-F182M. We visit three fields in Sgr B2 Deep South, each a few arcseconds across, switching between JWST and ALMA on identical sky. White contours are ALMA SiO J=5-4 (217.105 GHz): SiO is released when outflows shock the gas, so the contours show the outflows, tracing back to their origin at the ALMA continuum sources - which are offset from the JWST F480M emission.",
             "pause_time": 4000
         },
         {
@@ -23,13 +21,13 @@
             "zoom_out_time": 0,
             "zoom_in_time": 2.5,
             "title": "Field 1 - JWST",
-            "description": "5.5 arcsec across. Red is the 4.8 micron excess, tracing warm dust and shocked gas along the filament; the white contours are the ALMA moment-0 map at 0.05, 0.15, 0.30, 0.525 and 0.8625.",
-            "url": "SgrB2_DS_jwst_rgb_hips",
+            "description": "JWST NIRCam: red = F480M-F410M, green = F405N-F410M, blue = F187N-F182M. 5.5 arcsec across; the red 4.8 micron excess traces warm dust and shocked gas. White contours are ALMA SiO J=5-4 (217.105 GHz): SiO is released when outflows shock the gas, so the contours show the outflows, tracing back to their origin at the ALMA continuum sources - which are offset from the JWST F480M emission.",
             "footprint": "sgrb2_ds_contours.json",
             "footprint_color": "#ffffff",
             "footprint_line_width": 1.5,
-            "fade_in_time": 0.6,
-            "pause_time": 4000
+            "footprint_fade_in_time": 1.0,
+            "fade_out_time": 2.0,
+            "pause_time": 5000
         },
         {
             "ra": 266.845572,
@@ -40,10 +38,15 @@
             "zoom_out_time": 0,
             "zoom_in_time": 0.4,
             "title": "Field 1 - ALMA",
-            "description": "The same 5.5 arcsec of sky in ALMA 1.3 mm continuum at 0.15 arcsec resolution. Two compact sources sit on the filament that the infrared only hints at.",
+            "description": "JWST NIRCam: red = F480M-F410M, green = F405N-F410M, blue = F187N-F182M. The same 5.5 arcsec in ALMA 1.3 mm continuum at 0.15 arcsec resolution. The SiO contours hold as a spatial reference, then fade: the millimeter sources sit at the outflow origins, beside rather than on the infrared knots.",
             "url": "SgrB2_DS_alma_inferno_hips",
-            "fade_in_time": 2.0,
-            "pause_time": 4500
+            "footprint": "sgrb2_ds_contours.json",
+            "footprint_color": "#ffffff",
+            "footprint_line_width": 1.5,
+            "footprint_hold": 4.0,
+            "footprint_fade_out_time": 2.0,
+            "fade_in_time": 2.5,
+            "pause_time": 13000
         },
         {
             "ra": 266.846711,
@@ -54,14 +57,13 @@
             "zoom_out_time": 0,
             "zoom_in_time": 1.5,
             "title": "Field 2 - JWST",
-            "description": "6.4 arcsec across. A bright star with strong diffraction spikes sits right next to the millimeter peak.",
-            "url": "SgrB2_DS_jwst_rgb_hips",
+            "description": "JWST NIRCam: red = F480M-F410M, green = F405N-F410M, blue = F187N-F182M. 6.4 arcsec across. A bright star with strong diffraction spikes sits beside the outflow. White contours are ALMA SiO J=5-4 (217.105 GHz): SiO is released when outflows shock the gas, so the contours show the outflows, tracing back to their origin at the ALMA continuum sources - which are offset from the JWST F480M emission.",
             "footprint": "sgrb2_ds_contours.json",
             "footprint_color": "#ffffff",
             "footprint_line_width": 1.5,
-            "fade_out_time": 1.5,
-            "fade_in_time": 1.5,
-            "pause_time": 4000
+            "footprint_fade_in_time": 1.0,
+            "fade_out_time": 2.5,
+            "pause_time": 5000
         },
         {
             "ra": 266.846711,
@@ -72,42 +74,51 @@
             "zoom_out_time": 0,
             "zoom_in_time": 0.4,
             "title": "Field 2 - ALMA",
-            "description": "In the millimeter the bright infrared star vanishes and a single compact source lights up at the contour peak: a protostar still inside its envelope.",
+            "description": "JWST NIRCam: red = F480M-F410M, green = F405N-F410M, blue = F187N-F182M. In the millimeter the bright infrared star vanishes and one compact source lights up at the SiO origin: a protostar still inside its envelope, driving the outflow the contours trace.",
             "url": "SgrB2_DS_alma_inferno_hips",
-            "fade_in_time": 2.0,
-            "pause_time": 4500
+            "footprint": "sgrb2_ds_contours.json",
+            "footprint_color": "#ffffff",
+            "footprint_line_width": 1.5,
+            "footprint_hold": 4.0,
+            "footprint_fade_out_time": 2.0,
+            "fade_in_time": 2.5,
+            "pause_time": 13000
         },
         {
             "ra": 266.847728,
             "dec": -28.431085,
-            "fov": 0.0030,
+            "fov": 0.003,
             "transition_fov": 0.008,
             "transition_time": 1.8,
             "zoom_out_time": 0,
             "zoom_in_time": 1.8,
             "title": "Field 3 - JWST",
-            "description": "9 arcsec across, further south. Fainter and more extended, with a ridge running north-south through the field.",
-            "url": "SgrB2_DS_jwst_rgb_hips",
+            "description": "JWST NIRCam: red = F480M-F410M, green = F405N-F410M, blue = F187N-F182M. 9 arcsec across, further south: fainter, more extended, with an SiO ridge running north-south through the field. White contours are ALMA SiO J=5-4 (217.105 GHz): SiO is released when outflows shock the gas, so the contours show the outflows, tracing back to their origin at the ALMA continuum sources - which are offset from the JWST F480M emission.",
             "footprint": "sgrb2_ds_contours.json",
             "footprint_color": "#ffffff",
             "footprint_line_width": 1.5,
-            "fade_out_time": 1.5,
-            "fade_in_time": 1.5,
-            "pause_time": 4000
+            "footprint_fade_in_time": 1.0,
+            "fade_out_time": 2.5,
+            "pause_time": 5000
         },
         {
             "ra": 266.847728,
             "dec": -28.431085,
-            "fov": 0.0030,
-            "transition_fov": 0.0030,
+            "fov": 0.003,
+            "transition_fov": 0.003,
             "transition_time": 0.4,
             "zoom_out_time": 0,
             "zoom_in_time": 0.4,
             "title": "Field 3 - ALMA",
-            "description": "A chain of compact millimeter sources runs along that ridge - a line of protostars in a filament that is nearly invisible in the infrared.",
+            "description": "JWST NIRCam: red = F480M-F410M, green = F405N-F410M, blue = F187N-F182M. A chain of compact millimeter sources runs along that ridge - protostars in a filament nearly invisible in the infrared, each shocking the gas around it into SiO emission.",
             "url": "SgrB2_DS_alma_inferno_hips",
-            "fade_in_time": 2.0,
-            "pause_time": 5000
+            "footprint": "sgrb2_ds_contours.json",
+            "footprint_color": "#ffffff",
+            "footprint_line_width": 1.5,
+            "footprint_hold": 4.0,
+            "footprint_fade_out_time": 2.0,
+            "fade_in_time": 2.5,
+            "pause_time": 13000
         },
         {
             "ra": 266.84667,
@@ -118,9 +129,8 @@
             "zoom_out_time": 2.0,
             "zoom_in_time": 2.0,
             "title": "Back Out",
-            "description": "Three fields, 5 to 9 arcsec each, out of a cloud spanning arcminutes. Star formation in Deep South is distributed along filaments rather than concentrated in the classic cores.",
-            "url": "SgrB2_DS_jwst_rgb_hips",
-            "fade_in_time": 1.5,
+            "description": "JWST NIRCam: red = F480M-F410M, green = F405N-F410M, blue = F187N-F182M. Three fields, 5 to 9 arcsec each, out of a cloud spanning arcminutes. Star formation in Deep South runs along filaments rather than concentrating in the classic cores.",
+            "fade_out_time": 2.5,
             "pause_time": 5000
         }
     ]

@@ -105,7 +105,7 @@ def render(layers: list[dict], base_url: str) -> str:
 <input id="filter" placeholder="filter by name, e.g. SgrB2 or Brick" autofocus>
 <table id="t">
 <thead><tr><th>layer</th><th>max order</th><th>orders</th><th>frame</th><th>tiles</th>
-<th>centre (ra dec)</th><th>fov</th><th>built</th><th>links</th></tr></thead>
+<th>center (ra dec)</th><th>fov</th><th>built</th><th>links</th></tr></thead>
 <tbody>
 {chr(10).join(rows)}
 </tbody></table>

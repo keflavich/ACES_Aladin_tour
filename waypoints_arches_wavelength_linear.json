@@ -1,0 +1,33 @@
+{
+    "waypoints": [
+        {
+            "ra": 266.4650649,
+            "dec": -28.8422928,
+            "fov": 0.072,
+            "transition_fov": 0.072,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Arches Wavelength Explorer (Linear)",
+            "description": "4.80μm / 3.23μm / 2.12μm → 7.70μm / 4.80μm / 3.23μm",
+            "pause_time": 300000,
+            "wavelength_slider": {
+                "enabled": true,
+                "wavelengths": [
+                    {
+                        "wavelength": 480,
+                        "url": "arches_2045_10678_RGB_480-323-212_hips",
+                        "label": "RGB: 4.80μm / 3.23μm / 2.12μm",
+                        "description": "4.80μm / 3.23μm / 2.12μm"
+                    },
+                    {
+                        "wavelength": 770,
+                        "url": "arches_2045_10678_RGB_770-480-323_hips",
+                        "label": "RGB: 7.70μm / 4.80μm / 3.23μm",
+                        "description": "7.70μm / 4.80μm / 3.23μm"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,57 @@
+{
+    "waypoints": [
+        {
+            "ra": 266.566301,
+            "dec": -28.8016023,
+            "fov": 0.05,
+            "transition_fov": 0.05,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Sickle Wavelength Explorer (Linear)",
+            "description": "3.35μm / 2.10μm / 1.87μm → 4.70μm / 3.35μm / 2.10μm → 4.80μm / 4.70μm / 3.35μm → 7.70μm / 4.80μm / 4.70μm → 11.3μm / 7.70μm / 4.80μm → 15.0μm / 11.3μm / 7.70μm",
+            "pause_time": 300000,
+            "wavelength_slider": {
+                "enabled": true,
+                "wavelengths": [
+                    {
+                        "wavelength": 335,
+                        "url": "Sickle_RGB_335-210-187_hips",
+                        "label": "RGB: 3.35μm / 2.10μm / 1.87μm",
+                        "description": "3.35μm / 2.10μm / 1.87μm"
+                    },
+                    {
+                        "wavelength": 470,
+                        "url": "Sickle_RGB_470-335-210_hips",
+                        "label": "RGB: 4.70μm / 3.35μm / 2.10μm",
+                        "description": "4.70μm / 3.35μm / 2.10μm"
+                    },
+                    {
+                        "wavelength": 480,
+                        "url": "Sickle_RGB_480-470-335_hips",
+                        "label": "RGB: 4.80μm / 4.70μm / 3.35μm",
+                        "description": "4.80μm / 4.70μm / 3.35μm"
+                    },
+                    {
+                        "wavelength": 770,
+                        "url": "Sickle_RGB_770-480-470_hips",
+                        "label": "RGB: 7.70μm / 4.80μm / 4.70μm",
+                        "description": "7.70μm / 4.80μm / 4.70μm"
+                    },
+                    {
+                        "wavelength": 1130,
+                        "url": "Sickle_RGB_1130-770-480_hips",
+                        "label": "RGB: 11.3μm / 7.70μm / 4.80μm",
+                        "description": "11.3μm / 7.70μm / 4.80μm"
+                    },
+                    {
+                        "wavelength": 1500,
+                        "url": "Sickle_RGB_1500-1130-770_hips",
+                        "label": "RGB: 15.0μm / 11.3μm / 7.70μm",
+                        "description": "15.0μm / 11.3μm / 7.70μm"
+                    }
+                ]
+            }
+        }
+    ]
+}

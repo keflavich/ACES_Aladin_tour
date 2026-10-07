@@ -1,0 +1,45 @@
+{
+    "waypoints": [
+        {
+            "ra": 266.6858135,
+            "dec": -28.5174532,
+            "fov": 0.093,
+            "transition_fov": 0.093,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Clouds E/F Wavelength Explorer (Linear)",
+            "description": "3.60μm / 2.10μm / 1.62μm → 4.80μm / 3.60μm / 2.10μm → 7.70μm / 4.80μm / 3.60μm → 21.0μm / 7.70μm / 4.80μm",
+            "pause_time": 300000,
+            "wavelength_slider": {
+                "enabled": true,
+                "wavelengths": [
+                    {
+                        "wavelength": 360,
+                        "url": "Cloudef_RGB_360-210-162_hips",
+                        "label": "RGB: 3.60μm / 2.10μm / 1.62μm",
+                        "description": "3.60μm / 2.10μm / 1.62μm"
+                    },
+                    {
+                        "wavelength": 480,
+                        "url": "Cloudef_RGB_480-360-210_hips",
+                        "label": "RGB: 4.80μm / 3.60μm / 2.10μm",
+                        "description": "4.80μm / 3.60μm / 2.10μm"
+                    },
+                    {
+                        "wavelength": 770,
+                        "url": "Cloudef_RGB_770-480-360_hips",
+                        "label": "RGB: 7.70μm / 4.80μm / 3.60μm",
+                        "description": "7.70μm / 4.80μm / 3.60μm"
+                    },
+                    {
+                        "wavelength": 2100,
+                        "url": "Cloudef_RGB_2100-770-480_hips",
+                        "label": "RGB: 21.0μm / 7.70μm / 4.80μm",
+                        "description": "21.0μm / 7.70μm / 4.80μm"
+                    }
+                ]
+            }
+        }
+    ]
+}

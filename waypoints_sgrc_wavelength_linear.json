@@ -1,0 +1,57 @@
+{
+    "waypoints": [
+        {
+            "ra": 266.1702985,
+            "dec": -29.4477949,
+            "fov": 0.081,
+            "transition_fov": 0.081,
+            "transition_time": 3,
+            "zoom_out_time": 2,
+            "zoom_in_time": 3,
+            "title": "Sgr C Wavelength Explorer (Linear)",
+            "description": "1.82μm / 1.62μm / 1.15μm → 2.12μm / 1.82μm / 1.62μm → 3.60μm / 2.12μm / 1.82μm → 4.05μm / 3.60μm / 2.12μm → 4.70μm / 4.05μm / 3.60μm → 4.80μm / 4.70μm / 4.05μm",
+            "pause_time": 300000,
+            "wavelength_slider": {
+                "enabled": true,
+                "wavelengths": [
+                    {
+                        "wavelength": 182,
+                        "url": "SGRC_RGB_182-162-115_hips",
+                        "label": "RGB: 1.82μm / 1.62μm / 1.15μm",
+                        "description": "1.82μm / 1.62μm / 1.15μm"
+                    },
+                    {
+                        "wavelength": 212,
+                        "url": "SGRC_RGB_212-182-162_hips",
+                        "label": "RGB: 2.12μm / 1.82μm / 1.62μm",
+                        "description": "2.12μm / 1.82μm / 1.62μm"
+                    },
+                    {
+                        "wavelength": 360,
+                        "url": "SGRC_RGB_360-212-182_hips",
+                        "label": "RGB: 3.60μm / 2.12μm / 1.82μm",
+                        "description": "3.60μm / 2.12μm / 1.82μm"
+                    },
+                    {
+                        "wavelength": 405,
+                        "url": "SGRC_RGB_405-360-212_hips",
+                        "label": "RGB: 4.05μm / 3.60μm / 2.12μm",
+                        "description": "4.05μm / 3.60μm / 2.12μm"
+                    },
+                    {
+                        "wavelength": 470,
+                        "url": "SGRC_RGB_470-405-360_hips",
+                        "label": "RGB: 4.70μm / 4.05μm / 3.60μm",
+                        "description": "4.70μm / 4.05μm / 3.60μm"
+                    },
+                    {
+                        "wavelength": 480,
+                        "url": "SGRC_RGB_480-470-405_hips",
+                        "label": "RGB: 4.80μm / 4.70μm / 4.05μm",
+                        "description": "4.80μm / 4.70μm / 4.05μm"
+                    }
+                ]
+            }
+        }
+    ]
+}

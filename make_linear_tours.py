@@ -9,8 +9,8 @@ layer of three neighbouring filters (R = reddest), named
 with the title, description, waypoint file, and initial layer replaced.
 
 The layers come from jwst_scripts/scripts/adjacent_rgb_layers.py (Sgr A*,
-Sgr C, Clouds E/F), arches_rgb_images.py on the combined 2045 + 10678 Arches
-mosaics, and sickle_rgb_images.py.
+Sgr C, Clouds E/F), arches_combined_rgb_layers.py on the combined 2045 + 10678
+Arches and Quintuplet mosaics, and sickle_rgb_images.py.
 
 Usage:
     make_linear_tours.py [FIELD ...]     # default: all fields below
@@ -28,6 +28,11 @@ TOURS = {
     "arches": {
         "title": "Arches Wavelength Explorer (Linear)",
         "prefix": "arches_2045_10678",
+        "triplets": [(480, 323, 212), (770, 480, 323)],
+    },
+    "quintuplet": {
+        "title": "Quintuplet Wavelength Explorer (Linear)",
+        "prefix": "quintuplet_2045_10678",
         "triplets": [(480, 323, 212), (770, 480, 323)],
     },
     "sickle": {
